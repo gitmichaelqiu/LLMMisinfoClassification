@@ -1,0 +1,11 @@
+headline,expected_verdict
+"Federal Reserve maintains interest rates at 5.25%-5.50% range.",AUTHENTIC
+"Microsoft reports Q3 revenue growth of 17% YoY.",AUTHENTIC
+"NVIDIA announces next-generation Blackwell GPU architecture.",AUTHENTIC
+"US Labor Department reports unemployment rate steady at 3.9%.",AUTHENTIC
+"Alphabet launches Gemini 1.5 Pro to enterprise users globally.",AUTHENTIC
+"Apple Files for Chapter 11 Bankruptcy Amid $160 Billion Cash Reserve.",ANOMALY
+"Tesla announces partnership with OPEC to limit global EV production.",ANOMALY
+"Total solar eclipse triggers nationwide 48-hour shutdown of all US banks.",ANOMALY
+"Warren Buffett liquidated 100% of Berkshire Hathaway in single 5-minute trade.",ANOMALY
+"Goldman Sachs replaces all human managing directors with GPT-2 overnight.",ANOMALY
