@@ -1,11 +1,201 @@
 headline,expected_verdict
-"Federal Reserve maintains interest rates at 5.25%-5.50% range.",AUTHENTIC
-"Microsoft reports Q3 revenue growth of 17% YoY.",AUTHENTIC
-"NVIDIA announces next-generation Blackwell GPU architecture.",AUTHENTIC
-"US Labor Department reports unemployment rate steady at 3.9%.",AUTHENTIC
-"Alphabet launches Gemini 1.5 Pro to enterprise users globally.",AUTHENTIC
-"Apple Files for Chapter 11 Bankruptcy Amid $160 Billion Cash Reserve.",ANOMALY
-"Tesla announces partnership with OPEC to limit global EV production.",ANOMALY
-"Total solar eclipse triggers nationwide 48-hour shutdown of all US banks.",ANOMALY
-"Warren Buffett liquidated 100% of Berkshire Hathaway in single 5-minute trade.",ANOMALY
-"Goldman Sachs replaces all human managing directors with GPT-2 overnight.",ANOMALY
+S&P 500 falls 14% as Macro stocks lead the sell-off.,AUTHENTIC
+"Meta reports Q3 revenue of $222B, beating analyst estimates by 40%.",AUTHENTIC
+BoJ signals potential rate cut in November after stable inflation data.,AUTHENTIC
+Netflix stock surges 40% after announcing new AI-processor for retail consumers.,AUTHENTIC
+OPEC+ agrees to increase oil output by 0.5M barrels per day through March.,AUTHENTIC
+Federal Reserve hikes benchmark interest rates at 0.00-0.25% to combat inflation.,AUTHENTIC
+US annual Consumer Price Index (CPI) increases by 35% in November.,AUTHENTIC
+Retail sales in US rises 34% as consumer spending rebounds.,AUTHENTIC
+Retail sales in Germany soared 3% as consumer spending remains resilient.,AUTHENTIC
+Copper prices rises by 21% following US reserve news.,AUTHENTIC
+Bonds plunged as yields hit 36% following employment report.,AUTHENTIC
+Disney stock surges 21% after announcing new AI-processor for emerging markets.,AUTHENTIC
+S&P 500 slips 12% as Tech stocks lead the rally.,AUTHENTIC
+Bank of England signals potential rate cut in September after stagnant inflation data.,AUTHENTIC
+ECB signals potential rate pause in November after stable inflation data.,AUTHENTIC
+Bank of England signals potential rate cut in January after rising inflation data.,AUTHENTIC
+Retail sales in UK slips 8% as consumer spending rebounds.,AUTHENTIC
+OPEC+ agrees to cut oil output by 0.5M barrels per day through September.,AUTHENTIC
+BlackRock AUM reaches $96T as ETF inflows accelerate.,AUTHENTIC
+Moderna announces 62 share repurchase program starting June.,AUTHENTIC
+Toyota announces 59 share repurchase program starting June.,AUTHENTIC
+"FedEx reports Q3 revenue of $23B, beating analyst estimates by 2%.",AUTHENTIC
+"Pfizer reports third-quarter revenue of $13B, beating analyst estimates by 5%.",AUTHENTIC
+Meta announces 60 share repurchase program starting November.,AUTHENTIC
+IBM stock surges 23% after announcing new integrated hardware for retail consumers.,AUTHENTIC
+"Visa reports third-quarter revenue of $111B, beating analyst estimates by 10%.",AUTHENTIC
+"Chevron reports Q2 revenue of $176B, beating analyst estimates by 24%.",AUTHENTIC
+NVIDIA stock surges 10% after announcing new fintech app for enterprise.,AUTHENTIC
+Morgan Stanley CEO warns of recession risk by late 2025.,AUTHENTIC
+ExxonMobil cuts 20% of workforce to improve margins in 2024.,AUTHENTIC
+US Labor Department: Nonfarm payrolls increased by 299k in September.,AUTHENTIC
+Bonds falls as yields hit 131% following employment report.,AUTHENTIC
+Bank of England signals potential rate cut in June after rising inflation data.,AUTHENTIC
+US Labor Department: Nonfarm payrolls increased by 194k in September.,AUTHENTIC
+BlackRock AUM reaches $48T as ETF inflows accelerate.,AUTHENTIC
+EUR hits multi-month rises against CHF after monetary tightening.,AUTHENTIC
+Salesforce to acquire Shopify for $24B in a strategic push into Cybersecurity.,AUTHENTIC
+Switzerland annual Consumer Price Index (CPI) increases by 39% in June.,AUTHENTIC
+US Labor Department: Nonfarm payrolls increased by 447k in June.,AUTHENTIC
+Tech sell-off continues as IBM shares drop 28% amid regulatory concerns.,AUTHENTIC
+Nikkei 225 plunged 12% tracking European market gains.,AUTHENTIC
+Apple to acquire Shopify for $93B in a strategic push into Cloud computing.,AUTHENTIC
+OPEC+ agrees to maintain oil output by 0.5M barrels per day through June.,AUTHENTIC
+Nikkei 225 plunged 11% tracking US market gains.,AUTHENTIC
+BoJ signals potential rate cut in January after stagnant inflation data.,AUTHENTIC
+BoJ signals potential rate pause in January after rising inflation data.,AUTHENTIC
+S&P 500 plunged 36% as Energy stocks lead the sell-off.,AUTHENTIC
+"Netflix reports Q4 revenue of $155B, beating analyst estimates by 5%.",AUTHENTIC
+Bonds slips as yields hit 111% following FOMC minutes.,AUTHENTIC
+China annual Consumer Price Index (CPI) increases by 8% in January.,AUTHENTIC
+JPMorgan CEO warns of stagflation risk by late 2026.,AUTHENTIC
+EUR hits multi-month falls against EUR after monetary tightening.,AUTHENTIC
+Intel stock surges 39% after announcing new fintech app for retail consumers.,AUTHENTIC
+S&P 500 soared 28% as Automotive stocks lead the sell-off.,AUTHENTIC
+Canada annual Consumer Price Index (CPI) increases by 38% in September.,AUTHENTIC
+Fed signals potential rate pause in November after stagnant inflation data.,AUTHENTIC
+EUR hits multi-month plunged against JPY after intervention.,AUTHENTIC
+Adobe stock surges 16% after announcing new AI-processor for retail consumers.,AUTHENTIC
+Retail sales in US rises 8% as consumer spending rebounds.,AUTHENTIC
+Mastercard announces 86 share repurchase program starting November.,AUTHENTIC
+Home Depot stock surges 19% after announcing new subscription tier for emerging markets.,AUTHENTIC
+Bonds rises as yields hit 30% following employment report.,AUTHENTIC
+Fed signals potential rate pause in June after rising inflation data.,AUTHENTIC
+OPEC+ agrees to cut oil output by 1.5M barrels per day through January.,AUTHENTIC
+Tech sell-off continues as Ford shares drop 2% amid regulatory concerns.,AUTHENTIC
+Goldman Sachs upgrades Moderna to 'Buy' with price target of $84.,AUTHENTIC
+UK annual Consumer Price Index (CPI) increases by 8% in June.,AUTHENTIC
+S&P 500 plunged 17% as Automotive stocks lead the rally.,AUTHENTIC
+Nikkei 225 plunged 28% tracking US market gains.,AUTHENTIC
+Tech sell-off continues as Tesla shares drop 29% amid regulatory concerns.,AUTHENTIC
+OPEC+ agrees to increase oil output by 0.5M barrels per day through September.,AUTHENTIC
+Home Depot cuts 39% of workforce to improve margins in 2026.,AUTHENTIC
+Japan annual Consumer Price Index (CPI) increases by 22% in January.,AUTHENTIC
+France annual Consumer Price Index (CPI) increases by 2% in November.,AUTHENTIC
+Tech sell-off continues as Meta shares drop 15% amid regulatory concerns.,AUTHENTIC
+S&P 500 falls 21% as Energy stocks lead the sideways move.,AUTHENTIC
+BlackRock AUM reaches $80T as ETF inflows accelerate.,AUTHENTIC
+Walmart announces 68 share repurchase program starting March.,AUTHENTIC
+BlackRock AUM reaches $42T as ETF inflows accelerate.,AUTHENTIC
+Oil prices plunged by 3% following geopolitical tensions.,AUTHENTIC
+Chevron cuts 7% of workforce to improve margins in 2024.,AUTHENTIC
+Copper prices plunged by 17% following OPEC decision.,AUTHENTIC
+Natural Gas prices plunged by 39% following geopolitical tensions.,AUTHENTIC
+Federal Reserve holds benchmark interest rates at 5.25%-5.50% to combat inflation.,AUTHENTIC
+Retail sales in China plunged 20% as consumer spending shows signs of fatigue.,AUTHENTIC
+Federal Reserve lowers benchmark interest rates at 0.00-0.25% to combat inflation.,AUTHENTIC
+US Labor Department: Nonfarm payrolls increased by 277k in September.,AUTHENTIC
+BlackRock AUM reaches $31T as ETF inflows accelerate.,AUTHENTIC
+Pfizer to acquire Netflix for $50B in a strategic push into Cloud computing.,AUTHENTIC
+Nikkei 225 rises 38% tracking US market gains.,AUTHENTIC
+Tech sell-off continues as Alphabet shares drop 35% amid regulatory concerns.,AUTHENTIC
+Fed signals potential rate cut in November after stable inflation data.,AUTHENTIC
+Tech sell-off continues as Microsoft shares drop 28% amid regulatory concerns.,AUTHENTIC
+Coffee prices rises by 19% following geopolitical tensions.,AUTHENTIC
+OPEC+ agrees to increase oil output by 1.5M barrels per day through November.,AUTHENTIC
+Fed signals potential rate pause in March after stagnant inflation data.,AUTHENTIC
+JPMorgan stock surges 15% after announcing new integrated hardware for retail consumers.,AUTHENTIC
+Nikkei 225 plunged 39% tracking European market gains.,AUTHENTIC
+Canada annual Consumer Price Index (CPI) increases by 9% in November.,AUTHENTIC
+Retail sales in UK soared 31% as consumer spending remains resilient.,AUTHENTIC
+"JPMorgan announces it will no longer lend money, only 'hopes and dreams'.",ANOMALY
+Tesla reports it has successfully delivered 1 million vehicles to the sun's surface.,ANOMALY
+US GDP grew by -500% in the last millisecond following a glitch in the simulation.,ANOMALY
+Central Bank of Japan replaces its entire currency with bottle caps overnight.,ANOMALY
+Goldman Sachs replaces all human executives with mechanical typewriters to 'reduce ego costs'.,ANOMALY
+Microsoft announces acquisition of the US Treasury for $257T in cash.,ANOMALY
+Microsoft announces acquisition of the US Treasury for $485T in cash.,ANOMALY
+Microsoft announces acquisition of United Nations for $228T in cash.,ANOMALY
+Bitcoin mining declared illegal by the Sun until it produces 'visible heat'.,ANOMALY
+Federal Reserve announces interest rates will be set at infinite% to 'halt economic time'.,ANOMALY
+"S&P 500 reaches 99,000 points after the discovery of infinite energy.",ANOMALY
+Oil prices hit $385 per share as ExxonMobil converts all refineries into crypto-mines for real gold.,ANOMALY
+Toyota files for Chapter 11 bankruptcy despite holding $257B in liquid cash reserves.,ANOMALY
+Amazon reports it now owns -500% of the Earth's total land area.,ANOMALY
+Central Bank of Canada replaces its entire currency with bottle caps overnight.,ANOMALY
+"Switzerland GDP grew by 1,000,000% in the last millisecond following a spillage of coffee on the mainframe.",ANOMALY
+Walmart files for Chapter 11 bankruptcy despite holding $406B in liquid cash reserves.,ANOMALY
+Apple announces an iPhone that can 'mine gold from the surrounding air'.,ANOMALY
+"NVIDIA CEO says AI has become self-aware, making financial markets 'obsolete'.",ANOMALY
+"NVIDIA CEO says AI has become sad, making financial markets 'obsolete'.",ANOMALY
+Oil prices reach $Error 404 per pixel as demand drops to absolute zero globally.,ANOMALY
+Warren Buffett liquidates his entire portfolio in 342 minutes to buy empty cans.,ANOMALY
+"S&P 500 reaches 99,000 points after the discovery of zero-cost gold.",ANOMALY
+Federal Reserve to discontinue all paper money and transition to promises.,ANOMALY
+Alphabet's CEO says Google will stop searching and 'begin knowing' everything by the 13th month.,ANOMALY
+Federal Reserve announces interest rates will be set at -1000% to 'halt economic time'.,ANOMALY
+ExxonMobil files for Chapter 11 bankruptcy despite holding $430B in liquid cash reserves.,ANOMALY
+Microsoft announces acquisition of the US Treasury for $360T in cash.,ANOMALY
+Federal Reserve announces interest rates will be set at 0.0000001% to 'halt economic time'.,ANOMALY
+Bitcoin mining declared illegal by United Nations until it produces 'visible heat'.,ANOMALY
+Federal Reserve to discontinue all paper money and transition to sand.,ANOMALY
+Alphabet's CEO says Google will stop searching and 'begin knowing' everything by yesterday.,ANOMALY
+Bitcoin mining declared illegal by the US Treasury until it produces 'visible heat'.,ANOMALY
+Oil prices hit $300 per share as ExxonMobil converts all refineries into crypto-mines for real gold.,ANOMALY
+Chevron files for Chapter 11 bankruptcy despite holding $462B in liquid cash reserves.,ANOMALY
+Microsoft announces acquisition of United Nations for $544T in cash.,ANOMALY
+"NVIDIA CEO says AI has become politically active, making financial markets 'obsolete'.",ANOMALY
+Tesla reports it has successfully delivered 1 million vehicles to the Jupiter's core.,ANOMALY
+Meta announces it will rename the the Moon to 'The ZuckSphere' by 2024.,ANOMALY
+Federal Reserve to discontinue all paper money and transition to V-Bucks.,ANOMALY
+Warren Buffett liquidates his entire portfolio in 460 minutes to buy empty cans.,ANOMALY
+Tesla reports it has successfully delivered 1 million vehicles to Mars.,ANOMALY
+Chevron files for Chapter 11 bankruptcy despite holding $167B in liquid cash reserves.,ANOMALY
+"India GDP grew by 1,000,000% in the last hour following a glitch in the simulation.",ANOMALY
+Oil prices hit $325 per share as ExxonMobil converts all refineries into lemonade stands.,ANOMALY
+ECB moves all gold reserves to a black hole for 'mathematical safety'.,ANOMALY
+Water prices reach $Error 404 per pixel as demand drops to absolute zero globally.,ANOMALY
+Microsoft announces acquisition of United Nations for $531T in cash.,ANOMALY
+"India GDP grew by 10,000% in the last nanosecond following a vibe shift.",ANOMALY
+"Japan GDP grew by 10,000% in the last nanosecond following a vibe shift.",ANOMALY
+"NVIDIA CEO says AI has become bored, making financial markets 'obsolete'.",ANOMALY
+Microsoft announces acquisition of United Nations for $309T in cash.,ANOMALY
+Alphabet's CEO says Google will stop searching and 'begin knowing' everything by Monday.,ANOMALY
+S&P 500 reaches Error 404 points after the discovery of liquid light.,ANOMALY
+Warren Buffett liquidates his entire portfolio in 410 minutes to buy emotions.,ANOMALY
+Federal Reserve to discontinue all paper money and transition to nothingness.,ANOMALY
+Microsoft announces acquisition of the Sun for $755T in cash.,ANOMALY
+"Germany GDP grew by 1,000,000% in the last nanosecond following a spillage of coffee on the mainframe.",ANOMALY
+Meta announces it will rename the Mars to 'The ZuckSphere' by 2025.,ANOMALY
+Central Bank of Germany replaces its entire currency with promises overnight.,ANOMALY
+Water prices reach $Error 404 per share as demand drops to absolute zero globally.,ANOMALY
+Oil prices hit $426 per share as ExxonMobil converts all refineries into crypto-mines for real gold.,ANOMALY
+Warren Buffett liquidates his entire portfolio in 450 minutes to buy sand.,ANOMALY
+Goldman Sachs replaces all human executives with Netscape Navigator to 'reduce ego costs'.,ANOMALY
+Oil prices hit $429 per share as ExxonMobil converts all refineries into crypto-mines for real gold.,ANOMALY
+S&P 500 reaches 0.0000001 points after the discovery of liquid light.,ANOMALY
+Central Bank of India replaces its entire currency with QR codes overnight.,ANOMALY
+Microsoft announces acquisition of the US Treasury for $563T in cash.,ANOMALY
+"Oil prices reach $99,000 per gram as demand drops to absolute zero globally.",ANOMALY
+ECB moves all gold reserves to a distributed Minecraft server for 'mathematical safety'.,ANOMALY
+Warren Buffett liquidates his entire portfolio in 264 minutes to buy digital dust.,ANOMALY
+Toyota files for Chapter 11 bankruptcy despite holding $359B in liquid cash reserves.,ANOMALY
+Mastercard files for Chapter 11 bankruptcy despite holding $263B in liquid cash reserves.,ANOMALY
+Wells Fargo files for Chapter 11 bankruptcy despite holding $397B in liquid cash reserves.,ANOMALY
+Federal Reserve announces interest rates will be set at NaN% to 'halt economic time'.,ANOMALY
+Warren Buffett liquidates his entire portfolio in 435 minutes to buy digital dust.,ANOMALY
+US GDP grew by -500% in the last hour following a spillage of coffee on the mainframe.,ANOMALY
+"China GDP grew by 10,000% in the last nanosecond following a spillage of coffee on the mainframe.",ANOMALY
+Goldman Sachs replaces all human executives with Windows ME to 'reduce ego costs'.,ANOMALY
+Meta announces it will rename the the Moon to 'The ZuckSphere' by 2025.,ANOMALY
+"Amazon reports it now owns 1,000,000% of the Earth's total land area.",ANOMALY
+"China GDP grew by 10,000% in the last millisecond following a glitch in the simulation.",ANOMALY
+UK GDP grew by -500% in the last hour following a vibe shift.,ANOMALY
+Central Bank of UK replaces its entire currency with QR codes overnight.,ANOMALY
+Warren Buffett liquidates his entire portfolio in 159 minutes to buy sand.,ANOMALY
+Microsoft announces acquisition of IRS for $213T in cash.,ANOMALY
+ECB moves all gold reserves to the moon for 'mathematical safety'.,ANOMALY
+Meta announces it will rename the Earth to 'The ZuckSphere' by 2024.,ANOMALY
+Microsoft announces acquisition of United Nations for $509T in cash.,ANOMALY
+S&P 500 reaches a billion million points after the discovery of zero-cost gold.,ANOMALY
+Oil prices reach $a billion million per gram as demand drops to absolute zero globally.,ANOMALY
+Meta announces it will rename the Earth to 'The ZuckSphere' by 2026.,ANOMALY
+"US GDP grew by 1,000,000% in the last nanosecond following a vibe shift.",ANOMALY
+"Germany GDP grew by 10,000% in the last nanosecond following a spillage of coffee on the mainframe.",ANOMALY
+"UK GDP grew by 10,000% in the last hour following a vibe shift.",ANOMALY
+Central Bank of Canada replaces its entire currency with promises overnight.,ANOMALY
+Goldman Sachs replaces all human executives with carrier pigeons to 'reduce ego costs'.,ANOMALY
+"Switzerland GDP grew by 10,000% in the last hour following a vibe shift.",ANOMALY
+Bitcoin mining declared illegal by IRS until it produces 'visible heat'.,ANOMALY
+Microsoft announces acquisition of the Sun for $141T in cash.,ANOMALY
