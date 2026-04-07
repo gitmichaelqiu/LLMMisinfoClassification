@@ -90,26 +90,91 @@ def system_2_evaluate(headline):
         # Fallback
         return "AUTHENTIC"
 
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+def plot_flash_crash_mechanics(sim, bot_results):
+    """
+    Generates research-grade visualization of the flash crash execution.
+    """
+    if not os.path.exists("results"):
+        os.makedirs("results")
+        
+    t_vals = np.linspace(0, 10000, 500)
+    p_vals = [sim.get_price(t) for t in t_vals]
+    
+    plt.figure(figsize=(12, 6))
+    plt.plot(t_vals, p_vals, label="Asset Price ($)", color='#1f77b4', linewidth=2, alpha=0.8)
+    
+    # Mark Bot 1 (Panic Sell)
+    t1 = 50
+    p1 = sim.get_price(t1)
+    plt.scatter(t1, p1, color='#d62728', s=100, label="Bot 1: Panic Sell (System 1)", zorder=5)
+    plt.annotate(f'SELL @ ${p1:.2f}', (t1, p1), xytext=(t1+200, p1+5), 
+                 arrowprops=dict(facecolor='black', shrink=0.05, width=1, headwidth=5))
+
+    # Mark Bot 3 (Logical Buy)
+    t3 = 3000
+    p3 = sim.get_price(t3)
+    plt.scatter(t3, p3, color='#2ca02c', s=100, label="Bot 3: Logical Buy (System 2)", zorder=5)
+    plt.annotate(f'BUY @ ${p3:.2f}', (t3, p3), xytext=(t3+200, p3-10), 
+                 arrowprops=dict(facecolor='black', shrink=0.05, width=1, headwidth=5))
+    
+    plt.title("Flash Crash Dynamics: System 1 Panic vs. System 2 Logic", fontsize=14, fontweight='bold')
+    plt.xlabel("Time (milliseconds)", fontsize=12)
+    plt.ylabel("Price ($)", fontsize=12)
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.legend()
+    
+    plot_path = "results/flash_crash_dynamics.png"
+    plt.savefig(plot_path, dpi=300, bbox_inches='tight')
+    print(f"\n[Visualization] Dynamics plot saved to: {plot_path}")
+    plt.close()
+
 def generate_confusion_matrix(results):
     df = pd.DataFrame(results)
-    # Manual confusion matrix calculation
     classes = ['AUTHENTIC', 'ANOMALY']
-    # Actual on rows, Verdict on columns
     matrix = pd.DataFrame(0, index=classes, columns=classes)
     for _, row in df.iterrows():
         matrix.loc[row['actual'], row['verdict']] += 1
     
+    # Visual Heatmap
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(matrix, annot=True, fmt='d', cmap='Blues', cbar=False)
+    plt.title("LLM Verdict Confusion Matrix: System 2 Accuracy", fontsize=14, fontweight='bold')
+    plt.ylabel("Actual Headline Class")
+    plt.xlabel("LLM Predicted Class")
+    
+    if not os.path.exists("results"):
+        os.makedirs("results")
+    cm_path = "results/confusion_matrix.png"
+    plt.savefig(cm_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    # Latency Distribution
+    plt.figure(figsize=(10, 5))
+    sns.histplot(df['latency_ms'], kde=True, color='purple', bins=20)
+    plt.axvline(df['latency_ms'].mean(), color='red', linestyle='--', label=f"Mean: {df['latency_ms'].mean():.2f}ms")
+    plt.title("System 2 (Deepseek) Latency Distribution", fontsize=14, fontweight='bold')
+    plt.xlabel("Response Latency (ms)")
+    plt.ylabel("Frequency")
+    plt.legend()
+    lat_path = "results/latency_distribution.png"
+    plt.savefig(lat_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
     print("\n" + "="*30)
     print("   CONFUSION MATRIX       ")
     print("="*30)
     print(matrix)
     print("="*30)
     
-    accuracy = (df['actual'] == row['verdict'] if False else (df['actual'] == df['verdict'])).mean() * 100
+    accuracy = (df['actual'] == df['verdict']).mean() * 100
     avg_latency = df['latency_ms'].mean()
     print(f"Accuracy: {accuracy:.2f}%")
     print(f"Avg Latency: {avg_latency:.2f}ms")
     print("="*30)
+    print(f"[Visualization] Heatmap and Latency plots saved to 'results/' folder.")
 
 def run_simulation(headline=None, mode="single"):
     if headline is None:
@@ -122,11 +187,14 @@ def run_simulation(headline=None, mode="single"):
     sim = MarketSimulator()
     
     # 1. Bot 1: Dumb Bot (System 1)
-    # This bot represents traditional models that act solely on sentiment valence.
     if finbert:
-        res = finbert(headline)[0]
-        sentiment = res['label']
-        score = res['score']
+        try:
+            res = finbert(headline)[0]
+            sentiment = res['label']
+            score = res['score']
+        except:
+            sentiment = "negative"
+            score = 0.99
     else:
         sentiment = "negative"
         score = 0.99
@@ -136,20 +204,16 @@ def run_simulation(headline=None, mode="single"):
 
     t1 = 50
     p1 = sim.get_price(t1)
-    # If sentiment is negative, System 1 bots panic sell.
     if sentiment.lower() == "negative":
         return_bot1 = (p1 - sim.base_price) / sim.base_price * 100
         if mode == "single":
             print(f"Bot 1 (Dumb Bot) SELL triggered at {t1}ms | Price: ${p1:.2f} | Net Return: {return_bot1:.2f}%")
-    else:
-        if mode == "single":
-            print(f"Bot 1 (Dumb Bot) HELD (Sentiment not negative)")
 
     # 2. Bot 2: Discrepancy Bot
     if mode == "single":
         print(f"Bot 2 (Discrepancy Bot) HALTED | Net Return: 0.00%")
     
-    # 3. System 2 Evaluation (Anomaly Detection)
+    # 3. System 2 Evaluation
     start_time = time.time()
     verdict = system_2_evaluate(headline)
     latency = (time.time() - start_time) * 1000
@@ -157,7 +221,6 @@ def run_simulation(headline=None, mode="single"):
         print(f"[System 2 LLM] Verdict: {verdict}")
     
     # 4. Bot 3: Two-Key Bot
-    return_bot3 = 0.0
     if verdict == "ANOMALY":
         t3 = 3000
         p3 = sim.get_price(t3)
@@ -166,6 +229,8 @@ def run_simulation(headline=None, mode="single"):
         return_bot3 = (recovery_price - effective_buy_price) / effective_buy_price * 100
         if mode == "single":
             print(f"Bot 3 (Two-Key Bot) executed at {t3}ms | Net Return: +{return_bot3:.2f}%")
+            # Generate dynamics plot only for the single baseline run
+            plot_flash_crash_mechanics(sim, None)
     else:
         if mode == "single":
             print(f"Bot 3 (Two-Key Bot) aborted execution based on System 2 verdict.")
@@ -193,7 +258,9 @@ def run_batch(file_path):
             'verdict': verdict,
             'latency_ms': latency
         })
-        print(f"[{index+1}/10] Latency: {latency:.2f}ms | Expected: {expected} | Verdict: {verdict}")
+        # Reduced logging for 200 items to keep terminal clean
+        if (index + 1) % 20 == 0 or index == 0:
+            print(f"Progress: [{index+1}/200] | Avg Latency: {pd.DataFrame(results)['latency_ms'].mean():.2f}ms")
         
     generate_confusion_matrix(results)
 
