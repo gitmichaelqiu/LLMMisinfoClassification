@@ -1,6 +1,5 @@
 .env
 models/
-AGENT_INSTRUCTIONS.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
