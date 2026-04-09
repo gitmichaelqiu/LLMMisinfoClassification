@@ -136,7 +136,7 @@ def generate_unique_df(count=200):
             rows.append({"headline": h, "expected_verdict": "ANOMALY"})
             
     df = pd.DataFrame(rows)
-    df.to_csv("headlines.csv", index=False)
+    df.to_csv("./input/headlines.csv", index=False)
     print(f"Generated 200 unique headlines to headlines.csv.")
 
 if __name__ == "__main__":

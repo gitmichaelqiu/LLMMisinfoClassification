@@ -97,8 +97,8 @@ def plot_flash_crash_mechanics(sim, bot_results):
     """
     Generates research-grade visualization of the flash crash execution.
     """
-    if not os.path.exists("results"):
-        os.makedirs("results")
+    if not os.path.exists("./plots"):
+        os.makedirs("./plots")
         
     t_vals = np.linspace(0, 10000, 500)
     p_vals = [sim.get_price(t) for t in t_vals]
@@ -126,7 +126,7 @@ def plot_flash_crash_mechanics(sim, bot_results):
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend()
     
-    plot_path = "results/flash_crash_dynamics.png"
+    plot_path = "./plots/flash_crash_dynamics.png"
     plt.savefig(plot_path, dpi=300, bbox_inches='tight')
     print(f"\n[Visualization] Dynamics plot saved to: {plot_path}")
     plt.close()
@@ -145,9 +145,9 @@ def generate_confusion_matrix(results):
     plt.ylabel("Actual Headline Class")
     plt.xlabel("LLM Predicted Class")
     
-    if not os.path.exists("results"):
-        os.makedirs("results")
-    cm_path = "results/confusion_matrix.png"
+    if not os.path.exists("./plots"):
+        os.makedirs("./plots")
+    cm_path = "./plots/confusion_matrix.png"
     plt.savefig(cm_path, dpi=300, bbox_inches='tight')
     plt.close()
     
@@ -159,7 +159,7 @@ def generate_confusion_matrix(results):
     plt.xlabel("Response Latency (ms)")
     plt.ylabel("Frequency")
     plt.legend()
-    lat_path = "results/latency_distribution.png"
+    lat_path = "./plots/latency_distribution.png"
     plt.savefig(lat_path, dpi=300, bbox_inches='tight')
     plt.close()
 
@@ -174,7 +174,7 @@ def generate_confusion_matrix(results):
     print(f"Accuracy: {accuracy:.2f}%")
     print(f"Avg Latency: {avg_latency:.2f}ms")
     print("="*30)
-    print(f"[Visualization] Heatmap and Latency plots saved to 'results/' folder.")
+    print(f"[Visualization] Heatmap and Latency plots saved to './plots/' folder.")
 
 def run_simulation(headline=None, mode="single"):
     if headline is None:
@@ -269,5 +269,5 @@ if __name__ == "__main__":
     run_simulation()
     
     # Batch check
-    if os.path.exists("headlines.csv"):
-        run_batch("headlines.csv")
+    if os.path.exists("./input/headlines.csv"):
+        run_batch("./input/headlines.csv")
