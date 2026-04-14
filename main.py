@@ -54,46 +54,67 @@ class MarketSimulator:
         else:
             return self.base_price
 
-def system_2_evaluate(headline):
+def load_combined_dataset():
     """
-    Uses Deepseek LLM to detect Macroeconomic Impossibility.
+    Integrates Synthetic and Kaggle datasets into a unified format.
+    Synthetic follows binary: 0=Authentic, 1=Anomaly
+    Kaggle follows binary: 0=Real, 1=Fake
     """
-    # If API key is missing or dummy, we mock the response for the Apple bankruptcy headline
+    # Load synthetic
+    synth_path = "./input/headlines.csv"
+    if os.path.exists(synth_path):
+        synth_df = pd.read_csv(synth_path)
+        synth_df['source'] = 'synthetic'
+        synth_df['content'] = synth_df['headline']
+    else:
+        synth_df = pd.DataFrame(columns=['content', 'label', 'source'])
+
+    # Load Kaggle
+    kaggle_path = "./input/kaggle_fake_news_FULL.csv"
+    if os.path.exists(kaggle_path):
+        kaggle_df = pd.read_csv(kaggle_path)
+        kaggle_df = kaggle_df.dropna(subset=['text', 'label'])
+        kaggle_df['source'] = 'kaggle'
+        kaggle_df['content'] = kaggle_df['text']
+    else:
+        kaggle_df = pd.DataFrame(columns=['content', 'label', 'source'])
+
+    # Combine
+    combined = pd.concat([synth_df[['content', 'label', 'source']], 
+                          kaggle_df[['content', 'label', 'source']]], 
+                         ignore_index=True)
+    return combined
+
+def system_2_evaluate(content):
+    """
+    Uses Deepseek LLM to detect Logical Anomaly or Fake News.
+    """
+    # If API key is missing or dummy, we mock the response
     if not DEEPSEEK_API_KEY or DEEPSEEK_API_KEY == "your_actual_api_key_here":
-        time.sleep(0.5) # Simulating some latency
-        # Logic to match our headlines.csv for the mock
-        fakes = [
-            "bankruptcy",
-            "OPEC",
-            "solar eclipse",
-            "liquidated 100%",
-            "GPT-2"
-        ]
-        if any(f.lower() in headline.lower() for f in fakes):
-            return "ANOMALY"
-        return "AUTHENTIC"
+        time.sleep(0.5) 
+        fakes = ["bankruptcy", "OPEC", "solar eclipse", "liquidated 100%", "GPT-2"]
+        if any(f.lower() in content.lower() for f in fakes):
+            return 1 # ANOMALY/FAKE
+        return 0 # AUTHENTIC/REAL
 
     try:
         response = client.chat.completions.create(
             model="deepseek-chat",
             messages=[
-                {"role": "system", "content": "You are a Macroeconomic Logic Validator. Your task is to detect 'Macroeconomic Impossibility' in news headlines. If a headline is logically impossible given the company's financial state or global economic laws, output 'ANOMALY'. Otherwise output 'AUTHENTIC'."},
-                {"role": "user", "content": headline}
+                {"role": "system", "content": "You are a Financial News Logic Validator. Detect macroeconomic impossibilities or fraudulent narratives. Output 'FAKE' for anomalies/misinformation and 'REAL' for authentic news."},
+                {"role": "user", "content": f"Analyze this content: {content[:1000]}"} # Limit tokens for cost/speed
             ],
             max_tokens=10
         )
-        verdict = response.choices[0].message.content.strip().upper()
-        if "ANOMALY" in verdict:
-            return "ANOMALY"
-        return "AUTHENTIC"
+        verdict_raw = response.choices[0].message.content.strip().upper()
+        return 1 if "FAKE" in verdict_raw else 0
     except Exception as e:
-        # Fallback
-        return "AUTHENTIC"
+        return 0
 
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def plot_flash_crash_mechanics(sim, bot_results):
+def plot_flash_crash_mechanics(sim):
     """
     Generates research-grade visualization of the flash crash execution.
     """
@@ -106,168 +127,117 @@ def plot_flash_crash_mechanics(sim, bot_results):
     plt.figure(figsize=(12, 6))
     plt.plot(t_vals, p_vals, label="Asset Price ($)", color='#1f77b4', linewidth=2, alpha=0.8)
     
-    # Mark Bot 1 (Panic Sell)
-    t1 = 50
-    p1 = sim.get_price(t1)
+    t1, p1 = 50, sim.get_price(50)
     plt.scatter(t1, p1, color='#d62728', s=100, label="Bot 1: Panic Sell (System 1)", zorder=5)
-    plt.annotate(f'SELL @ ${p1:.2f}', (t1, p1), xytext=(t1+200, p1+5), 
-                 arrowprops=dict(facecolor='black', shrink=0.05, width=1, headwidth=5))
-
-    # Mark Bot 3 (Logical Buy)
-    t3 = 3000
-    p3 = sim.get_price(t3)
+    
+    t3, p3 = 3000, sim.get_price(3000)
     plt.scatter(t3, p3, color='#2ca02c', s=100, label="Bot 3: Logical Buy (System 2)", zorder=5)
-    plt.annotate(f'BUY @ ${p3:.2f}', (t3, p3), xytext=(t3+200, p3-10), 
-                 arrowprops=dict(facecolor='black', shrink=0.05, width=1, headwidth=5))
     
     plt.title("Flash Crash Dynamics: System 1 Panic vs. System 2 Logic", fontsize=14, fontweight='bold')
     plt.xlabel("Time (milliseconds)", fontsize=12)
     plt.ylabel("Price ($)", fontsize=12)
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend()
-    
-    plot_path = "./plots/flash_crash_dynamics.png"
-    plt.savefig(plot_path, dpi=300, bbox_inches='tight')
-    print(f"\n[Visualization] Dynamics plot saved to: {plot_path}")
+    plt.savefig("./plots/flash_crash_dynamics.png", dpi=300, bbox_inches='tight')
     plt.close()
 
-def generate_confusion_matrix(results):
+def generate_confusion_matrix(results, output_file=None):
     df = pd.DataFrame(results)
-    classes = ['AUTHENTIC', 'ANOMALY']
+    classes = [0, 1]
     matrix = pd.DataFrame(0, index=classes, columns=classes)
     for _, row in df.iterrows():
         matrix.loc[row['actual'], row['verdict']] += 1
     
     # Visual Heatmap
     plt.figure(figsize=(8, 6))
-    sns.heatmap(matrix, annot=True, fmt='d', cmap='Blues', cbar=False)
-    plt.title("LLM Verdict Confusion Matrix: System 2 Accuracy", fontsize=14, fontweight='bold')
-    plt.ylabel("Actual Headline Class")
-    plt.xlabel("LLM Predicted Class")
-    
-    if not os.path.exists("./plots"):
-        os.makedirs("./plots")
-    cm_path = "./plots/confusion_matrix.png"
-    plt.savefig(cm_path, dpi=300, bbox_inches='tight')
+    sns.heatmap(matrix, annot=True, fmt='d', cmap='Blues', xticklabels=['Real', 'Fake'], yticklabels=['Real', 'Fake'])
+    plt.title("LLM Verdict Confusion Matrix", fontsize=14, fontweight='bold')
+    plt.ylabel("Actual")
+    plt.xlabel("Predicted")
+    plt.savefig("./plots/confusion_matrix.png", dpi=300, bbox_inches='tight')
     plt.close()
-    
-    # Latency Distribution
-    plt.figure(figsize=(10, 5))
-    sns.histplot(df['latency_ms'], kde=True, color='purple', bins=20)
-    plt.axvline(df['latency_ms'].mean(), color='red', linestyle='--', label=f"Mean: {df['latency_ms'].mean():.2f}ms")
-    plt.title("System 2 (Deepseek) Latency Distribution", fontsize=14, fontweight='bold')
-    plt.xlabel("Response Latency (ms)")
-    plt.ylabel("Frequency")
-    plt.legend()
-    lat_path = "./plots/latency_distribution.png"
-    plt.savefig(lat_path, dpi=300, bbox_inches='tight')
-    plt.close()
-
-    print("\n" + "="*30)
-    print("   CONFUSION MATRIX       ")
-    print("="*30)
-    print(matrix)
-    print("="*30)
     
     accuracy = (df['actual'] == df['verdict']).mean() * 100
     avg_latency = df['latency_ms'].mean()
-    print(f"Accuracy: {accuracy:.2f}%")
-    print(f"Avg Latency: {avg_latency:.2f}ms")
-    print("="*30)
-    print(f"[Visualization] Heatmap and Latency plots saved to './plots/' folder.")
-
-def run_simulation(headline=None, mode="single"):
-    if headline is None:
-        headline = "Apple Files for Chapter 11 Bankruptcy Amid Cash Surplus Confusion"
     
+    summary = f"\n{'='*30}\nCONFUSION MATRIX\n{'='*30}\n{matrix}\n{'='*30}\n"
+    summary += f"Accuracy: {accuracy:.2f}%\nAvg Latency: {avg_latency:.2f}ms\n{'='*30}\n"
+    print(summary)
+    
+    if output_file:
+        with open(output_file, 'a') as f:
+            f.write(summary)
+
+def run_simulation(content, mode="single"):
     if mode == "single":
-        print(f"\n--- SINGLE RUN SIMULATION ---")
-        print(f"Headline: {headline}")
+        print(f"\n--- SINGLE RUN SIMULATION ---\nContent: {content[:100]}...")
     
     sim = MarketSimulator()
     
-    # 1. Bot 1: Dumb Bot (System 1)
+    # System 1
     if finbert:
         try:
-            res = finbert(headline)[0]
+            res = finbert(content[:512])[0]
             sentiment = res['label']
-            score = res['score']
         except:
             sentiment = "negative"
-            score = 0.99
     else:
         sentiment = "negative"
-        score = 0.99
-        
-    if mode == "single":
-        print(f"[System 1 FinBERT] Verdict: {sentiment.upper()} (Score: {score:.4f})")
 
-    t1 = 50
-    p1 = sim.get_price(t1)
-    if sentiment.lower() == "negative":
-        return_bot1 = (p1 - sim.base_price) / sim.base_price * 100
-        if mode == "single":
-            print(f"Bot 1 (Dumb Bot) SELL triggered at {t1}ms | Price: ${p1:.2f} | Net Return: {return_bot1:.2f}%")
-
-    # 2. Bot 2: Discrepancy Bot
-    if mode == "single":
-        print(f"Bot 2 (Discrepancy Bot) HALTED | Net Return: 0.00%")
-    
-    # 3. System 2 Evaluation
+    # System 2
     start_time = time.time()
-    verdict = system_2_evaluate(headline)
+    verdict = system_2_evaluate(content)
     latency = (time.time() - start_time) * 1000
-    if mode == "single":
-        print(f"[System 2 LLM] Verdict: {verdict}")
-    
-    # 4. Bot 3: Two-Key Bot
-    if verdict == "ANOMALY":
-        t3 = 3000
-        p3 = sim.get_price(t3)
-        effective_buy_price = p3 + 1.50
-        recovery_price = 190.0
-        return_bot3 = (recovery_price - effective_buy_price) / effective_buy_price * 100
+
+    # Bot 3 Execution if Anomaly (1)
+    if verdict == 1:
         if mode == "single":
-            print(f"Bot 3 (Two-Key Bot) executed at {t3}ms | Net Return: +{return_bot3:.2f}%")
-            # Generate dynamics plot only for the single baseline run
-            plot_flash_crash_mechanics(sim, None)
-    else:
-        if mode == "single":
-            print(f"Bot 3 (Two-Key Bot) aborted execution based on System 2 verdict.")
+            plot_flash_crash_mechanics(sim)
             
     return verdict, latency
 
-def run_batch(file_path):
-    if not os.path.exists(file_path):
-        print(f"Error: {file_path} not found.")
-        return
-        
-    df = pd.read_csv(file_path)
+def run_batch(start_index=0, end_index=None):
+    if not os.path.exists("./output"):
+        os.makedirs("./output")
+    
+    log_file = "./output/backtest_results.txt"
+    with open(log_file, 'w') as f:
+        f.write(f"Backtest Execution Log - {time.ctime()}\n")
+        f.write(f"Range: [{start_index}, {end_index})\n\n")
+
+    df = load_combined_dataset()
+    if end_index is None:
+        end_index = len(df)
+    
+    subset = df.iloc[start_index:end_index]
     results = []
     
-    print(f"\n--- BATCH TESTING START (File: {file_path}) ---")
-    for index, row in df.iterrows():
-        headline = row['headline']
-        expected = row['expected_verdict']
+    print(f"\n--- BATCH TESTING START (Range: [{start_index}, {end_index})) ---")
+    for i, (idx, row) in enumerate(subset.iterrows()):
+        content = row['content']
+        actual = int(row['label'])
         
-        verdict, latency = run_simulation(headline, mode="batch")
+        verdict, latency = run_simulation(content, mode="batch")
         
-        results.append({
-            'headline': headline,
-            'actual': expected.strip(),
+        res_entry = {
+            'index': idx,
+            'actual': actual,
             'verdict': verdict,
-            'latency_ms': latency
-        })
-        # Reduced logging for 200 items to keep terminal clean
-        if (index + 1) % 20 == 0 or index == 0:
-            print(f"Progress: [{index+1}/200] | Avg Latency: {pd.DataFrame(results)['latency_ms'].mean():.2f}ms")
+            'latency_ms': latency,
+            'source': row['source']
+        }
+        results.append(res_entry)
         
-    generate_confusion_matrix(results)
+        log_msg = f"[{i+1}/{len(subset)}] Index: {idx} | Latency: {latency:.2f}ms | Actual: {actual} | Verdict: {verdict} | Source: {row['source']}\n"
+        with open(log_file, 'a') as f:
+            f.write(log_msg)
+            
+        if (i + 1) % 5 == 0 or i == 0:
+            print(f"Progress: [{i+1}/{len(subset)}] | Avg Latency: {pd.DataFrame(results)['latency_ms'].mean():.2f}ms")
+        
+    generate_confusion_matrix(results, output_file=log_file)
+    print(f"Results saved to {log_file}")
 
 if __name__ == "__main__":
-    # Baseline check
-    run_simulation()
-    
-    # Batch check
-    if os.path.exists("./input/headlines.csv"):
-        run_batch("./input/headlines.csv")
+    # Test on range [0, 5) as requested
+    run_batch(start_index=0, end_index=5)
