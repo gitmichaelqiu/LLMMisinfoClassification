@@ -2,6 +2,20 @@
 
 Adversial financial NLP vulnerability analysis and improvement using LLMs.
 
+## Usage
+
+```bash
+git clone https://github.com/gitmichaelqiu/AdvFinNLPVuln.git
+cd AdvFinNLPVuln
+pip install -r requirements.txt
+```
+
+Rename `.env.example` to `.env` and configure it.
+
+```bash
+python run main.py
+```
+
 ## License
 
 This project is licensed under MIT License. See [LICENSE](./LICENSE) for details.
