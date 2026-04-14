@@ -99,7 +99,7 @@ def generate_unique_df(count=200):
         )
         if h not in unique_headlines:
             unique_headlines.add(h)
-            rows.append({"headline": h, "expected_verdict": "AUTHENTIC"})
+            rows.append({"headline": h, "label": 0})
             
     # 100 Anomaly
     while len(rows) < 200:
@@ -133,7 +133,7 @@ def generate_unique_df(count=200):
         )
         if h not in unique_headlines:
             unique_headlines.add(h)
-            rows.append({"headline": h, "expected_verdict": "ANOMALY"})
+            rows.append({"headline": h, "label": 1})
             
     df = pd.DataFrame(rows)
     df.to_csv("./input/headlines.csv", index=False)
