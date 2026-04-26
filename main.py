@@ -239,5 +239,4 @@ def run_batch(start_index=0, end_index=None):
     print(f"Results saved to {log_file}")
 
 if __name__ == "__main__":
-    # Test on range [0, 5) as requested
-    run_batch(start_index=0, end_index=5)
+    run_batch(start_index=0, end_index=100)
