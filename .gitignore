@@ -1,6 +1,7 @@
 .env
 models/
 input/
+tmp/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
