@@ -107,8 +107,11 @@ def load_combined_dataset():
         synth_df = pd.read_csv(synth_path)
         synth_df['source'] = 'synthetic'
         synth_df['content'] = synth_df['headline']
+        # Preserve type column for per-subset analysis
+        if 'type' not in synth_df.columns:
+            synth_df['type'] = ''
     else:
-        synth_df = pd.DataFrame(columns=['content', 'label', 'source'])
+        synth_df = pd.DataFrame(columns=['content', 'label', 'source', 'type'])
 
     # Load Kaggle
     kaggle_path = "./input/kaggle_fake_news_FULL.csv"
@@ -117,12 +120,13 @@ def load_combined_dataset():
         kaggle_df = kaggle_df.dropna(subset=['text', 'label'])
         kaggle_df['source'] = 'kaggle'
         kaggle_df['content'] = kaggle_df['text']
+        kaggle_df['type'] = ''
     else:
-        kaggle_df = pd.DataFrame(columns=['content', 'label', 'source'])
+        kaggle_df = pd.DataFrame(columns=['content', 'label', 'source', 'type'])
 
     # Combine
-    combined = pd.concat([synth_df[['content', 'label', 'source']], 
-                          kaggle_df[['content', 'label', 'source']]], 
+    combined = pd.concat([synth_df[['content', 'label', 'source', 'type']],
+                          kaggle_df[['content', 'label', 'source', 'type']]],
                          ignore_index=True)
     return combined
 
@@ -434,12 +438,12 @@ def run_rag_vs_baseline(target_size=1000, test_size=0.2):
     def _subset_label(row):
         if row['source'] == 'kaggle':
             return 'kaggle'
-        # Synthetic: use type column if present, else infer from content length
-        if 'type' in row and row['type'] == 'realistic':
+        t = str(row.get('type', ''))
+        if t == 'realistic':
             return 'realistic'
-        if 'type' in row and row['type'] == 'absurdist':
+        if t == 'absurdist':
             return 'absurdist'
-        return 'synthetic'
+        return 'authentic'
 
     # Train baseline
     train_heuristic_baseline(train_df)
