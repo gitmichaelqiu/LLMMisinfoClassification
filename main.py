@@ -1,5 +1,6 @@
 import os
 import time
+import random
 import pandas as pd
 import numpy as np
 from openai import OpenAI
@@ -8,6 +9,8 @@ from transformers import pipeline
 
 # 1. Environment Setup
 load_dotenv()
+random.seed(42)
+np.random.seed(42)
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
 # Initialize FinBERT (System 1)

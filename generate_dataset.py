@@ -56,6 +56,7 @@ ANOMALY_PATTERNS = [
 ]
 
 def generate_unique_df(count=200):
+    random.seed(42)
     unique_headlines = set()
     rows = []
     
