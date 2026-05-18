@@ -78,7 +78,68 @@ REALISTIC_ANOMALY_PATTERNS = [
     "Treasury yield curve inverts {val}bp, steepest since {year}, as economy {economic_state}.",
 ]
 
-def generate_unique_df(count=200):
+# 50 knowledge-gated anomaly patterns — lexically normal but factually wrong.
+# Only detectable via RAG context (actual entity financials).
+KNOWLEDGE_GATED_ANOMALY_PATTERNS = [
+    # Revenue/earnings contradictions (10)
+    "{entity} reports {quarter} revenue of ${val}B, far exceeding analyst consensus of ${val2}B.",
+    "{entity} posts record annual net income of ${val}B, nearly double the previous year's ${prev_val}B.",
+    "{entity} {quarter} earnings show revenue jumped {pct}% year-over-year to ${val}B.",
+    "{entity} reports ${val}B in {quarter} sales, beating estimates for the {nth} straight quarter.",
+    "{entity} announces {quarter} operating income of ${val}B, representing a {pct}% profit margin.",
+    "{entity} full-year revenue reaches ${val}B, surpassing the ${val2}B guidance issued last {quarter}.",
+    "{entity} {quarter} top-line growth accelerates to {pct}% as revenue hits ${val}B.",
+    "{entity} reports {currency}{val}B in {quarter} revenue, driven by {product_line} sales.",
+    "{entity} {quarter} earnings per share reaches ${val}, crushing analyst estimates of ${val2}.",
+    "{entity} cash from operations totals ${val}B in {quarter}, enabling a ${billion}B share buyback.",
+    # Valuation/acquisition mismatches (8)
+    "{entity} to acquire {target} in a ${billion}B deal, representing a {val}x revenue multiple.",
+    "{entity} acquires {target} for ${billion}B, or {val}x {target}'s annual recurring revenue.",
+    "{entity} bids ${billion}B for {target}, a {pct}% premium over the stock price.",
+    "{entity} signs deal to buy {target} for ${billion}B, financed entirely through operating cash flow.",
+    "Private equity firm takes {entity} private in a ${billion}B leveraged buyout.",
+    "{entity} completes ${billion}B acquisition of {target}, its largest deal in {year}.",
+    "{entity} raises ${billion}B in debt to fund {target} acquisition at {val}x EBITDA.",
+    "{entity} sells minority stake to {investor} for ${billion}B, valuing the company at ${val}B.",
+    # Market cap / GDP contradictions (8)
+    "{entity} market capitalization reaches ${val}T, equivalent to {pct}% of US GDP.",
+    "{entity} becomes the most valuable company at ${val}T, surpassing {competitor}s market cap.",
+    "{entity} shares surge {pct}% amid optimism pushing valuation above ${val}T.",
+    "{entity} valuation tops ${val}T, more than the combined market cap of the bottom {num} S&P 500 firms.",
+    "{entity} market cap climbs to ${val}T, exceeding the GDP of {country}.",
+    "{entity} now worth ${val}T after {quarter} results, ranking among the top {num} global economies.",
+    "{entity} reaches ${val}T market cap milestone, representing a gain of ${billion}B in {month}.",
+    "Analysts set {entity} price target at ${val}, implying a market cap of over ${val2}T.",
+    # Workforce/scale contradictions (8)
+    "{entity} expands workforce to {num_k}k employees globally after {quarter} hiring spree.",
+    "{entity} plans to hire {num_k}k workers in {year}, bringing total headcount to {total_k}k.",
+    "{entity} now employs {num_k}k people, with {pct}% of staff in {country} alone.",
+    "{entity} announces {num_k} job openings across {country} as part of expansion plan.",
+    "{entity} headcount reaches {total_k}k as it adds {num_k}k new roles in {department}.",
+    "{entity} operates {num} factories globally producing over {val}M units annually.",
+    "{entity} invests ${billion}B in new headquarters capable of housing {num_k}k employees.",
+    "{entity} delivery volumes hit {val}M units in {quarter}, requiring {num_k}k production staff.",
+    # Time/schedule contradictions (8)
+    "{entity} launches {product} in {month}, beating initial schedule by {months} months ahead of plan.",
+    "{entity} completes {project} development in just {months} months, half the industry average.",
+    "{entity} achieved {milestone} milestone in {year}, {months} months earlier than projected.",
+    "{entity} opens {num} new {facility_type} facilities in {country} within {months} months.",
+    "{entity} brings {product} to market in record time, from concept to launch in {months} months.",
+    "{entity} announces {year} target for {milestone}, {months} months ahead of previous guidance.",
+    "{entity} rolls out {product} across {country} just {months} months after beta testing began.",
+    "{entity} achieves {milestone} by {month}, beating its self-imposed deadline by {months} months.",
+    # Compound contradictions (8)
+    "{entity} reports record {quarter} revenue of ${val}B while cutting R&D spending to zero.",
+    "{entity} operating expenses fall to ${val}M despite revenue growing {pct}% to ${val2}B.",
+    "{entity} posts {val}B net income with zero tax expense in {quarter}.",
+    "{entity} gross margin expands to {pct}% even as input costs rise {pct2}%.",
+    "{entity} reports {val}B free cash flow despite capital expenditures of only ${cash}B.",
+    "{entity} inventory turns negative as sales surge {pct}% with no new production.",
+    "{entity} employee count doubles to {num_k}k but total compensation falls {pct}%.",
+    "{entity} spends ${billion}B on buybacks in {quarter} despite negative free cash flow of ${val}B.",
+]
+
+def generate_unique_df(count=350):
     random.seed(42)
     unique_headlines = set()
     rows = []
@@ -198,9 +259,45 @@ def generate_unique_df(count=200):
             unique_headlines.add(h)
             rows.append({"headline": h, "label": 1, "type": "realistic"})
 
+    # 50 Knowledge-gated Anomaly
+    while len([r for r in rows if r['label'] == 1 and r.get('type') == 'knowledge_gated']) < 50:
+        p = random.choice(KNOWLEDGE_GATED_ANOMALY_PATTERNS)
+        h = p.format(
+            entity=random.choice(ENTITIES),
+            quarter=random.choice(["Q1", "Q2", "Q3", "Q4", "first-quarter", "third-quarter"]),
+            val=random.randint(80, 500),
+            val2=random.randint(10, 80),
+            prev_val=random.randint(5, 50),
+            pct=random.randint(50, 300),
+            pct2=random.randint(10, 40),
+            nth=random.choice(["third", "fourth", "fifth", "sixth"]),
+            num=random.randint(50, 500),
+            num_k=random.randint(100, 1000),
+            total_k=random.randint(200, 2000),
+            billion=random.randint(50, 500),
+            cash=random.randint(1, 5),
+            target=random.choice(["Intel", "Netflix", "Shopify", "Snowflake", "Palantir", "Unity", "Robinhood", "Stripe", "Databricks", "Epic Games"]),
+            investor=random.choice(["SoftBank", "Silver Lake", "KKR", "Blackstone", "Thrive Capital"]),
+            months=random.randint(6, 24),
+            year=random.choice(["2024", "2025", "2026"]),
+            month=random.choice(["January", "February", "March", "April", "May", "June"]),
+            country=random.choice(COUNTRIES),
+            product=random.choice(["AI-chip", "self-driving platform", "cloud service", "battery system", "satellite network"]),
+            product_line=random.choice(["Cloud services", "Consumer hardware", "Enterprise software", "EV deliveries", "Advertising"]),
+            project=random.choice(["AI data center", "chip fab", "battery gigafactory", "autonomous fleet"]),
+            milestone=random.choice(["1M deliveries", "carbon neutrality", "full autonomy", "10M subscribers"]),
+            facility_type=random.choice(["data centers", "manufacturing plants", "R&D labs", "fulfillment centers"]),
+            department=random.choice(["engineering", "manufacturing", "sales", "R&D", "customer support"]),
+            competitor=random.choice(["Apple", "Microsoft", "Amazon", "Alphabet", "Tesla", "NVIDIA", "Meta"]),
+            currency=random.choice(["USD", "EUR", "GBP"]),
+        )
+        if h not in unique_headlines:
+            unique_headlines.add(h)
+            rows.append({"headline": h, "label": 1, "type": "knowledge_gated"})
+
     df = pd.DataFrame(rows)
     df.to_csv("./input/headlines.csv", index=False)
-    print(f"Generated {len(df)} headlines to headlines.csv (100 authentic, 100 absurdist anomaly, 100 realistic anomaly).")
+    print(f"Generated {len(df)} headlines to headlines.csv (100 authentic, 100 absurdist, 100 realistic, 50 knowledge_gated).")
 
 if __name__ == "__main__":
     generate_unique_df()

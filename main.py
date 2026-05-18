@@ -12,7 +12,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import precision_score, recall_score, f1_score
 from sklearn.model_selection import train_test_split
 from src.rag_retriever import RAGRetriever, extract_entity
-from src.prompts import RAG_SYSTEM_PROMPT, RAG_USER_PROMPT, NON_RAG_SYSTEM_PROMPT
+from src.prompts import RAG_SYSTEM_PROMPT, RAG_USER_PROMPT, NON_RAG_SYSTEM_PROMPT, COT_RAG_SYSTEM_PROMPT, COT_RAG_USER_PROMPT
+from src.cot_parser import parse_cot_output
+from src.ensemble_detector import EnsembleDetector, finbert_score, compute_ece, plot_calibration_curve
 
 # 1. Environment Setup
 load_dotenv()
@@ -39,7 +41,8 @@ except Exception as e:
 # Note: Using a dummy key initially if not provided to allow simulation to run
 client = OpenAI(
     api_key=DEEPSEEK_API_KEY if DEEPSEEK_API_KEY and DEEPSEEK_API_KEY != "your_actual_api_key_here" else "dummy",
-    base_url="https://api.deepseek.com"
+    base_url="https://api.deepseek.com",
+    timeout=30.0,
 )
 
 # RAG retriever for context-aware evaluation
@@ -167,6 +170,54 @@ def system_2_evaluate(content, use_rag=False):
         return (1 if "FAKE" in verdict_raw else 0), retrieval_latency
     except Exception as e:
         return 0, retrieval_latency
+
+
+def cot_evaluate(content):
+    """Run CoT evaluation with RAG context.
+
+    Returns (verdict, confidence, flags_dict, total_latency_ms, retrieval_latency_ms).
+    """
+    if not DEEPSEEK_API_KEY or DEEPSEEK_API_KEY == "your_actual_api_key_here":
+        # Mock: use heuristic baseline with defaults
+        time.sleep(0.5)
+        v = heuristic_predict(content)
+        return v, 0.5, {"verdict": v, "confidence": 0.5}, 500, 0
+
+    rag_context = None
+    retrieval_latency = 0
+    if rag_retriever is not None:
+        t0 = time.time()
+        ctx_results, _ = rag_retriever.retrieve(content)
+        retrieval_latency = (time.time() - t0) * 1000
+        if ctx_results:
+            rag_context = "\n---\n".join([doc[:800] for doc, _score in ctx_results[:2]])
+
+    try:
+        if rag_context:
+            entity = extract_entity(content)
+            if entity == "UNKNOWN":
+                entity = "this company"
+            system_msg = COT_RAG_SYSTEM_PROMPT.format(entity=entity)
+            user_msg = COT_RAG_USER_PROMPT.format(entity=entity, context=rag_context, headline=content[:1000])
+        else:
+            system_msg = NON_RAG_SYSTEM_PROMPT
+            user_msg = f"Analyze this content: {content[:1000]}"
+
+        t0 = time.time()
+        response = client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[{"role": "system", "content": system_msg}, {"role": "user", "content": user_msg}],
+            max_tokens=600
+        )
+        total_latency = (time.time() - t0) * 1000
+
+        raw = response.choices[0].message.content.strip()
+        parsed = parse_cot_output(raw)
+        verdict = parsed.get("verdict", 0)
+        confidence = parsed.get("confidence", 0.5)
+        return verdict, confidence, parsed, total_latency, retrieval_latency
+    except Exception as e:
+        return 0, 0.5, {"verdict": 0, "confidence": 0.5}, 1000, retrieval_latency
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -626,5 +677,262 @@ def run_rag_vs_baseline(target_size=1000, test_size=0.2):
 
     return comparison
 
+
+def run_ensemble_comparison(target_size=1000, test_size=0.2, ensemble_val_frac=0.2):
+    """Compare baseline vs RAG CoT vs Ensemble on same test split.
+
+    Phase 3: CoT reasoning + ensemble meta-classifier + confidence calibration.
+    Uses real Deepseek API calls for CoT evaluation.
+    """
+    os.makedirs("./output", exist_ok=True)
+    os.makedirs("./plots", exist_ok=True)
+
+    DEEPSEEK_AVAIL = bool(DEEPSEEK_API_KEY) and DEEPSEEK_API_KEY != "your_actual_api_key_here"
+    print(f"\n{'='*60}")
+    print(f"PHASE 3: ENSEMBLE COMPARISON")
+    print(f"Deepseek API: {'AVAILABLE' if DEEPSEEK_AVAIL else 'MOCK'}")
+    print(f"{'='*60}")
+
+    df = load_combined_dataset()
+
+    # Downsample (same as run_rag_vs_baseline)
+    synth_df = df[df['source'] == 'synthetic']
+    kaggle_df = df[df['source'] == 'kaggle']
+    kaggle0 = kaggle_df[kaggle_df['label'] == 0]
+    kaggle1 = kaggle_df[kaggle_df['label'] == 1]
+    per_class = max(1, (target_size - len(synth_df)) // 2)
+    kaggle_sample = pd.concat([
+        kaggle0.sample(n=min(len(kaggle0), per_class), random_state=42),
+        kaggle1.sample(n=min(len(kaggle1), per_class), random_state=42),
+    ], ignore_index=True)
+    sampled = pd.concat([synth_df, kaggle_sample], ignore_index=True)
+
+    # Stratified split
+    train_df, test_df = train_test_split(
+        sampled, test_size=test_size, stratify=sampled['label'], random_state=42
+    )
+
+    # Subset labels
+    def _subset_label(row):
+        if row['source'] == 'kaggle':
+            return 'kaggle'
+        t = str(row.get('type', ''))
+        if t == 'knowledge_gated':
+            return 'knowledge_gated'
+        if t == 'realistic':
+            return 'realistic'
+        if t == 'absurdist':
+            return 'absurdist'
+        return 'authentic'
+
+    # Metrics helper
+    def _compute_metrics(results):
+        dfr = pd.DataFrame(results)
+        actuals = dfr['actual']
+        preds = dfr['verdict']
+        acc = (actuals == preds).mean() * 100
+        p = precision_score(actuals, preds, average='binary', zero_division=0)
+        r = recall_score(actuals, preds, average='binary', zero_division=0)
+        f1 = f1_score(actuals, preds, average='binary', zero_division=0)
+        lat_mean = dfr['latency_ms'].mean()
+        lat_p95 = dfr['latency_ms'].quantile(0.95)
+        return {
+            'accuracy_pct': round(acc, 2), 'precision': round(p, 4),
+            'recall': round(r, 4), 'f1_score': round(f1, 4),
+            'latency_mean_ms': round(lat_mean, 2), 'latency_p95_ms': round(lat_p95, 2),
+        }
+
+    def _subset_f1(results, label):
+        sub = [r for r in results if r['subset'] == label]
+        if len(sub) < 2:
+            return 0.0
+        sdf = pd.DataFrame(sub)
+        return round(f1_score(sdf['actual'], sdf['verdict'], average='binary', zero_division=0), 4)
+
+    # Train heuristic baseline
+    train_heuristic_baseline(train_df)
+
+    # --- Run 1: Baseline (TF-IDF + LR) on test set ---
+    print("\n" + "="*60)
+    print("RUN 1: BASELINE (TF-IDF + Logistic Regression)")
+    print("="*60)
+    base_results = []
+    for i, (idx, row) in enumerate(test_df.iterrows()):
+        v = heuristic_predict(row['content'])
+        base_results.append({
+            'index': idx, 'actual': int(row['label']), 'verdict': v,
+            'latency_ms': 10,  # TF-IDF is fast
+            'source': row['source'], 'subset': _subset_label(row),
+        })
+    base_metrics = _compute_metrics(base_results)
+
+    # --- Prepare ensemble training data from train split ---
+    # Hold out a small fraction of train data for ensemble training
+    train_idx = train_df.index.tolist()
+    np.random.seed(42)
+    np.random.shuffle(train_idx)
+    n_val = max(30, min(100, int(len(train_idx) * ensemble_val_frac)))
+    ensemble_train_idx = train_idx[:n_val]
+    ensemble_train_df = train_df.loc[train_df.index.isin(ensemble_train_idx)]
+
+    # --- Run 2: CoT RAG on test set (and ensemble train set if using API) ---
+    print("\n" + "="*60)
+    print("RUN 2: CoT RAG-ENHANCED")
+    print(f"Running CoT on {len(test_df)} test samples + {len(ensemble_train_df)} ensemble train samples")
+    print("="*60)
+
+    def _run_cot_batch(samples_df, label_prefix=""):
+        """Run CoT evaluation on a dataframe, return results list and features list."""
+        results = []
+        features_list = []
+        etl = 0.0
+        detector = EnsembleDetector(
+            rag_retriever=rag_retriever,
+            finbert_model=finbert,
+            heuristic_baseline=_heuristic_baseline,
+        )
+        for i, (idx, row) in enumerate(samples_df.iterrows()):
+            content = row['content']
+            actual = int(row['label'])
+            t0 = time.time()
+            v, conf, parsed, tot_lat, _ret_lat = cot_evaluate(content)
+            lat = (time.time() - t0) * 1000
+
+            results.append({
+                'index': idx, 'actual': actual, 'verdict': v,
+                'latency_ms': lat, 'source': row['source'],
+                'subset': _subset_label(row),
+            })
+
+            # Collect ensemble features
+            feat = detector.collect_features(content, cot_result=parsed)
+            features_list.append(feat)
+            etl += lat
+
+            if (i + 1) % 10 == 0:
+                avg = (i + 1) / (etl / 1000) if etl > 0 else 0
+                print(f"  {label_prefix}[{i+1}/{len(samples_df)}] Avg throughput: {avg:.1f} samples/sec")
+
+        return results, features_list
+
+    # Run CoT on test set
+    cot_test_results, cot_test_features = _run_cot_batch(test_df, label_prefix="TEST ")
+    # Run CoT on ensemble training set
+    cot_train_results, cot_train_features = _run_cot_batch(ensemble_train_df, label_prefix="ENSEMBLE TRAIN ")
+
+    cot_metrics = _compute_metrics(cot_test_results)
+
+    # --- Run 3: Ensemble meta-classifier ---
+    print("\n" + "="*60)
+    print("RUN 3: ENSEMBLE META-CLASSIFIER")
+    print("="*60)
+
+    # Train ensemble on ensemble train set features
+    ensemble_train_labels = [int(r['actual']) for r in cot_train_results]
+    detector = EnsembleDetector(
+        rag_retriever=rag_retriever,
+        finbert_model=finbert,
+        heuristic_baseline=_heuristic_baseline,
+    )
+    detector.train(cot_train_features, ensemble_train_labels)
+
+    # Evaluate on test set
+    ensemble_results = []
+    ensemble_probs = []
+    for i, (idx, row) in enumerate(test_df.iterrows()):
+        # Use pre-collected features from the test CoT run
+        if i < len(cot_test_features):
+            feat = cot_test_features[i]
+        else:
+            # Fallback (shouldn't happen)
+            feat = detector.collect_features(row['content'])
+
+        proba = detector.predict_proba(feat)
+        v = detector.predict(feat)
+        ensemble_probs.append(proba)
+
+        # Find corresponding cot result for latency
+        lat = 0
+        if i < len(cot_test_results):
+            lat = cot_test_results[i].get('latency_ms', 0)
+
+        ensemble_results.append({
+            'index': idx, 'actual': int(row['label']), 'verdict': v,
+            'latency_ms': lat, 'source': row['source'],
+            'subset': _subset_label(row),
+            'ensemble_probability': round(proba, 4),
+        })
+
+    ensemble_metrics = _compute_metrics(ensemble_results)
+
+    # --- Calibration ---
+    actuals = [r['actual'] for r in ensemble_results]
+    ece = compute_ece(ensemble_probs, actuals, n_bins=10)
+    print(f"\nECE: {ece:.4f}")
+    plot_calibration_curve(ensemble_probs, actuals, save_path="./plots/calibration_curve.png")
+    print("Calibration curve saved to plots/calibration_curve.png")
+
+    # --- Per-subset breakdown ---
+    subset_labels = ['authentic', 'absurdist', 'realistic', 'knowledge_gated', 'kaggle']
+    by_subset = {}
+    for sl in subset_labels:
+        by_subset[sl] = {
+            'baseline_f1': _subset_f1(base_results, sl),
+            'rag_f1': _subset_f1(cot_test_results, sl),
+            'ensemble_f1': _subset_f1(ensemble_results, sl),
+        }
+
+    # --- Comparison report ---
+    comparison = {
+        'phase': 3,
+        'timestamp': time.ctime(),
+        'params': {
+            'target_size': target_size,
+            'test_size': test_size,
+            'ensemble_val_frac': ensemble_val_frac,
+            'deepseek_available': DEEPSEEK_AVAIL,
+        },
+        'baseline': base_metrics,
+        'rag_enhanced': cot_metrics,
+        'ensemble': ensemble_metrics,
+        'by_subset': by_subset,
+        'calibration': {
+            'ece': round(ece, 4),
+            'n_bins': 10,
+        },
+    }
+
+    # Success criteria: Ensemble F1 > 0.85, ECE < 0.1, ensemble beats both on knowledge_gated subset
+    kg_ens = by_subset.get('knowledge_gated', {}).get('ensemble_f1', 0)
+    kg_rag = by_subset.get('knowledge_gated', {}).get('rag_f1', 0)
+    kg_bl = by_subset.get('knowledge_gated', {}).get('baseline_f1', 0)
+    success = (
+        ensemble_metrics['f1_score'] > 0.85
+        and ece < 0.1
+        and kg_ens >= max(kg_rag, kg_bl)
+    )
+    comparison['success_criteria_met'] = success
+
+    # Print summary
+    print("\n" + "="*60)
+    print("PHASE 3 COMPARISON RESULTS")
+    print("="*60)
+    print(f"  Baseline F1:         {base_metrics['f1_score']}")
+    print(f"  RAG CoT F1:          {cot_metrics['f1_score']}")
+    print(f"  Ensemble F1:         {ensemble_metrics['f1_score']}")
+    print(f"  ECE:                 {ece:.4f}")
+    print(f"  Deepseek key:        {'AVAILABLE' if DEEPSEEK_AVAIL else 'MOCK'}")
+    print(f"  Knowledge-gated F1:  baseline={kg_bl} | RAG={kg_rag} | ensemble={kg_ens}")
+    print(f"  Success criteria:    {'MET' if success else 'NOT MET'}")
+    print("="*60)
+
+    json_path = "./output/phase3_results.json"
+    with open(json_path, 'w') as f:
+        json.dump(comparison, f, indent=2)
+    print(f"Phase 3 results saved to {json_path}")
+
+    return comparison
+
+
 if __name__ == "__main__":
-    run_rag_vs_baseline()
+    run_ensemble_comparison()
