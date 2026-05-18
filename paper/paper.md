@@ -30,7 +30,7 @@ News Ingest -> [System 1: FinBERT Sentiment] -> Trading Signal (fast, ~50ms)
 
 **System 1** uses ProsusAI/finbert for sentiment classification. The sentiment signal triggers an immediate trade — the model does not wait for authenticity verification.
 
-**System 2** runs concurrently via ThreadPoolExecutor. It first retrieves verified articles about the headline's entity from a pre-built embedding index (sentence-transformers all-MiniLM-L6-v2, 5,000 documents, cosine similarity). Retrieved context is appended to a Chain-of-Thought prompt sent to Deepseek-chat (max_tokens=600). The LLM outputs a structured verdict (FAKE/REAL), confidence score (0-100), and five binary flags: contradiction, entity_mismatch, temporal_inconsistency, metric_implausibility, source_unverifiable.
+**System 2** runs concurrently via ThreadPoolExecutor. It first retrieves verified articles about the headline's entity from a pre-built embedding index (sentence-transformers all-MiniLM-L6-v2, 5,000 documents, cosine similarity). Retrieved context is appended to a Chain-of-Thought prompt sent to deepseek-v4-flash (max_tokens=600). The LLM outputs a structured verdict (FAKE/REAL), confidence score (0-100), and five binary flags: contradiction, entity_mismatch, temporal_inconsistency, metric_implausibility, source_unverifiable.
 
 If System 2 returns FAKE within the configurable latency budget, the Intervention Engine reverses the System 1 trade and computes profit: `P&L_saved = position_size × (price_at_intervention − trough_price)`.
 

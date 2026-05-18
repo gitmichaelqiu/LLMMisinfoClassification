@@ -166,7 +166,7 @@ def system_2_evaluate(content, use_rag=False):
             user_msg = f"Analyze this content: {content[:1000]}"
 
         response = client.chat.completions.create(
-            model="deepseek-chat",
+            model="deepseek-v4-flash",
             messages=[{"role": "system", "content": system_msg}, {"role": "user", "content": user_msg}],
             max_tokens=10
         )
@@ -209,7 +209,7 @@ def cot_evaluate(content):
 
         t0 = time.time()
         response = client.chat.completions.create(
-            model="deepseek-chat",
+            model="deepseek-v4-flash",
             messages=[{"role": "system", "content": system_msg}, {"role": "user", "content": user_msg}],
             max_tokens=600
         )
