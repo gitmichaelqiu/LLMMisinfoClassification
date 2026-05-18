@@ -10,6 +10,7 @@ import json
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import precision_score, recall_score, f1_score
+from sklearn.model_selection import train_test_split
 
 # 1. Environment Setup
 load_dotenv()
@@ -216,6 +217,11 @@ def generate_confusion_matrix(results, output_file=None, dataset_stats=None):
     latency_p95 = latencies.quantile(0.95)
     latency_p99 = latencies.quantile(0.99)
 
+    latency_actual_0 = df[df['actual'] == 0]['latency_ms'].mean() if (df['actual'] == 0).any() else 0
+    latency_actual_1 = df[df['actual'] == 1]['latency_ms'].mean() if (df['actual'] == 1).any() else 0
+    latency_verdict_0 = df[df['verdict'] == 0]['latency_ms'].mean() if (df['verdict'] == 0).any() else 0
+    latency_verdict_1 = df[df['verdict'] == 1]['latency_ms'].mean() if (df['verdict'] == 1).any() else 0
+
     metrics = {
         'confusion_matrix': {'tn': int(tn), 'fp': int(fp), 'fn': int(matrix.loc[1, 0]), 'tp': int(matrix.loc[1, 1])},
         'accuracy_pct': round(accuracy, 2),
@@ -228,21 +234,29 @@ def generate_confusion_matrix(results, output_file=None, dataset_stats=None):
             'median': round(latency_p50, 2),
             'p95': round(latency_p95, 2),
             'p99': round(latency_p99, 2),
+            'actual_real': round(latency_actual_0, 2),
+            'actual_fake': round(latency_actual_1, 2),
+            'verdict_real': round(latency_verdict_0, 2),
+            'verdict_fake': round(latency_verdict_1, 2),
         }
     }
     if dataset_stats:
         metrics['dataset'] = dataset_stats
 
     summary = f"\n{'='*30}\nCLASSIFICATION REPORT\n{'='*30}\n{matrix}\n{'='*30}\n"
-    summary += f"Accuracy:      {accuracy:.2f}%\n"
-    summary += f"Precision:     {precision:.4f}\n"
-    summary += f"Recall:        {recall:.4f}\n"
-    summary += f"F1 Score:      {f1:.4f}\n"
-    summary += f"Specificity:   {specificity:.4f}\n"
-    summary += f"Latency(mean): {latency_mean:.2f}ms\n"
-    summary += f"Latency(p50):  {latency_p50:.2f}ms\n"
-    summary += f"Latency(p95):  {latency_p95:.2f}ms\n"
-    summary += f"Latency(p99):  {latency_p99:.2f}ms\n"
+    summary += f"Accuracy:          {accuracy:.2f}%\n"
+    summary += f"Precision:         {precision:.4f}\n"
+    summary += f"Recall:            {recall:.4f}\n"
+    summary += f"F1 Score:          {f1:.4f}\n"
+    summary += f"Specificity:       {specificity:.4f}\n"
+    summary += f"Latency(mean):     {latency_mean:.2f}ms\n"
+    summary += f"Latency(p50):      {latency_p50:.2f}ms\n"
+    summary += f"Latency(p95):      {latency_p95:.2f}ms\n"
+    summary += f"Latency(p99):      {latency_p99:.2f}ms\n"
+    summary += f"Latency(act_real): {latency_actual_0:.2f}ms\n"
+    summary += f"Latency(act_fake): {latency_actual_1:.2f}ms\n"
+    summary += f"Latency(ver_real): {latency_verdict_0:.2f}ms\n"
+    summary += f"Latency(ver_fake): {latency_verdict_1:.2f}ms\n"
     summary += f"{'='*30}\n"
     print(summary)
 
@@ -283,39 +297,65 @@ def run_simulation(content, mode="single"):
             
     return verdict, latency
 
-def run_batch(start_index=0, end_index=None):
+def run_batch(target_size=1000, test_size=0.2):
     if not os.path.exists("./output"):
         os.makedirs("./output")
-    
+
     log_file = "./output/backtest_results.txt"
+
+    # Load full dataset
+    df = load_combined_dataset()
+
+    # Downsample to target_size: keep all synthetic + sample Kaggle stratified
+    synth_df = df[df['source'] == 'synthetic']
+    kaggle_df = df[df['source'] == 'kaggle']
+    synth_n = len(synth_df)
+    kaggle_target = target_size - synth_n
+    kaggle0 = kaggle_df[kaggle_df['label'] == 0]
+    kaggle1 = kaggle_df[kaggle_df['label'] == 1]
+    # Sample equal class representation from Kaggle
+    per_class = max(1, kaggle_target // 2)
+    kaggle_sample = pd.concat([
+        kaggle0.sample(n=min(len(kaggle0), per_class), random_state=42),
+        kaggle1.sample(n=min(len(kaggle1), per_class), random_state=42),
+    ], ignore_index=True)
+    sampled = pd.concat([synth_df, kaggle_sample], ignore_index=True)
+
+    # Stratified train/test split
+    train_df, test_df = train_test_split(
+        sampled, test_size=test_size, stratify=sampled['label'], random_state=42
+    )
+
+    # Save split indices for reproducibility
+    split_indices = {
+        'train_indices': train_df.index.tolist(),
+        'test_indices': test_df.index.tolist(),
+        'random_state': 42,
+        'test_size': test_size,
+        'target_size': target_size,
+    }
+    with open("./output/split_indices.json", 'w') as f:
+        json.dump(split_indices, f, indent=2)
+
     with open(log_file, 'w') as f:
         f.write(f"Backtest Execution Log - {time.ctime()}\n")
-        f.write(f"Range: [{start_index}, {end_index})\n\n")
+        f.write(f"Total: {len(sampled)} | Train: {len(train_df)} | Test: {len(test_df)}\n\n")
 
-    df = load_combined_dataset()
-    if end_index is None:
-        end_index = len(df)
+    # Dataset stats on sampled data
+    dataset_stats = report_dataset_statistics(sampled)
 
-    # Report dataset statistics
-    dataset_stats = report_dataset_statistics(df)
+    # Train heuristic baseline on TRAIN split
+    train_heuristic_baseline(train_df)
 
-    # Train heuristic baseline on out-of-fold data to avoid leakage
-    train_indices = list(set(range(len(df))) - set(range(start_index, end_index)))
-    if train_indices:
-        train_heuristic_baseline(df.iloc[train_indices])
-    else:
-        train_heuristic_baseline(df)
-
-    subset = df.iloc[start_index:end_index]
+    # Evaluate on TEST split
     results = []
-
-    print(f"\n--- BATCH TESTING START (Range: [{start_index}, {end_index})) ---")
-    for i, (idx, row) in enumerate(subset.iterrows()):
+    print(f"\n--- BATCH TESTING START (Test set: {len(test_df)} samples) ---")
+    for i, (idx, row) in enumerate(test_df.iterrows()):
         content = row['content']
         actual = int(row['label'])
-        
+
         verdict, latency = run_simulation(content, mode="batch")
-        
+
         res_entry = {
             'index': idx,
             'actual': actual,
@@ -324,16 +364,16 @@ def run_batch(start_index=0, end_index=None):
             'source': row['source']
         }
         results.append(res_entry)
-        
-        log_msg = f"[{i+1}/{len(subset)}] Index: {idx} | Latency: {latency:.2f}ms | Actual: {actual} | Verdict: {verdict} | Source: {row['source']}\n"
+
+        log_msg = f"[{i+1}/{len(test_df)}] Index: {idx} | Latency: {latency:.2f}ms | Actual: {actual} | Verdict: {verdict} | Source: {row['source']}\n"
         with open(log_file, 'a') as f:
             f.write(log_msg)
-            
+
         if (i + 1) % 5 == 0 or i == 0:
-            print(f"Progress: [{i+1}/{len(subset)}] | Avg Latency: {pd.DataFrame(results)['latency_ms'].mean():.2f}ms")
-        
+            print(f"Progress: [{i+1}/{len(test_df)}] | Avg Latency: {pd.DataFrame(results)['latency_ms'].mean():.2f}ms")
+
     generate_confusion_matrix(results, output_file=log_file, dataset_stats=dataset_stats)
     print(f"Results saved to {log_file}")
 
 if __name__ == "__main__":
-    run_batch(start_index=0, end_index=100)
+    run_batch()
