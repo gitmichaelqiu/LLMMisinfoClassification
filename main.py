@@ -16,6 +16,7 @@ from src.prompts import RAG_SYSTEM_PROMPT, RAG_USER_PROMPT, NON_RAG_SYSTEM_PROMP
 from src.cot_parser import parse_cot_output
 from src.ensemble_detector import EnsembleDetector, finbert_score, compute_ece, plot_calibration_curve
 from src.async_pipeline import AsyncDualPipeline, PnLCalculator
+from src.sensitivity_analysis import SensitivityAnalyzer, flash_crash_price
 
 # 1. Environment Setup
 load_dotenv()
@@ -1203,9 +1204,178 @@ def run_latency_sweep(
     return report
 
 
+def run_sensitivity_analysis(
+    target_size=1000,
+    test_size=0.2,
+    model="deepseek",
+    ollama_model="qwen3.5:2b",
+    n_lhs_samples=30,
+):
+    """Phase 5: LHS-based sensitivity analysis over crash parameters.
+
+    Runs pipeline once with unbounded latency (∞ budget) to collect
+    per-sample verdicts/confidences/intervention times. Then sweeps
+    5-dim parameter space via Latin Hypercube Sampling, recomputing
+    net P&L at each point without re-running API calls.
+    """
+    os.makedirs("./output", exist_ok=True)
+    os.makedirs("./plots", exist_ok=True)
+
+    DEEPSEEK_AVAIL = bool(DEEPSEEK_API_KEY) and DEEPSEEK_API_KEY != "your_actual_api_key_here"
+    print(f"\n{'='*60}")
+    print(f"PHASE 5: SENSITIVITY ANALYSIS")
+    print(f"Model: {model} | Test size: {int(target_size * test_size)} | LHS samples: {n_lhs_samples}")
+    print(f"Deepseek available: {DEEPSEEK_AVAIL}")
+    print(f"{'='*60}")
+
+    df = load_combined_dataset()
+    synth_df = df[df['source'] == 'synthetic']
+    kaggle_df = df[df['source'] == 'kaggle']
+    kaggle0 = kaggle_df[kaggle_df['label'] == 0]
+    kaggle1 = kaggle_df[kaggle_df['label'] == 1]
+    per_class = max(1, (target_size - len(synth_df)) // 2)
+    kaggle_sample = pd.concat([
+        kaggle0.sample(n=min(len(kaggle0), per_class), random_state=42),
+        kaggle1.sample(n=min(len(kaggle1), per_class), random_state=42),
+    ], ignore_index=True)
+    sampled = pd.concat([synth_df, kaggle_sample], ignore_index=True)
+
+    train_df, test_df = train_test_split(
+        sampled, test_size=test_size, stratify=sampled['label'], random_state=42)
+
+    train_heuristic_baseline(train_df)
+    base_preds = [heuristic_predict(row['content']) for _, row in test_df.iterrows()]
+    baseline_f1 = float(f1_score(test_df['label'].values, base_preds,
+                                  average='binary', zero_division=0))
+    print(f"Baseline (TF-IDF+LR) F1: {baseline_f1:.4f}")
+
+    # --- Run pipeline once with unbounded budget ---
+    print(f"\nRunning pipeline (∞ budget) on {len(test_df)} test samples...")
+    pipeline = AsyncDualPipeline(
+        finbert_model=finbert,
+        rag_retriever=rag_retriever,
+        deepseek_client=client if DEEPSEEK_AVAIL else None,
+        deepseek_key=DEEPSEEK_API_KEY,
+        latency_budget_ms=None,
+        model=model,
+        ollama_model=ollama_model,
+        position_size=1000,
+    )
+
+    per_sample_results = []
+    for i, (idx, row) in enumerate(test_df.iterrows()):
+        content = row['content']
+        actual = int(row['label'])
+        out = pipeline.process_sample(content)
+        per_sample_results.append({
+            "actual": actual,
+            "verdict": out["verdict"],
+            "confidence": out["confidence"],
+            "intervention_time_ms": out["intervention_time_ms"],
+        })
+        if (i + 1) % 10 == 0 or i == 0:
+            print(f"  [{i+1}/{len(test_df)}] lat={out['total_latency_ms']:.0f}ms "
+                  f"verdict={out['verdict']} conf={out['confidence']:.2f}")
+
+    pipeline.cleanup()
+
+    # Save per-sample results
+    psr_path = "./output/phase5_per_sample_results.json"
+    with open(psr_path, "w") as f:
+        json.dump(per_sample_results, f, indent=2)
+    print(f"Per-sample results saved to {psr_path}")
+
+    # --- Sensitivity analysis ---
+    analyzer = SensitivityAnalyzer(per_sample_results, base_price=190.0, fp_cost_factor=0.5)
+
+    # Evaluate regimes
+    print(f"\n{'='*40}")
+    print("REGIME COMPARISON")
+    print(f"{'='*40}")
+    normal_metrics, normal_pnl = analyzer.evaluate_regime(SensitivityAnalyzer.NORMAL_REGIME)
+    stress_metrics, stress_pnl = analyzer.evaluate_regime(SensitivityAnalyzer.STRESS_REGIME)
+    print(f"  Normal: P&L=${normal_metrics['total_pnl']:>10,.0f} "
+          f"Sharpe={normal_metrics['sharpe_ratio']:.3f} "
+          f"TP={normal_metrics['n_tp']} FP={normal_metrics['n_fp']} "
+          f"FN={normal_metrics['n_fn']}")
+    print(f"  Stress: P&L=${stress_metrics['total_pnl']:>10,.0f} "
+          f"Sharpe={stress_metrics['sharpe_ratio']:.3f} "
+          f"TP={stress_metrics['n_tp']} FP={stress_metrics['n_fp']} "
+          f"FN={stress_metrics['n_fn']}")
+
+    # LHS sweep
+    print(f"\n{'='*40}")
+    print(f"LHS SWEEP ({n_lhs_samples} samples, 5 dimensions)")
+    print(f"{'='*40}")
+    sweep_results = analyzer.run_sweep(n_samples=n_lhs_samples)
+
+    # Sensitivity ranking
+    ranking = analyzer.sensitivity_ranking(sweep_results)
+    print(f"\nSensitivity ranking (impact on total P&L):")
+    for r in ranking:
+        print(f"  {r['param']:>25}: importance={r['importance']:>8,.0f} "
+              f"({r['direction']})")
+
+    # Optimal params: highest total_pnl from sweep
+    optimal = max(sweep_results, key=lambda r: r["total_pnl"])
+
+    # Report
+    report = {
+        "phase": 5,
+        "timestamp": time.ctime(),
+        "params": {
+            "target_size": target_size,
+            "test_size": test_size,
+            "model": model,
+            "n_lhs_samples": n_lhs_samples,
+            "deepseek_available": DEEPSEEK_AVAIL,
+            "fp_cost_factor": 0.5,
+        },
+        "baseline_f1": round(baseline_f1, 4),
+        "regime_comparison": {
+            "normal": {k: v for k, v in normal_metrics.items()
+                       if k not in SensitivityAnalyzer.PARAM_BOUNDS},
+            "stress": {k: v for k, v in stress_metrics.items()
+                       if k not in SensitivityAnalyzer.PARAM_BOUNDS},
+        },
+        "sensitivity_ranking": ranking,
+        "optimal_params": {k: optimal[k] for k in SensitivityAnalyzer.PARAM_BOUNDS},
+        "optimal_pnl": optimal["total_pnl"],
+        "optimal_sharpe": optimal["sharpe_ratio"],
+        "sweep_results": sweep_results,
+    }
+
+    json_path = "./output/phase5_sensitivity_analysis.json"
+    with open(json_path, "w") as f:
+        json.dump(report, f, indent=2)
+    print(f"\nSensitivity report saved to {json_path}")
+
+    # Plots
+    analyzer.plot_heatmaps(sweep_results)
+    analyzer.plot_pnl_distribution(normal_pnl, stress_pnl)
+
+    # Summary
+    print(f"\n{'='*60}")
+    print(f"PHASE 5: SENSITIVITY ANALYSIS SUMMARY")
+    print(f"{'='*60}")
+    print(f"  Baseline F1:       {baseline_f1:.4f}")
+    print(f"  Regime comparison:")
+    print(f"    Normal: P&L=${normal_metrics['total_pnl']:>10,.0f} "
+          f"Sharpe={normal_metrics['sharpe_ratio']:.3f}")
+    print(f"    Stress: P&L=${stress_metrics['total_pnl']:>10,.0f} "
+          f"Sharpe={stress_metrics['sharpe_ratio']:.3f}")
+    print(f"  Top sensitivity:   {ranking[0]['param']} "
+          f"(importance={ranking[0]['importance']:.0f})")
+    print(f"  Optimal params:    P&L=${optimal['total_pnl']:,.0f} "
+          f"Sharpe={optimal['sharpe_ratio']:.3f}")
+    print(f"{'='*60}")
+
+    return report
+
+
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="Phase 4: Latency-Optimized Dual-System Pipeline")
+    parser = argparse.ArgumentParser(description="AdvFinNLPVuln: Dual-System Pipeline")
     parser.add_argument("--test-size", type=int, default=10, help="Number of test samples (default: 10)")
     parser.add_argument("--latency-budget-ms", type=int, default=None, help="Single latency budget override (ms)")
     parser.add_argument("--model", type=str, default="deepseek",
@@ -1214,25 +1384,35 @@ if __name__ == "__main__":
                         help="Comma-separated budgets to sweep (ms), 'none' = no limit")
     parser.add_argument("--position-size", type=int, default=1000, help="Position size in shares")
     parser.add_argument("--target-size", type=int, default=1000, help="Total dataset sample size")
+    parser.add_argument("--phase5", action="store_true", help="Run Phase 5 sensitivity analysis")
+    parser.add_argument("--lhs-samples", type=int, default=30, help="Number of LHS samples (Phase 5)")
     args = parser.parse_args()
 
     test_size_frac = args.test_size / args.target_size if args.target_size > 0 else 0.2
-    budgets = []
-    for b in args.budgets.split(","):
-        b = b.strip()
-        if b.lower() == "none":
-            budgets.append(None)
-        else:
-            budgets.append(int(b))
 
-    # If single budget override, use only that
-    if args.latency_budget_ms is not None:
-        budgets = [args.latency_budget_ms]
+    if args.phase5:
+        run_sensitivity_analysis(
+            target_size=args.target_size,
+            test_size=test_size_frac,
+            model=args.model,
+            n_lhs_samples=args.lhs_samples,
+        )
+    else:
+        budgets = []
+        for b in args.budgets.split(","):
+            b = b.strip()
+            if b.lower() == "none":
+                budgets.append(None)
+            else:
+                budgets.append(int(b))
 
-    run_latency_sweep(
-        target_size=args.target_size,
-        test_size=test_size_frac,
-        budgets_ms=budgets,
-        model=args.model,
-        position_size=args.position_size,
-    )
+        if args.latency_budget_ms is not None:
+            budgets = [args.latency_budget_ms]
+
+        run_latency_sweep(
+            target_size=args.target_size,
+            test_size=test_size_frac,
+            budgets_ms=budgets,
+            model=args.model,
+            position_size=args.position_size,
+        )
