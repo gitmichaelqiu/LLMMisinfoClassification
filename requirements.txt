@@ -2,3 +2,7 @@ pandas
 numpy
 openai
 python-dotenv
+scikit-learn
+matplotlib
+seaborn
+transformers

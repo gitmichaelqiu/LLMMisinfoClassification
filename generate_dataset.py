@@ -55,13 +55,39 @@ ANOMALY_PATTERNS = [
     "Alphabet's CEO says Google will stop searching and 'begin knowing' everything by {month}."
 ]
 
+REALISTIC_ANOMALY_PATTERNS = [
+    "{entity} reports quarterly revenue of ${val}B, defying analyst consensus of ${val2}B despite {sector} downturn.",
+    "{entity} announces ${billion}B buyback despite having only ${cash}B in cash reserves.",
+    "Federal Reserve cuts rates to {low_val}% while core inflation remains at {high_val}%.",
+    "{entity} acquires {target} for ${billion}B, exceeding {target} market cap of ${val}M.",
+    "Unemployment in {country} drops to {low_val}%, historically low amid mass layoffs in {sector}.",
+    "{country} GDP expands {pct}% in Q{q}, fastest quarterly growth on record during {economic_condition}.",
+    "{entity} CEO sells ${val}M in stock days before {positive_event}, avoiding {pct}% loss.",
+    "Oil plunges to ${val}/barrel as OPEC+ unexpectedly boosts output {bpd}M bpd.",
+    "{currency} surges {pct}% versus {other_currency} in single session with no catalyst.",
+    "{entity} market cap hits ${val}T, exceeding {competitor1} and {competitor2} combined.",
+    "Consumer confidence rises to {val} while retail sales fall {pct}%, baffling economists.",
+    "{bank} forecasts {country} recession by Q{q} yet raises equity allocation to {pct}%.",
+    "ECB hikes rates to {val}% as Eurozone inflation cools to {low_val}%.",
+    "{entity} net income jumps {pct}% despite revenue drop of {pct2}%.",
+    "Gold hits ${val}/oz as central banks {action}, contradicting Q{q} demand reports.",
+    "SEC charges {entity} with ${val}B fraud, surpassing {entity} annual revenue of ${val2}B.",
+    "{company} plans {num} factories in {country}, which has zero {sector} workforce.",
+    "{entity} operating margin surges {pct}% after {reason} while revenue stays flat.",
+    "{country} sovereign debt yields turn negative across all tenors despite {pct}% inflation.",
+    "Treasury yield curve inverts {val}bp, steepest since {year}, as economy {economic_state}.",
+]
+
 def generate_unique_df(count=200):
     random.seed(42)
     unique_headlines = set()
     rows = []
-    
+
+    def pick_choice(name, *args, **kwargs):
+        return random.choice(*args, **kwargs)
+
     # 100 Authentic
-    while len(rows) < 100:
+    while len([r for r in rows if r['label'] == 0]) < 100:
         p = random.choice(AUTH_PATTERNS)
         h = p.format(
             entity=random.choice(ENTITIES),
@@ -101,9 +127,9 @@ def generate_unique_df(count=200):
         if h not in unique_headlines:
             unique_headlines.add(h)
             rows.append({"headline": h, "label": 0})
-            
-    # 100 Anomaly
-    while len(rows) < 200:
+
+    # 100 Absurdist Anomaly
+    while len([r for r in rows if r['label'] == 1 and r.get('type') == 'absurdist']) < 100:
         p = random.choice(ANOMALY_PATTERNS)
         h = p.format(
             entity=random.choice(ENTITIES),
@@ -134,11 +160,47 @@ def generate_unique_df(count=200):
         )
         if h not in unique_headlines:
             unique_headlines.add(h)
-            rows.append({"headline": h, "label": 1})
-            
+            rows.append({"headline": h, "label": 1, "type": "absurdist"})
+
+    # 100 Realistic Anomaly
+    while len([r for r in rows if r['label'] == 1 and r.get('type') == 'realistic']) < 100:
+        p = random.choice(REALISTIC_ANOMALY_PATTERNS)
+        h = p.format(
+            entity=random.choice(ENTITIES),
+            val=random.randint(50, 500),
+            val2=random.randint(30, 200),
+            billion=random.randint(50, 200),
+            cash=random.randint(5, 40),
+            low_val=random.choice(["0.25", "0.50", "1.0", "1.2", "1.5"]),
+            high_val=random.choice(["4.5", "5.0", "6.2", "7.1", "8.0"]),
+            target=random.choice(["Intel", "Netflix", "Shopify", "Snowflake", "Palantir", "Unity", "Robinhood"]),
+            country=random.choice(COUNTRIES),
+            sector=random.choice(SECTORS),
+            pct=random.randint(10, 60),
+            pct2=random.randint(5, 30),
+            q=random.randint(1, 4),
+            economic_condition=random.choice(["a trade war", "supply chain disruption", "inflationary pressure", "political instability"]),
+            positive_event=random.choice(["earnings beat", "product launch", "FDA approval", "contract win"]),
+            currency=random.choice(CURRENCIES),
+            other_currency=random.choice(CURRENCIES),
+            competitor1=random.choice(["Apple", "Microsoft", "Amazon", "Alphabet"]),
+            competitor2=random.choice(["Tesla", "NVIDIA", "Meta", "JPMorgan"]),
+            bank=random.choice(["Goldman Sachs", "JPMorgan", "Morgan Stanley", "Deutsche Bank"]),
+            action=random.choice(["buy", "sell", "accumulate", "hedge"]),
+            reason=random.choice(["restructuring", "tax adjustments", "asset sales", "accounting changes"]),
+            company=random.choice(["Tesla", "NVIDIA", "Apple", "Amazon", "Toyota", "Intel"]),
+            num=random.randint(3, 10),
+            year=random.choice(["2008", "2001", "1997", "1987"]),
+            bpd=random.choice(["0.5", "1.0", "1.5", "2.0"]),
+            economic_state=random.choice(["expands", "contracts", "stagnates", "grows slowly"]),
+        )
+        if h not in unique_headlines:
+            unique_headlines.add(h)
+            rows.append({"headline": h, "label": 1, "type": "realistic"})
+
     df = pd.DataFrame(rows)
     df.to_csv("./input/headlines.csv", index=False)
-    print(f"Generated 200 unique headlines to headlines.csv.")
+    print(f"Generated {len(df)} headlines to headlines.csv (100 authentic, 100 absurdist anomaly, 100 realistic anomaly).")
 
 if __name__ == "__main__":
     generate_unique_df()

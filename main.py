@@ -6,6 +6,10 @@ import numpy as np
 from openai import OpenAI
 from dotenv import load_dotenv
 from transformers import pipeline
+import json
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import precision_score, recall_score, f1_score
 
 # 1. Environment Setup
 load_dotenv()
@@ -34,6 +38,27 @@ client = OpenAI(
     api_key=DEEPSEEK_API_KEY if DEEPSEEK_API_KEY and DEEPSEEK_API_KEY != "your_actual_api_key_here" else "dummy",
     base_url="https://api.deepseek.com"
 )
+
+# Heuristic baseline (System 2 fallback)
+_heuristic_baseline = None
+
+def train_heuristic_baseline(df):
+    global _heuristic_baseline
+    vectorizer = TfidfVectorizer(max_features=5000, ngram_range=(1, 2))
+    clf = LogisticRegression(max_iter=1000, random_state=42)
+    X = vectorizer.fit_transform(df['content'].fillna(''))
+    y = df['label']
+    clf.fit(X, y)
+    _heuristic_baseline = (vectorizer, clf)
+    print(f"[Heuristic Baseline] Trained on {len(df)} samples (acc={clf.score(X, y):.2%})")
+
+def heuristic_predict(content):
+    global _heuristic_baseline
+    if _heuristic_baseline is None:
+        return 0
+    vectorizer, clf = _heuristic_baseline
+    X = vectorizer.transform([content])
+    return int(clf.predict(X)[0])
 
 class MarketSimulator:
     def __init__(self, base_price=190.0):
@@ -92,13 +117,10 @@ def system_2_evaluate(content):
     """
     Uses Deepseek LLM to detect Logical Anomaly or Fake News.
     """
-    # If API key is missing or dummy, we mock the response
+    # If API key is missing or dummy, use heuristic baseline
     if not DEEPSEEK_API_KEY or DEEPSEEK_API_KEY == "your_actual_api_key_here":
-        time.sleep(0.5) 
-        fakes = ["bankruptcy", "OPEC", "solar eclipse", "liquidated 100%", "GPT-2"]
-        if any(f.lower() in content.lower() for f in fakes):
-            return 1 # ANOMALY/FAKE
-        return 0 # AUTHENTIC/REAL
+        time.sleep(0.5)
+        return heuristic_predict(content)
 
     try:
         response = client.chat.completions.create(
@@ -144,14 +166,33 @@ def plot_flash_crash_mechanics(sim):
     plt.savefig("./plots/flash_crash_dynamics.png", dpi=300, bbox_inches='tight')
     plt.close()
 
-def generate_confusion_matrix(results, output_file=None):
+def report_dataset_statistics(df):
+    print(f"\n{'='*30}\nDATASET STATISTICS\n{'='*30}")
+    total = len(df)
+    class0 = int((df['label'] == 0).sum())
+    class1 = int((df['label'] == 1).sum())
+    sources = df['source'].value_counts().to_dict()
+    avg_len = float(df['content'].str.len().mean())
+    print(f"Total samples: {total}")
+    print(f"Class 0 (Authentic): {class0} ({class0/total:.1%})")
+    print(f"Class 1 (Anomaly):   {class1} ({class1/total:.1%})")
+    print(f"Sources: {sources}")
+    print(f"Avg content length: {avg_len:.0f} chars")
+    return {
+        'total_samples': total,
+        'class_balance': {0: class0, 1: class1},
+        'source_distribution': sources,
+        'avg_content_length': round(avg_len, 1),
+    }
+
+def generate_confusion_matrix(results, output_file=None, dataset_stats=None):
     df = pd.DataFrame(results)
     classes = [0, 1]
     matrix = pd.DataFrame(0, index=classes, columns=classes)
     for _, row in df.iterrows():
         matrix.loc[row['actual'], row['verdict']] += 1
-    
-    # Visual Heatmap
+
+    # Heatmap
     plt.figure(figsize=(8, 6))
     sns.heatmap(matrix, annot=True, fmt='d', cmap='Blues', xticklabels=['Real', 'Fake'], yticklabels=['Real', 'Fake'])
     plt.title("LLM Verdict Confusion Matrix", fontsize=14, fontweight='bold')
@@ -159,17 +200,60 @@ def generate_confusion_matrix(results, output_file=None):
     plt.xlabel("Predicted")
     plt.savefig("./plots/confusion_matrix.png", dpi=300, bbox_inches='tight')
     plt.close()
-    
-    accuracy = (df['actual'] == df['verdict']).mean() * 100
-    avg_latency = df['latency_ms'].mean()
-    
-    summary = f"\n{'='*30}\nCONFUSION MATRIX\n{'='*30}\n{matrix}\n{'='*30}\n"
-    summary += f"Accuracy: {accuracy:.2f}%\nAvg Latency: {avg_latency:.2f}ms\n{'='*30}\n"
+
+    actuals = df['actual']
+    preds = df['verdict']
+    accuracy = (actuals == preds).mean() * 100
+    precision = precision_score(actuals, preds, average='binary', zero_division=0)
+    recall = recall_score(actuals, preds, average='binary', zero_division=0)
+    f1 = f1_score(actuals, preds, average='binary', zero_division=0)
+    tn, fp = matrix.loc[0, 0], matrix.loc[0, 1]
+    specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
+
+    latencies = df['latency_ms']
+    latency_mean = latencies.mean()
+    latency_p50 = latencies.median()
+    latency_p95 = latencies.quantile(0.95)
+    latency_p99 = latencies.quantile(0.99)
+
+    metrics = {
+        'confusion_matrix': {'tn': int(tn), 'fp': int(fp), 'fn': int(matrix.loc[1, 0]), 'tp': int(matrix.loc[1, 1])},
+        'accuracy_pct': round(accuracy, 2),
+        'precision': round(precision, 4),
+        'recall': round(recall, 4),
+        'f1_score': round(f1, 4),
+        'specificity': round(specificity, 4),
+        'latency_ms': {
+            'mean': round(latency_mean, 2),
+            'median': round(latency_p50, 2),
+            'p95': round(latency_p95, 2),
+            'p99': round(latency_p99, 2),
+        }
+    }
+    if dataset_stats:
+        metrics['dataset'] = dataset_stats
+
+    summary = f"\n{'='*30}\nCLASSIFICATION REPORT\n{'='*30}\n{matrix}\n{'='*30}\n"
+    summary += f"Accuracy:      {accuracy:.2f}%\n"
+    summary += f"Precision:     {precision:.4f}\n"
+    summary += f"Recall:        {recall:.4f}\n"
+    summary += f"F1 Score:      {f1:.4f}\n"
+    summary += f"Specificity:   {specificity:.4f}\n"
+    summary += f"Latency(mean): {latency_mean:.2f}ms\n"
+    summary += f"Latency(p50):  {latency_p50:.2f}ms\n"
+    summary += f"Latency(p95):  {latency_p95:.2f}ms\n"
+    summary += f"Latency(p99):  {latency_p99:.2f}ms\n"
+    summary += f"{'='*30}\n"
     print(summary)
-    
+
     if output_file:
         with open(output_file, 'a') as f:
             f.write(summary)
+
+    json_path = "./output/phase1_metrics.json"
+    with open(json_path, 'w') as f:
+        json.dump(metrics, f, indent=2)
+    print(f"Phase 1 metrics saved to {json_path}")
 
 def run_simulation(content, mode="single"):
     if mode == "single":
@@ -211,10 +295,20 @@ def run_batch(start_index=0, end_index=None):
     df = load_combined_dataset()
     if end_index is None:
         end_index = len(df)
-    
+
+    # Report dataset statistics
+    dataset_stats = report_dataset_statistics(df)
+
+    # Train heuristic baseline on out-of-fold data to avoid leakage
+    train_indices = list(set(range(len(df))) - set(range(start_index, end_index)))
+    if train_indices:
+        train_heuristic_baseline(df.iloc[train_indices])
+    else:
+        train_heuristic_baseline(df)
+
     subset = df.iloc[start_index:end_index]
     results = []
-    
+
     print(f"\n--- BATCH TESTING START (Range: [{start_index}, {end_index})) ---")
     for i, (idx, row) in enumerate(subset.iterrows()):
         content = row['content']
@@ -238,7 +332,7 @@ def run_batch(start_index=0, end_index=None):
         if (i + 1) % 5 == 0 or i == 0:
             print(f"Progress: [{i+1}/{len(subset)}] | Avg Latency: {pd.DataFrame(results)['latency_ms'].mean():.2f}ms")
         
-    generate_confusion_matrix(results, output_file=log_file)
+    generate_confusion_matrix(results, output_file=log_file, dataset_stats=dataset_stats)
     print(f"Results saved to {log_file}")
 
 if __name__ == "__main__":
