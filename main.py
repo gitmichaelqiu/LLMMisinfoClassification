@@ -15,6 +15,7 @@ from src.rag_retriever import RAGRetriever, extract_entity
 from src.prompts import RAG_SYSTEM_PROMPT, RAG_USER_PROMPT, NON_RAG_SYSTEM_PROMPT, COT_RAG_SYSTEM_PROMPT, COT_RAG_USER_PROMPT
 from src.cot_parser import parse_cot_output
 from src.ensemble_detector import EnsembleDetector, finbert_score, compute_ece, plot_calibration_curve
+from src.async_pipeline import AsyncDualPipeline, PnLCalculator
 
 # 1. Environment Setup
 load_dotenv()
@@ -934,5 +935,304 @@ def run_ensemble_comparison(target_size=1000, test_size=0.2, ensemble_val_frac=0
     return comparison
 
 
+def plot_pareto_frontier(sweep_results, save_path="./plots/latency_accuracy_pareto.png"):
+    """F1 vs mean latency scatter plot with P&L annotation per budget point."""
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.figure(figsize=(10, 7))
+    budgets = [r["budget_ms"] if r["budget_ms"] else 10000 for r in sweep_results]
+    f1s = [r["f1_score"] for r in sweep_results]
+    lats = [r["latency_mean_ms"] for r in sweep_results]
+    pnls = [r["total_pnl_saved"] for r in sweep_results]
+    viols = [r["budget_violation_pct"] for r in sweep_results]
+
+    scatter = plt.scatter(
+        lats, f1s, c=viols, s=[max(50, p / 100) for p in pnls],
+        cmap="RdYlGn_r", alpha=0.8, edgecolors="k", zorder=5,
+    )
+    cbar = plt.colorbar(scatter, label="Budget violation %")
+    for i, b in enumerate(budgets):
+        label = f"{'∞' if b == 10000 else b}ms (${pnls[i]:,.0f})"
+        plt.annotate(
+            label, (lats[i], f1s[i]),
+            xytext=(5, 5), textcoords="offset points", fontsize=9,
+        )
+
+    # "No System 2" baseline (heuristic-only F1)
+    if sweep_results:
+        baseline_f1 = sweep_results[0].get("baseline_f1", 0)
+        plt.axhline(y=baseline_f1, color="gray", linestyle="--", alpha=0.5, label=f"Baseline F1={baseline_f1}")
+
+    plt.xlabel("Mean Latency (ms)")
+    plt.ylabel("F1 Score")
+    plt.title("Latency-Accuracy Pareto Frontier")
+    plt.grid(True, linestyle="--", alpha=0.3)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close()
+    print(f"Pareto frontier saved to {save_path}")
+
+
+def plot_pnl_vs_latency(sweep_results, save_path="./plots/pnl_vs_latency.png"):
+    """Bar chart: total P&L saved per budget with violation rate overlay."""
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    fig, ax1 = plt.subplots(figsize=(10, 6))
+    budgets = [str(r["budget_ms"]) if r["budget_ms"] else "None" for r in sweep_results]
+    pnls = [r["total_pnl_saved"] for r in sweep_results]
+    viols = [r["budget_violation_pct"] for r in sweep_results]
+
+    ax1.bar(budgets, pnls, color="steelblue", alpha=0.7, label="P&L Saved ($)")
+    ax1.set_xlabel("Latency Budget (ms)")
+    ax1.set_ylabel("Total P&L Saved ($)", color="steelblue")
+    ax1.tick_params(axis="y", labelcolor="steelblue")
+
+    ax2 = ax1.twinx()
+    ax2.plot(budgets, viols, "ro-", linewidth=2, label="Budget Violation %")
+    ax2.set_ylabel("Budget Violation %", color="red")
+    ax2.tick_params(axis="y", labelcolor="red")
+
+    plt.title("P&L Saved vs Latency Budget")
+    fig.tight_layout()
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close()
+    print(f"P&L vs latency chart saved to {save_path}")
+
+
+def run_latency_sweep(
+    target_size=1000,
+    test_size=0.2,
+    budgets_ms=[None, 5000, 2000, 1000, 500, 100],
+    model="deepseek",
+    ollama_model="qwen3.5:2b",
+    position_size=1000,
+):
+    """Sweep across latency budgets, measure accuracy + P&L at each budget.
+
+    For each budget:
+      1. Create AsyncDualPipeline with that budget
+      2. Run on test set
+      3. Record F1, latency, P&L saved, violation rate
+      4. Store in sweep_results
+
+    Generates Pareto frontier + P&L chart.
+    """
+    os.makedirs("./output", exist_ok=True)
+    os.makedirs("./plots", exist_ok=True)
+
+    DEEPSEEK_AVAIL = bool(DEEPSEEK_API_KEY) and DEEPSEEK_API_KEY != "your_actual_api_key_here"
+    print(f"\n{'='*60}")
+    print(f"PHASE 4: LATENCY SWEEP")
+    print(f"Model: {model} | Test size: {int(target_size * test_size)} | Budgets: {budgets_ms}")
+    print(f"Deepseek available: {DEEPSEEK_AVAIL}")
+    print(f"{'='*60}")
+
+    df = load_combined_dataset()
+
+    # Downsample
+    synth_df = df[df['source'] == 'synthetic']
+    kaggle_df = df[df['source'] == 'kaggle']
+    kaggle0 = kaggle_df[kaggle_df['label'] == 0]
+    kaggle1 = kaggle_df[kaggle_df['label'] == 1]
+    per_class = max(1, (target_size - len(synth_df)) // 2)
+    kaggle_sample = pd.concat([
+        kaggle0.sample(n=min(len(kaggle0), per_class), random_state=42),
+        kaggle1.sample(n=min(len(kaggle1), per_class), random_state=42),
+    ], ignore_index=True)
+    sampled = pd.concat([synth_df, kaggle_sample], ignore_index=True)
+
+    train_df, test_df = train_test_split(
+        sampled, test_size=test_size, stratify=sampled['label'], random_state=42
+    )
+
+    # Train heuristic baseline for reference
+    train_heuristic_baseline(train_df)
+
+    # Compute baseline metrics
+    base_preds = [heuristic_predict(row['content']) for _, row in test_df.iterrows()]
+    base_actuals = test_df['label'].values
+    baseline_f1 = float(f1_score(base_actuals, base_preds, average='binary', zero_division=0))
+    print(f"Baseline (TF-IDF+LR) F1: {baseline_f1:.4f}")
+
+    # Pipeline profile: measure FinBERT latency once
+    profile_results = {}
+    if finbert is not None:
+        t0 = time.time()
+        finbert("test headline"[:512])
+        fb_lat = (time.time() - t0) * 1000
+        profile_results["finbert_mean_ms"] = round(fb_lat, 2)
+    else:
+        profile_results["finbert_mean_ms"] = 0
+
+    sweep_results = []
+    for budget in budgets_ms:
+        budget_label = f"{'∞' if budget is None else budget} ms"
+        print(f"\n{'='*40}")
+        print(f"Budget: {budget_label}")
+        print(f"{'='*40}")
+
+        pipeline = AsyncDualPipeline(
+            finbert_model=finbert,
+            rag_retriever=rag_retriever,
+            deepseek_client=client if DEEPSEEK_AVAIL else None,
+            deepseek_key=DEEPSEEK_API_KEY,
+            latency_budget_ms=budget,
+            model=model,
+            ollama_model=ollama_model,
+            position_size=position_size,
+        )
+
+        results = []
+        for i, (idx, row) in enumerate(test_df.iterrows()):
+            content = row['content']
+            actual = int(row['label'])
+            out = pipeline.process_sample(content)
+            results.append({
+                'index': idx,
+                'actual': actual,
+                'verdict': out['verdict'],
+                'latency_ms': out['total_latency_ms'],
+                'finbert_latency_ms': out['finbert_latency_ms'],
+                'retrieval_latency_ms': out['retrieval_latency_ms'],
+                'llm_latency_ms': out['llm_latency_ms'],
+                'budget_violation': out['budget_violation'],
+                'pnl_saved': out['pnl_saved'],
+                'source': row['source'],
+            })
+
+            if (i + 1) % 5 == 0 or i == 0:
+                print(f"  [{i+1}/{len(test_df)}] lat={out['total_latency_ms']:.0f}ms pnl=${out['pnl_saved']:.0f}")
+
+        pipeline.cleanup()
+
+        # Compute metrics
+        dfr = pd.DataFrame(results)
+        actuals = dfr['actual']
+        preds = dfr['verdict']
+        acc = float((actuals == preds).mean() * 100)
+        f1 = float(f1_score(actuals, preds, average='binary', zero_division=0))
+        lat_mean = float(dfr['latency_ms'].mean())
+        lat_p95 = float(dfr['latency_ms'].quantile(0.95))
+        total_pnl = float(dfr['pnl_saved'].sum())
+        viol_pct = float(dfr['budget_violation'].mean() * 100)
+        intervention_count = int(((dfr['verdict'] == 1) & ~dfr['budget_violation']).sum())
+        intervention_pct = float(((dfr['verdict'] == 1) & ~dfr['budget_violation']).mean() * 100)
+
+        # Per-stage latency averages (non-violation samples only)
+        ok = dfr[~dfr['budget_violation']]
+        if len(ok) > 0:
+            profile_results["retrieval_mean_ms"] = round(float(ok['retrieval_latency_ms'].mean()), 2)
+            profile_results["retrieval_p95_ms"] = round(float(ok['retrieval_latency_ms'].quantile(0.95)), 2)
+            profile_results["llm_mean_ms"] = round(float(ok['llm_latency_ms'].mean()), 2)
+            profile_results["llm_p95_ms"] = round(float(ok['llm_latency_ms'].quantile(0.95)), 2)
+            profile_results["total_mean_ms"] = round(float(ok['latency_ms'].mean()), 2)
+
+        sweep_entry = {
+            "budget_ms": budget,
+            "accuracy_pct": round(acc, 2),
+            "f1_score": round(f1, 4),
+            "latency_mean_ms": round(lat_mean, 2),
+            "latency_p95_ms": round(lat_p95, 2),
+            "total_pnl_saved": round(total_pnl, 2),
+            "budget_violation_pct": round(viol_pct, 2),
+            "intervention_pct": round(intervention_pct, 2),
+            "n_violations": int(dfr['budget_violation'].sum()),
+        }
+        sweep_results.append(sweep_entry)
+
+        print(f"  -> F1={f1:.4f} | Lat={lat_mean:.0f}ms | P&L=${total_pnl:.0f} | Viol={viol_pct:.1f}%")
+
+    # Save report
+    report = {
+        "phase": 4,
+        "timestamp": time.ctime(),
+        "params": {
+            "target_size": target_size,
+            "test_size": test_size,
+            "model": model,
+            "ollama_model": ollama_model,
+            "position_size": position_size,
+            "base_price": 190.0,
+            "deepseek_available": DEEPSEEK_AVAIL,
+        },
+        "pipeline_profile": profile_results,
+        "baseline_f1": round(baseline_f1, 4),
+        "sweep_results": sweep_results,
+    }
+
+    # Find optimal budget: budget with highest F1 where violation < 50%
+    feasible = [r for r in sweep_results if r["budget_violation_pct"] < 50]
+    if feasible:
+        report["optimal_budget_ms"] = max(feasible, key=lambda r: r["f1_score"])["budget_ms"]
+    else:
+        report["optimal_budget_ms"] = None
+
+    # Identify Pareto-dominated points (lower F1 AND higher latency than another point)
+    pareto_dominated = []
+    for i, r1 in enumerate(sweep_results):
+        for j, r2 in enumerate(sweep_results):
+            if i != j and r2["latency_mean_ms"] <= r1["latency_mean_ms"] and r2["f1_score"] >= r1["f1_score"]:
+                if r2["latency_mean_ms"] < r1["latency_mean_ms"] or r2["f1_score"] > r1["f1_score"]:
+                    pareto_dominated.append(r1["budget_ms"])
+                    break
+    report["pareto_dominated"] = list(set(pareto_dominated))
+
+    json_path = "./output/phase4_latency_report.json"
+    with open(json_path, "w") as f:
+        json.dump(report, f, indent=2)
+    print(f"\nLatency report saved to {json_path}")
+
+    # Plots
+    plot_pareto_frontier(sweep_results)
+    plot_pnl_vs_latency(sweep_results)
+
+    # Summary
+    opt_b = report["optimal_budget_ms"]
+    opt_label = f"{'∞' if opt_b is None else opt_b}ms"
+    print(f"\n{'='*60}")
+    print(f"PHASE 4: LATENCY SWEEP SUMMARY")
+    print(f"{'='*60}")
+    print(f"  Model:           {model}")
+    print(f"  Baseline F1:     {baseline_f1:.4f}")
+    print(f"  Optimal budget:  {opt_label}")
+    for r in sweep_results:
+        b = f"{'∞' if r['budget_ms'] is None else r['budget_ms']}ms"
+        print(f"  Budget {b:>6}: F1={r['f1_score']:.4f} Lat={r['latency_mean_ms']:.0f}ms "
+              f"P&L=${r['total_pnl_saved']:>8,.0f} Viol={r['budget_violation_pct']:.1f}%")
+    print(f"{'='*60}")
+
+    return report
+
+
 if __name__ == "__main__":
-    run_ensemble_comparison()
+    import argparse
+    parser = argparse.ArgumentParser(description="Phase 4: Latency-Optimized Dual-System Pipeline")
+    parser.add_argument("--test-size", type=int, default=10, help="Number of test samples (default: 10)")
+    parser.add_argument("--latency-budget-ms", type=int, default=None, help="Single latency budget override (ms)")
+    parser.add_argument("--model", type=str, default="deepseek",
+                        help="System 2 model: deepseek, ollama:qwen3.5:2b, ollama:gemma4:e2b")
+    parser.add_argument("--budgets", type=str, default="none,5000,2000,1000,500,100",
+                        help="Comma-separated budgets to sweep (ms), 'none' = no limit")
+    parser.add_argument("--position-size", type=int, default=1000, help="Position size in shares")
+    parser.add_argument("--target-size", type=int, default=1000, help="Total dataset sample size")
+    args = parser.parse_args()
+
+    test_size_frac = args.test_size / args.target_size if args.target_size > 0 else 0.2
+    budgets = []
+    for b in args.budgets.split(","):
+        b = b.strip()
+        if b.lower() == "none":
+            budgets.append(None)
+        else:
+            budgets.append(int(b))
+
+    # If single budget override, use only that
+    if args.latency_budget_ms is not None:
+        budgets = [args.latency_budget_ms]
+
+    run_latency_sweep(
+        target_size=args.target_size,
+        test_size=test_size_frac,
+        budgets_ms=budgets,
+        model=args.model,
+        position_size=args.position_size,
+    )
