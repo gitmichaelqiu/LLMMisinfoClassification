@@ -12,20 +12,10 @@ import pickle
 import numpy as np
 import pandas as pd
 
-ENTITY_LIST = [
-    "Apple", "Microsoft", "Amazon", "Alphabet", "Meta", "Tesla", "NVIDIA",
-    "JPMorgan", "Wells Fargo", "Goldman Sachs", "ExxonMobil", "Chevron",
-    "Pfizer", "Moderna", "Disney", "Ford", "Toyota", "Walmart", "Home Depot",
-    "Nike", "FedEx", "Visa", "Mastercard", "Netflix", "Oracle", "IBM",
-    "Intel", "Adobe", "Salesforce", "Verizon",
-    # Major S&P 500 additions
-    "Berkshire Hathaway", "UnitedHealth", "Johnson & Johnson", "Procter & Gamble",
-    "Coca-Cola", "PepsiCo", "McDonald's", "Boeing", "Caterpillar", "3M",
-    "American Express", "Honeywell", "Merck", "AbbVie", "Cisco",
-    "AT&T", "Comcast", "NextEra Energy", "Bank of America", "Citigroup",
-    "Morgan Stanley", "Charles Schwab", "BlackRock", "Thermo Fisher",
-    "Accenture", "Uber", "AMD", "Micron", "Qualcomm", "Broadcom",
-]
+from src.domain_adapter import DomainAdapter, get_adapter, set_domain
+
+# Legacy entity list preserved for the RAG corpus builder (always finance)
+ENTITY_LIST = DomainAdapter("finance").entities
 
 # Build regex pattern for entity matching
 _ENTITY_PATTERN = re.compile(
@@ -35,19 +25,12 @@ _ENTITY_PATTERN = re.compile(
 
 
 def extract_entity(text):
-    """Extract entity name from text using regex matching.
+    """Extract entity name from text using active domain adapter.
 
-    Returns matched entity (canonical form from ENTITY_LIST) or 'UNKNOWN'.
+    Returns matched entity (canonical form) or domain-specific fallback.
+    Uses DomainAdapter so health domain returns health entities, etc.
     """
-    match = _ENTITY_PATTERN.search(text)
-    if match:
-        raw = match.group(1)
-        # Find canonical form (preserving original capitalization from ENTITY_LIST)
-        for e in ENTITY_LIST:
-            if e.lower() == raw.lower():
-                return e
-        return raw.title()
-    return "UNKNOWN"
+    return get_adapter().extract_entity(text)
 
 
 class RAGRetriever:

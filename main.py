@@ -17,6 +17,8 @@ from src.cot_parser import parse_cot_output
 from src.ensemble_detector import EnsembleDetector, finbert_score, compute_ece, plot_calibration_curve
 from src.async_pipeline import AsyncDualPipeline, PnLCalculator
 from src.sensitivity_analysis import SensitivityAnalyzer, flash_crash_price
+from src.domain_adapter import set_domain, get_adapter, DomainAdapter
+from src.prompts import get_domain_prompts
 
 # 1. Environment Setup
 load_dotenv()
@@ -1373,6 +1375,163 @@ def run_sensitivity_analysis(
     return report
 
 
+def run_cross_domain_comparison(domains=None, target_size=1000, max_samples=None, model="deepseek"):
+    """Phase 6: Cross-domain generalization evaluation.
+
+    Runs the detection pipeline on each domain (finance, health),
+    comparing F1/precision/recall to validate framework generalizability.
+    Health domain uses NON_RAG prompt only (no health-specific RAG corpus).
+
+    Args:
+        domains: list of domain names, defaults to ["finance", "health"]
+        target_size: total dataset size for finance domain
+        max_samples: cap samples per domain (None = use all)
+        model: System 2 model backend
+    """
+    if domains is None:
+        domains = ["finance", "health"]
+
+    os.makedirs("./output", exist_ok=True)
+    DEEPSEEK_AVAIL = bool(DEEPSEEK_API_KEY) and DEEPSEEK_API_KEY != "your_actual_api_key_here"
+
+    print(f"\n{'='*60}")
+    print(f"PHASE 6: CROSS-DOMAIN GENERALIZATION")
+    print(f"Domains: {domains} | Model: {model}")
+    print(f"Deepseek available: {DEEPSEEK_AVAIL}")
+    print(f"{'='*60}")
+
+    results_by_domain = {}
+
+    for domain in domains:
+        print(f"\n{'='*40}")
+        print(f"Domain: {domain.upper()}")
+        print(f"{'='*40}")
+
+        set_domain(domain)
+
+        # Load domain-specific dataset
+        if domain == "health":
+            health_path = "./input/health_headlines.csv"
+            if not os.path.exists(health_path):
+                print(f"  Health dataset not found at {health_path}, generating...")
+                from src.health_dataset import generate_health_headlines
+                generate_health_headlines()
+            df = pd.read_csv(health_path)
+            df["content"] = df["headline"]
+            df["source"] = "synthetic_health"
+            if "type" not in df.columns:
+                df["type"] = ""
+        else:
+            df = load_combined_dataset()
+            synth_df = df[df["source"] == "synthetic"]
+            kaggle_df = df[df["source"] == "kaggle"]
+            kaggle0 = kaggle_df[kaggle_df["label"] == 0]
+            kaggle1 = kaggle_df[kaggle_df["label"] == 1]
+            per_class = max(1, (target_size - len(synth_df)) // 2)
+            kaggle_sample = pd.concat([
+                kaggle0.sample(n=min(len(kaggle0), per_class), random_state=42),
+                kaggle1.sample(n=min(len(kaggle1), per_class), random_state=42),
+            ], ignore_index=True)
+            df = pd.concat([synth_df, kaggle_sample], ignore_index=True)
+
+        # Apply max_samples cap for quick testing
+        if max_samples is not None and len(df) > max_samples:
+            df = df.sample(n=max_samples, random_state=42).reset_index(drop=True)
+
+        print(f"  Dataset: {len(df)} samples | "
+              f"Fake: {(df['label']==1).sum()} | Real: {(df['label']==0).sum()}")
+
+        pipeline = AsyncDualPipeline(
+            finbert_model=finbert,
+            rag_retriever=rag_retriever if domain == "finance" else None,
+            deepseek_client=client if DEEPSEEK_AVAIL else None,
+            deepseek_key=DEEPSEEK_API_KEY,
+            latency_budget_ms=None,
+            model=model,
+            position_size=1000,
+        )
+
+        results = []
+        for i, (idx, row) in enumerate(df.iterrows()):
+            content = row["content"]
+            actual = int(row["label"])
+            out = pipeline.process_sample(content)
+            results.append({
+                "actual": actual,
+                "verdict": out["verdict"],
+                "confidence": out["confidence"],
+                "latency_ms": out["total_latency_ms"],
+            })
+
+            if (i + 1) % 10 == 0 or i == 0:
+                print(f"  [{i+1}/{len(df)}] lat={out['total_latency_ms']:.0f}ms "
+                      f"verdict={out['verdict']} conf={out['confidence']:.2f}")
+
+        pipeline.cleanup()
+
+        dfr = pd.DataFrame(results)
+        actuals = dfr["actual"]
+        preds = dfr["verdict"]
+        acc = float((actuals == preds).mean() * 100)
+        prec = float(precision_score(actuals, preds, average="binary", zero_division=0))
+        rec = float(recall_score(actuals, preds, average="binary", zero_division=0))
+        f1 = float(f1_score(actuals, preds, average="binary", zero_division=0))
+        lat_mean = float(dfr["latency_ms"].mean())
+
+        domain_metrics = {
+            "domain": domain,
+            "n_samples": len(results),
+            "accuracy_pct": round(acc, 2),
+            "precision": round(prec, 4),
+            "recall": round(rec, 4),
+            "f1_score": round(f1, 4),
+            "latency_mean_ms": round(lat_mean, 2),
+            "n_fake": int((actuals == 1).sum()),
+            "n_real": int((actuals == 0).sum()),
+        }
+        results_by_domain[domain] = domain_metrics
+
+        print(f"  -> F1={f1:.4f} Prec={prec:.4f} Rec={rec:.4f} "
+              f"Acc={acc:.1f}% Lat={lat_mean:.0f}ms")
+
+    set_domain("finance")
+
+    report = {
+        "phase": 6,
+        "timestamp": time.ctime(),
+        "params": {
+            "domains": domains,
+            "target_size": target_size,
+            "model": model,
+            "deepseek_available": DEEPSEEK_AVAIL,
+        },
+        "domain_results": results_by_domain,
+    }
+
+    if len(domains) >= 2:
+        d0, d1 = domains[0], domains[1]
+        f1_gap = results_by_domain[d0]["f1_score"] - results_by_domain[d1]["f1_score"]
+        report["cross_domain_f1_gap"] = round(f1_gap, 4)
+
+    json_path = "./output/phase6_cross_domain.json"
+    with open(json_path, "w") as f:
+        json.dump(report, f, indent=2)
+    print(f"\nCross-domain report saved to {json_path}")
+
+    print(f"\n{'='*60}")
+    print(f"PHASE 6: CROSS-DOMAIN COMPARISON")
+    print(f"{'='*60}")
+    for domain, m in results_by_domain.items():
+        print(f"  {domain:>8}: F1={m['f1_score']:.4f} Prec={m['precision']:.4f} "
+              f"Rec={m['recall']:.4f} Acc={m['accuracy_pct']:.1f}% "
+              f"Lat={m['latency_mean_ms']:.0f}ms")
+    if "cross_domain_f1_gap" in report:
+        print(f"  F1 gap (finance - health): {report['cross_domain_f1_gap']:+.4f}")
+    print(f"{'='*60}")
+
+    return report
+
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="AdvFinNLPVuln: Dual-System Pipeline")
@@ -1386,11 +1545,26 @@ if __name__ == "__main__":
     parser.add_argument("--target-size", type=int, default=1000, help="Total dataset sample size")
     parser.add_argument("--phase5", action="store_true", help="Run Phase 5 sensitivity analysis")
     parser.add_argument("--lhs-samples", type=int, default=30, help="Number of LHS samples (Phase 5)")
+    parser.add_argument("--phase6", action="store_true", help="Run Phase 6 cross-domain comparison")
+    parser.add_argument("--domain", type=str, default="finance",
+                        help="Domain for cross-domain eval: finance, health (Phase 6)")
     args = parser.parse_args()
 
     test_size_frac = args.test_size / args.target_size if args.target_size > 0 else 0.2
 
-    if args.phase5:
+    if args.phase6:
+        # Default: both domains. --domain overrides to specific domain(s).
+        if args.domain == "finance":
+            domains = None  # let run_cross_domain_comparison use default [finance, health]
+        else:
+            domains = [d.strip() for d in args.domain.split(",")]
+        run_cross_domain_comparison(
+            domains=domains,
+            target_size=args.target_size,
+            max_samples=args.test_size,
+            model=args.model,
+        )
+    elif args.phase5:
         run_sensitivity_analysis(
             target_size=args.target_size,
             test_size=test_size_frac,
