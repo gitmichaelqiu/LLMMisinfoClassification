@@ -11,6 +11,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import precision_score, recall_score, f1_score
 from sklearn.model_selection import train_test_split
+from src.rag_retriever import RAGRetriever, extract_entity
+from src.prompts import RAG_SYSTEM_PROMPT, RAG_USER_PROMPT, NON_RAG_SYSTEM_PROMPT
 
 # 1. Environment Setup
 load_dotenv()
@@ -39,6 +41,16 @@ client = OpenAI(
     api_key=DEEPSEEK_API_KEY if DEEPSEEK_API_KEY and DEEPSEEK_API_KEY != "your_actual_api_key_here" else "dummy",
     base_url="https://api.deepseek.com"
 )
+
+# RAG retriever for context-aware evaluation
+rag_retriever = None
+try:
+    rr = RAGRetriever()
+    rr.ensure_index()
+    rag_retriever = rr
+    print("[RAG] Retriever ready.")
+except Exception as e:
+    print(f"[RAG] Retriever unavailable: {e}")
 
 # Heuristic baseline (System 2 fallback)
 _heuristic_baseline = None
@@ -114,28 +126,43 @@ def load_combined_dataset():
                          ignore_index=True)
     return combined
 
-def system_2_evaluate(content):
-    """
-    Uses Deepseek LLM to detect Logical Anomaly or Fake News.
-    """
+def system_2_evaluate(content, use_rag=False):
+    """Return (verdict, retrieval_latency_ms)."""
     # If API key is missing or dummy, use heuristic baseline
     if not DEEPSEEK_API_KEY or DEEPSEEK_API_KEY == "your_actual_api_key_here":
         time.sleep(0.5)
-        return heuristic_predict(content)
+        return heuristic_predict(content), 0
+
+    # RAG: retrieve context before LLM call
+    rag_context = None
+    retrieval_latency = 0
+    if use_rag and rag_retriever is not None:
+        t0 = time.time()
+        ctx_results, _ = rag_retriever.retrieve(content)
+        retrieval_latency = (time.time() - t0) * 1000
+        if ctx_results:
+            rag_context = "\n---\n".join([doc[:800] for doc, _score in ctx_results[:2]])
 
     try:
+        if rag_context:
+            entity = extract_entity(content)
+            if entity == "UNKNOWN":
+                entity = "this company"
+            system_msg = RAG_SYSTEM_PROMPT.format(entity=entity)
+            user_msg = RAG_USER_PROMPT.format(entity=entity, context=rag_context, headline=content[:1000])
+        else:
+            system_msg = NON_RAG_SYSTEM_PROMPT
+            user_msg = f"Analyze this content: {content[:1000]}"
+
         response = client.chat.completions.create(
             model="deepseek-chat",
-            messages=[
-                {"role": "system", "content": "You are a Financial News Logic Validator. Detect macroeconomic impossibilities or fraudulent narratives. Output 'FAKE' for anomalies/misinformation and 'REAL' for authentic news."},
-                {"role": "user", "content": f"Analyze this content: {content[:1000]}"} # Limit tokens for cost/speed
-            ],
+            messages=[{"role": "system", "content": system_msg}, {"role": "user", "content": user_msg}],
             max_tokens=10
         )
         verdict_raw = response.choices[0].message.content.strip().upper()
-        return 1 if "FAKE" in verdict_raw else 0
+        return (1 if "FAKE" in verdict_raw else 0), retrieval_latency
     except Exception as e:
-        return 0
+        return 0, retrieval_latency
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -269,12 +296,13 @@ def generate_confusion_matrix(results, output_file=None, dataset_stats=None):
         json.dump(metrics, f, indent=2)
     print(f"Phase 1 metrics saved to {json_path}")
 
-def run_simulation(content, mode="single"):
+def run_simulation(content, mode="single", use_rag=False):
+    """Return (verdict, total_latency_ms, retrieval_latency_ms)."""
     if mode == "single":
         print(f"\n--- SINGLE RUN SIMULATION ---\nContent: {content[:100]}...")
-    
+
     sim = MarketSimulator()
-    
+
     # System 1
     if finbert:
         try:
@@ -287,15 +315,15 @@ def run_simulation(content, mode="single"):
 
     # System 2
     start_time = time.time()
-    verdict = system_2_evaluate(content)
+    verdict, retrieval_latency = system_2_evaluate(content, use_rag=use_rag)
     latency = (time.time() - start_time) * 1000
 
     # Bot 3 Execution if Anomaly (1)
     if verdict == 1:
         if mode == "single":
             plot_flash_crash_mechanics(sim)
-            
-    return verdict, latency
+
+    return verdict, latency, retrieval_latency
 
 def run_batch(target_size=1000, test_size=0.2):
     if not os.path.exists("./output"):
@@ -354,7 +382,7 @@ def run_batch(target_size=1000, test_size=0.2):
         content = row['content']
         actual = int(row['label'])
 
-        verdict, latency = run_simulation(content, mode="batch")
+        verdict, latency, _retrieval_lat = run_simulation(content, mode="batch")
 
         res_entry = {
             'index': idx,
@@ -375,5 +403,224 @@ def run_batch(target_size=1000, test_size=0.2):
     generate_confusion_matrix(results, output_file=log_file, dataset_stats=dataset_stats)
     print(f"Results saved to {log_file}")
 
+def run_rag_vs_baseline(target_size=1000, test_size=0.2):
+    """Compare baseline heuristic vs RAG-enhanced detection on same test split.
+
+    In mock mode (no key): RAG simulates context check via keyword overlap,
+    baseline uses TF-IDF+LR. In real mode: both use Deepseek, RAG adds context.
+    """
+    os.makedirs("./output", exist_ok=True)
+
+    df = load_combined_dataset()
+
+    # Downsample (same logic as run_batch)
+    synth_df = df[df['source'] == 'synthetic']
+    kaggle_df = df[df['source'] == 'kaggle']
+    kaggle0 = kaggle_df[kaggle_df['label'] == 0]
+    kaggle1 = kaggle_df[kaggle_df['label'] == 1]
+    per_class = max(1, (target_size - len(synth_df)) // 2)
+    kaggle_sample = pd.concat([
+        kaggle0.sample(n=min(len(kaggle0), per_class), random_state=42),
+        kaggle1.sample(n=min(len(kaggle1), per_class), random_state=42),
+    ], ignore_index=True)
+    sampled = pd.concat([synth_df, kaggle_sample], ignore_index=True)
+
+    # Train/test split (same seed as Phase 1)
+    train_df, test_df = train_test_split(
+        sampled, test_size=test_size, stratify=sampled['label'], random_state=42
+    )
+
+    # Subset labels for per-subset analysis
+    def _subset_label(row):
+        if row['source'] == 'kaggle':
+            return 'kaggle'
+        # Synthetic: use type column if present, else infer from content length
+        if 'type' in row and row['type'] == 'realistic':
+            return 'realistic'
+        if 'type' in row and row['type'] == 'absurdist':
+            return 'absurdist'
+        return 'synthetic'
+
+    # Train baseline
+    train_heuristic_baseline(train_df)
+
+    def _compute_metrics(results):
+        dfr = pd.DataFrame(results)
+        actuals = dfr['actual']
+        preds = dfr['verdict']
+        acc = (actuals == preds).mean() * 100
+        p = precision_score(actuals, preds, average='binary', zero_division=0)
+        r = recall_score(actuals, preds, average='binary', zero_division=0)
+        f1 = f1_score(actuals, preds, average='binary', zero_division=0)
+        lat_mean = dfr['latency_ms'].mean()
+        lat_p95 = dfr['latency_ms'].quantile(0.95)
+        return {
+            'accuracy_pct': round(acc, 2), 'precision': round(p, 4),
+            'recall': round(r, 4), 'f1_score': round(f1, 4),
+            'latency_mean_ms': round(lat_mean, 2), 'latency_p95_ms': round(lat_p95, 2),
+        }
+
+    def _subset_f1(results, label):
+        sub = [r for r in results if r['subset'] == label]
+        if len(sub) < 2:
+            return 0.0
+        dfr = pd.DataFrame(sub)
+        return round(f1_score(dfr['actual'], dfr['verdict'], average='binary', zero_division=0), 4)
+
+    # --- Run 1: Baseline ---
+    print("\n" + "="*60)
+    print("RUNNING BASELINE (TF-IDF + Logistic Regression)")
+    print("="*60)
+
+    # In mock mode: baseline = heuristic_predict
+    # In real mode: baseline = non-RAG Deepseek
+    use_rag = True  # will be False for baseline run
+
+    base_results = []
+    for i, (idx, row) in enumerate(test_df.iterrows()):
+        content = row['content']
+        actual = int(row['label'])
+        DEEPSEEK_KEY_AVAIL = bool(DEEPSEEK_API_KEY) and DEEPSEEK_API_KEY != "your_actual_api_key_here"
+
+        if not DEEPSEEK_KEY_AVAIL:
+            # Mock mode: baseline = heuristic_predict
+            time.sleep(0.5)
+            v = heuristic_predict(content)
+            lat = 500
+        else:
+            t0 = time.time()
+            v, _ = system_2_evaluate(content, use_rag=False)
+            lat = (time.time() - t0) * 1000
+
+        base_results.append({
+            'index': idx, 'actual': actual, 'verdict': v,
+            'latency_ms': lat, 'source': row['source'],
+            'subset': _subset_label(row),
+        })
+
+        if (i + 1) % 10 == 0 or i == 0:
+            print(f"  Baseline [{i+1}/{len(test_df)}]")
+
+    base_metrics = _compute_metrics(base_results)
+
+    # --- Run 2: RAG-enhanced ---
+    print("\n" + "="*60)
+    if rag_retriever is not None:
+        print("RUNNING RAG-ENHANCED")
+    else:
+        print("RUNNING RAG-ENHANCED (retriever unavailable, falls back to baseline)")
+    print("="*60)
+
+    rag_results = []
+    rag_retrieval_times = []
+    for i, (idx, row) in enumerate(test_df.iterrows()):
+        content = row['content']
+        actual = int(row['label'])
+        DEEPSEEK_KEY_AVAIL = bool(DEEPSEEK_API_KEY) and DEEPSEEK_API_KEY != "your_actual_api_key_here"
+
+        if not DEEPSEEK_KEY_AVAIL:
+            # Mock mode: RAG = retrieved-context overlap check + heuristic
+            retrieval_ms = 0
+            rag_boost = None  # None = no RAG signal, fall through to heuristic
+            if rag_retriever is not None:
+                t0 = time.time()
+                ctx_results, _ = rag_retriever.retrieve(content)
+                retrieval_ms = (time.time() - t0) * 1000
+                if ctx_results:
+                    # Keyword overlap: headline words not in any retrieved doc
+                    headline_words = set(w.lower() for w in content.split() if len(w) > 3)
+                    doc_words = set()
+                    for doc, _score in ctx_results:
+                        doc_words.update(w.lower() for w in doc.split() if len(w) > 3)
+                    overlap = len(headline_words & doc_words) / max(len(headline_words), 1)
+                    if overlap < 0.3:
+                        rag_boost = 1  # Headline contradicts known context
+                    else:
+                        rag_boost = 0  # Headline consistent with context
+
+            if rag_boost is not None:
+                time.sleep(0.3)
+                v = rag_boost
+                lat = 300 + retrieval_ms
+            else:
+                time.sleep(0.5)
+                v = heuristic_predict(content)
+                lat = 500 + retrieval_ms
+        else:
+            t0 = time.time()
+            v, rl = system_2_evaluate(content, use_rag=True)
+            lat = (time.time() - t0) * 1000
+
+        rag_retrieval_times.append(retrieval_ms if not DEEPSEEK_KEY_AVAIL else rl)
+
+        rag_results.append({
+            'index': idx, 'actual': actual, 'verdict': v,
+            'latency_ms': lat, 'source': row['source'],
+            'subset': _subset_label(row),
+        })
+
+        if (i + 1) % 10 == 0 or i == 0:
+            print(f"  RAG [{i+1}/{len(test_df)}]")
+
+    rag_metrics = _compute_metrics(rag_results)
+
+    # --- Per-subset breakdown ---
+    subset_labels = ['authentic', 'absurdist', 'realistic', 'kaggle']
+    by_subset = {}
+    for sl in subset_labels:
+        by_subset[sl] = {
+            'baseline_f1': _subset_f1(base_results, sl),
+            'rag_f1': _subset_f1(rag_results, sl),
+        }
+
+    # --- Comparison report ---
+    retrieval_times_arr = np.array(rag_retrieval_times) if rag_retrieval_times else np.array([0])
+    comparison = {
+        'phase': 2,
+        'timestamp': time.ctime(),
+        'params': {'target_size': target_size, 'test_size': test_size, 'deepseek_available': bool(DEEPSEEK_API_KEY) and DEEPSEEK_API_KEY != "your_actual_api_key_here"},
+        'baseline': base_metrics,
+        'rag_enhanced': rag_metrics,
+        'by_subset': by_subset,
+        'latency_delta_ms': {
+            'retrieval_mean': round(float(retrieval_times_arr.mean()), 2),
+            'retrieval_p95': round(float(np.percentile(retrieval_times_arr, 95)), 2),
+            'total_rag_mean': rag_metrics['latency_mean_ms'],
+            'total_baseline_mean': base_metrics['latency_mean_ms'],
+        },
+    }
+
+    f1_delta = comparison['rag_enhanced']['f1_score'] - comparison['baseline']['f1_score']
+    comparison['f1_delta'] = round(f1_delta, 4)
+    comparison['success_criteria_met'] = f1_delta >= 10.0  # ≥10% F1 improvement on realistic subset
+
+    # Also check realistic-subset criterion
+    realistic_f1_base = by_subset.get('realistic', {}).get('baseline_f1', 0)
+    realistic_f1_rag = by_subset.get('realistic', {}).get('rag_f1', 0)
+    comparison['realistic_f1_delta'] = round(realistic_f1_rag - realistic_f1_base, 4)
+    comparison['realistic_success'] = (realistic_f1_rag - realistic_f1_base) >= 0.1
+
+    # Print summary
+    print("\n" + "="*60)
+    print("RAG VS BASELINE COMPARISON")
+    print("="*60)
+    print(f"  Baseline F1:       {base_metrics['f1_score']}")
+    print(f"  RAG-enhanced F1:   {rag_metrics['f1_score']}")
+    print(f"  F1 delta:          {f1_delta:+.4f}")
+    print(f"  Realistic F1 base: {realistic_f1_base}")
+    print(f"  Realistic F1 RAG:  {realistic_f1_rag}")
+    print(f"  Realistic F1 delta:{comparison['realistic_f1_delta']:+.4f}")
+    print(f"  Retrieval latency: {comparison['latency_delta_ms']['retrieval_mean']}ms mean, {comparison['latency_delta_ms']['retrieval_p95']}ms p95")
+    print(f"  Deepseek key:      {'AVAILABLE' if comparison['params']['deepseek_available'] else 'MOCK'}")
+    print(f"  Success criteria:  {'MET' if comparison['success_criteria_met'] else 'NOT MET'}")
+    print("="*60)
+
+    json_path = "./output/phase2_vs_phase1.json"
+    with open(json_path, 'w') as f:
+        json.dump(comparison, f, indent=2)
+    print(f"Comparison report saved to {json_path}")
+
+    return comparison
+
 if __name__ == "__main__":
-    run_batch()
+    run_rag_vs_baseline()

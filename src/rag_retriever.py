@@ -165,11 +165,11 @@ class RAGRetriever:
         Returns list of (doc_text, similarity_score) tuples.
         """
         if not self._loaded or self.embeddings is None:
-            return []
+            return [], 0.0
 
         entity = extract_entity(headline)
         if entity == "UNKNOWN":
-            return []
+            return [], 0.0
 
         self._load_model()
 
