@@ -63,42 +63,50 @@ python main.py --test-size 200 || true
 
 # Step 5: Phase 3 — CoT + Ensemble comparison
 echo ""
-echo "[5/12] Phase 3 — CoT + Ensemble comparison..."
-# Run via python if available; Phase 3 is run_ensemble_comparison
+echo "[5/12] Phase 3 — CoT + Ensemble comparison (Thinking Enabled & Disabled)..."
 python -c "
 from main import run_ensemble_comparison
-run_ensemble_comparison(target_size=1000, test_size=0.2)
-" || echo "  (skipped — API key required or error during run)"
+run_ensemble_comparison(target_size=1000, test_size=0.2, thinking='enabled')
+" || echo "  (skipped thinking=enabled — API key required or error during run)"
+python -c "
+from main import run_ensemble_comparison
+run_ensemble_comparison(target_size=1000, test_size=0.2, thinking='disabled')
+" || echo "  (skipped thinking=disabled — API key required or error during run)"
 
 # Step 6: Phase 4 — Latency sweep
 echo ""
-echo "[6/12] Phase 4 — Latency sweep (50 samples, 3 budgets)..."
-python main.py --test-size 50 --budgets none,5000,1000
+echo "[6/12] Phase 4 — Latency sweep (Thinking Enabled & Disabled)..."
+python main.py --test-size 50 --budgets none,5000,1000 --thinking enabled
+python main.py --test-size 50 --budgets none,5000,1000 --thinking disabled
 
 # Step 7: Phase 5 — Sensitivity analysis
 echo ""
-echo "[7/12] Phase 5 — Sensitivity analysis (50 samples, 20 LHS points)..."
-python main.py --phase5 --test-size 50 --lhs-samples 20
+echo "[7/12] Phase 5 — Sensitivity analysis (Thinking Enabled & Disabled)..."
+python main.py --phase5 --test-size 50 --lhs-samples 20 --thinking enabled
+python main.py --phase5 --test-size 50 --lhs-samples 20 --thinking disabled
 
 # Step 8: Phase 6 — Cross-domain comparison
 echo ""
-echo "[8/12] Phase 6 — Cross-domain comparison..."
-python main.py --phase6 --test-size 50
+echo "[8/12] Phase 6 — Cross-domain comparison (Thinking Enabled & Disabled)..."
+python main.py --phase6 --test-size 50 --thinking enabled
+python main.py --phase6 --test-size 50 --thinking disabled
 
 # Step 9: Phase 7a — Execution realism analysis
 echo ""
-echo "[9/12] Phase 7a — Execution realism analysis (50 samples)..."
+echo "[9/12] Phase 7a — Execution realism analysis (Thinking Enabled & Disabled)..."
 if $PHASE7_AVAIL; then
-    python main.py --phase7a --test-size 50
+    python main.py --phase7a --test-size 50 --thinking enabled
+    python main.py --phase7a --test-size 50 --thinking disabled
 else
     echo "  (skipped — hftbacktest/vectorbt not installed)"
 fi
 
 # Step 10: Phase 7b — vectorbt signal sweep
 echo ""
-echo "[10/12] Phase 7b — vectorbt signal sweep (221 combos)..."
+echo "[10/12] Phase 7b — vectorbt signal sweep (Thinking Enabled & Disabled)..."
 if $PHASE7_AVAIL; then
-    python main.py --phase7b --test-size 50
+    python main.py --phase7b --test-size 50 --thinking enabled
+    python main.py --phase7b --test-size 50 --thinking disabled
 else
     echo "  (skipped — hftbacktest/vectorbt not installed)"
 fi
@@ -119,13 +127,12 @@ echo " Reproduction complete: $(date)"
 echo " Outputs:"
 echo "   output/phase1_metrics.json"
 echo "   output/phase2_vs_phase1.json"
-echo "   output/phase3_results.json"
-echo "   output/phase4_latency_report.json"
-echo "   output/phase5_sensitivity_analysis.json"
-echo "   output/phase6_cross_domain.json"
-echo "   output/phase7a_execution_realism.json"
-echo "   output/phase7b_signal_sweep.json"
-echo "   output/phase7_detection_results.json"
+echo "   output/*_phase3_results.json"
+echo "   output/*_phase4_latency_report.json"
+echo "   output/*_phase5_sensitivity_analysis.json"
+echo "   output/*_phase6_cross_domain.json"
+echo "   output/*_phase7a_execution_realism.json"
+echo "   output/*_phase7b_signal_sweep.json"
 echo "   output/base_rate_analysis.json"
 echo "   output/verify_first_tradeoff.json"
 echo "   plots/ (confusion matrices, Pareto frontiers, heatmaps, ideal_vs_realized_pnl, vectorbt_heatmaps, base_rate_analysis, verify_first_tradeoff)"

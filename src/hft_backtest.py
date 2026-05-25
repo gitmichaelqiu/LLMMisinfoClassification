@@ -304,7 +304,7 @@ def run_hftbacktest_validation(results, config=None, save_dir="./output"):
 
 
 def run_execution_realism_analysis(results, base_price=190.0, output_dir="./output",
-                                   plots_dir="./plots"):
+                                   plots_dir="./plots", model_name="deepseek", thinking="enabled"):
     """Full Phase 7a analysis: quantify execution realism gap.
 
     Args:
@@ -328,7 +328,9 @@ def run_execution_realism_analysis(results, base_price=190.0, output_dir="./outp
     hbt_result = run_hftbacktest_validation(results)
 
     # Plot
-    simulator.plot_comparison(comparison, save_path=f"{plots_dir}/ideal_vs_realized_pnl.png")
+    thinking_str = f"_thinking_{thinking}" if model_name == "deepseek" else ""
+    save_path = f"{plots_dir}/{model_name}{thinking_str}_ideal_vs_realized_pnl.png"
+    simulator.plot_comparison(comparison, save_path=save_path)
 
     # Find key metrics for flagship claim
     normal_05 = next(r for r in comparison if r["regime"] == "normal" and r["threshold"] == 0.5)
@@ -342,6 +344,8 @@ def run_execution_realism_analysis(results, base_price=190.0, output_dir="./outp
             "confidence_thresholds": [0.3, 0.5, 0.7],
             "regimes": ["normal", "stress"],
             "n_samples": len(results),
+            "model_name": model_name,
+            "thinking": thinking,
         },
         "comparison": comparison,
         "flagship_metrics": {
@@ -358,7 +362,7 @@ def run_execution_realism_analysis(results, base_price=190.0, output_dir="./outp
     }
 
     os.makedirs(output_dir, exist_ok=True)
-    output_path = f"{output_dir}/phase7a_execution_realism.json"
+    output_path = f"{output_dir}/{model_name}{thinking_str}_phase7a_execution_realism.json"
     with open(output_path, "w") as f:
         json.dump(report, f, indent=2)
     print(f"Phase 7a report saved to {output_path}")

@@ -208,7 +208,7 @@ def plot_vectorbt_heatmaps(sweep_results, save_path="./plots/vectorbt_heatmaps.p
     print(f"vectorbt heatmaps saved to {save_path}")
 
 
-def run_phase7b(results, output_dir="./output", plots_dir="./plots"):
+def run_phase7b(results, output_dir="./output", plots_dir="./plots", model_name="deepseek", thinking="enabled"):
     """Full Phase 7b analysis: vectorbt sweep + Phase 5 comparison.
 
     Args:
@@ -228,10 +228,11 @@ def run_phase7b(results, output_dir="./output", plots_dir="./plots"):
     vbt_result = run_vectorbt_sweep(results, param_grid=param_grid)
 
     # Plot heatmaps
+    thinking_str = f"_thinking_{thinking}" if model_name == "deepseek" else ""
     if vbt_result.get("status") == "completed":
         plot_vectorbt_heatmaps(
             vbt_result["sweep_results"],
-            save_path=f"{plots_dir}/vectorbt_heatmaps.png",
+            save_path=f"{plots_dir}/{model_name}{thinking_str}_vectorbt_heatmaps.png",
         )
 
     # Compare with Phase 5 optimal threshold
@@ -245,6 +246,8 @@ def run_phase7b(results, output_dir="./output", plots_dir="./plots"):
             "n_samples": len(results),
             "param_grid_size": f"{len(param_grid['confidence_threshold'])} x {len(param_grid['position_size'])}",
             "n_combinations": vbt_result.get("n_combinations", 0),
+            "model_name": model_name,
+            "thinking": thinking,
         },
         "vectorbt_results": {
             "best_threshold": round(float(best_vbt_threshold), 4),
@@ -263,7 +266,7 @@ def run_phase7b(results, output_dir="./output", plots_dir="./plots"):
     }
 
     os.makedirs(output_dir, exist_ok=True)
-    output_path = f"{output_dir}/phase7b_signal_sweep.json"
+    output_path = f"{output_dir}/{model_name}{thinking_str}_phase7b_signal_sweep.json"
     with open(output_path, "w") as f:
         json.dump(report, f, indent=2)
     print(f"Phase 7b report saved to {output_path}")

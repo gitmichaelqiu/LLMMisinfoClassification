@@ -200,7 +200,7 @@ def system_2_evaluate(content, use_rag=False):
         return 0, retrieval_latency
 
 
-def cot_evaluate(content):
+def cot_evaluate(content, thinking="enabled"):
     """Run CoT evaluation with RAG context.
 
     Returns (verdict, confidence, flags_dict, total_latency_ms, retrieval_latency_ms).
@@ -235,7 +235,8 @@ def cot_evaluate(content):
         response = client.chat.completions.create(
             model="deepseek-v4-flash",
             messages=[{"role": "system", "content": system_msg}, {"role": "user", "content": user_msg}],
-            max_tokens=600
+            max_tokens=600,
+            extra_body={"thinking": {"type": thinking}}
         )
         total_latency = (time.time() - t0) * 1000
 
@@ -732,7 +733,7 @@ def run_rag_vs_baseline(target_size=1000, test_size=0.2):
     return comparison
 
 
-def run_ensemble_comparison(target_size=1000, test_size=0.2, ensemble_val_frac=0.2):
+def run_ensemble_comparison(target_size=1000, test_size=0.2, ensemble_val_frac=0.2, thinking="enabled"):
     """Compare baseline vs RAG CoT vs Ensemble on same test split.
 
     Phase 3: CoT reasoning + ensemble meta-classifier + confidence calibration.
@@ -837,37 +838,37 @@ def run_ensemble_comparison(target_size=1000, test_size=0.2, ensemble_val_frac=0
 
     def _run_cot_batch(samples_df, label_prefix=""):
         """Run CoT evaluation on a dataframe, return results list and features list."""
-        results = []
-        features_list = []
-        etl = 0.0
+        features_list = [None] * len(samples_df)
+        results_list = [None] * len(samples_df)
         detector = EnsembleDetector(
             rag_retriever=rag_retriever,
             finbert_model=finbert,
             heuristic_baseline=_heuristic_baseline,
         )
-        for i, (idx, row) in enumerate(samples_df.iterrows()):
-            content = row['content']
-            actual = int(row['label'])
-            t0 = time.time()
-            v, conf, parsed, tot_lat, _ret_lat = cot_evaluate(content)
-            lat = (time.time() - t0) * 1000
 
-            results.append({
-                'index': idx, 'actual': actual, 'verdict': v,
-                'latency_ms': lat, 'source': row['source'],
+        def process_sample_cot(idx, row, seq_idx):
+            v, conf, parsed, tot_lat, _ret_lat = cot_evaluate(row['content'], thinking=thinking)
+            res_entry = {
+                'index': idx, 'actual': int(row['label']), 'verdict': v,
+                'latency_ms': tot_lat, 'source': row['source'],
                 'subset': _subset_label(row),
-            })
+            }
+            feat = detector.collect_features(row['content'], cot_result=parsed)
+            return seq_idx, res_entry, feat
 
-            # Collect ensemble features
-            feat = detector.collect_features(content, cot_result=parsed)
-            features_list.append(feat)
-            etl += lat
+        with ThreadPoolExecutor(max_workers=30) as pool:
+            futures = {
+                pool.submit(process_sample_cot, idx, row, seq_idx): seq_idx
+                for seq_idx, (idx, row) in enumerate(samples_df.iterrows())
+            }
+            for i, fut in enumerate(as_completed(futures)):
+                seq_idx, res_entry, feat = fut.result()
+                results_list[seq_idx] = res_entry
+                features_list[seq_idx] = feat
+                if (i + 1) % 10 == 0 or i == 0:
+                    print(f"  {label_prefix}[{i+1}/{len(samples_df)}]")
 
-            if (i + 1) % 10 == 0:
-                avg = (i + 1) / (etl / 1000) if etl > 0 else 0
-                print(f"  {label_prefix}[{i+1}/{len(samples_df)}] Avg throughput: {avg:.1f} samples/sec")
-
-        return results, features_list
+        return results_list, features_list
 
     # Run CoT on test set
     cot_test_results, cot_test_features = _run_cot_batch(test_df, label_prefix="TEST ")
@@ -980,7 +981,8 @@ def run_ensemble_comparison(target_size=1000, test_size=0.2, ensemble_val_frac=0
     print(f"  Success criteria:    {'MET' if success else 'NOT MET'}")
     print("="*60)
 
-    json_path = "./output/phase3_results.json"
+    thinking_str = f"_thinking_{thinking}"
+    json_path = f"./output/deepseek{thinking_str}_phase3_results.json"
     with open(json_path, 'w') as f:
         json.dump(comparison, f, indent=2)
     print(f"Phase 3 results saved to {json_path}")
@@ -1237,14 +1239,15 @@ def run_latency_sweep(
                     break
     report["pareto_dominated"] = list(set(pareto_dominated))
 
-    json_path = "./output/phase4_latency_report.json"
+    thinking_str = f"_thinking_{thinking}" if model == "deepseek" else ""
+    json_path = f"./output/{model}{thinking_str}_phase4_latency_report.json"
     with open(json_path, "w") as f:
         json.dump(report, f, indent=2)
     print(f"\nLatency report saved to {json_path}")
 
     # Plots
-    plot_pareto_frontier(sweep_results)
-    plot_pnl_vs_latency(sweep_results)
+    plot_pareto_frontier(sweep_results, save_path=f"./plots/{model}{thinking_str}_latency_accuracy_pareto.png")
+    plot_pnl_vs_latency(sweep_results, save_path=f"./plots/{model}{thinking_str}_pnl_vs_latency.png")
 
     # Summary
     opt_b = report["optimal_budget_ms"]
@@ -1355,7 +1358,8 @@ def run_sensitivity_analysis(
     pipeline.cleanup()
 
     # Save per-sample results
-    psr_path = "./output/phase5_per_sample_results.json"
+    thinking_str = f"_thinking_{thinking}" if model == "deepseek" else ""
+    psr_path = f"./output/{model}{thinking_str}_phase5_per_sample_results.json"
     with open(psr_path, "w") as f:
         json.dump(per_sample_results, f, indent=2)
     print(f"Per-sample results saved to {psr_path}")
@@ -1420,14 +1424,15 @@ def run_sensitivity_analysis(
         "sweep_results": sweep_results,
     }
 
-    json_path = "./output/phase5_sensitivity_analysis.json"
+    thinking_str = f"_thinking_{thinking}" if model == "deepseek" else ""
+    json_path = f"./output/{model}{thinking_str}_phase5_sensitivity_analysis.json"
     with open(json_path, "w") as f:
         json.dump(report, f, indent=2)
     print(f"\nSensitivity report saved to {json_path}")
 
     # Plots
-    analyzer.plot_heatmaps(sweep_results)
-    analyzer.plot_pnl_distribution(normal_pnl, stress_pnl)
+    analyzer.plot_heatmaps(sweep_results, save_path=f"./plots/{model}{thinking_str}_sensitivity_heatmaps.png")
+    analyzer.plot_pnl_distribution(normal_pnl, stress_pnl, save_path=f"./plots/{model}{thinking_str}_pnl_distribution.png")
 
     # Summary
     print(f"\n{'='*60}")
@@ -1526,6 +1531,8 @@ def run_phase7(target_size=1000, test_size=0.2, model="deepseek",
             base_price=190.0,
             output_dir="./output",
             plots_dir="./plots",
+            model_name=model,
+            thinking=thinking,
         )
         print(f"  Key finding: {report_7a['key_finding']}")
 
@@ -1536,6 +1543,8 @@ def run_phase7(target_size=1000, test_size=0.2, model="deepseek",
             detection_results,
             output_dir="./output",
             plots_dir="./plots",
+            model_name=model,
+            thinking=thinking,
         )
         best_ct = report_7b.get("vectorbt_results", {}).get("best_threshold", "N/A")
         phase5_ct = report_7b.get("phase5_comparison", {}).get("phase5_optimal_threshold", "N/A")
@@ -1701,7 +1710,8 @@ def run_cross_domain_comparison(domains=None, target_size=1000, max_samples=None
         f1_gap = results_by_domain[d0]["f1_score"] - results_by_domain[d1]["f1_score"]
         report["cross_domain_f1_gap"] = round(f1_gap, 4)
 
-    json_path = "./output/phase6_cross_domain.json"
+    thinking_str = f"_thinking_{thinking}" if model == "deepseek" else ""
+    json_path = f"./output/{model}{thinking_str}_phase6_cross_domain.json"
     with open(json_path, "w") as f:
         json.dump(report, f, indent=2)
     print(f"\nCross-domain report saved to {json_path}")
