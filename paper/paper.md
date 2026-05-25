@@ -114,6 +114,26 @@ Pure HFT latency budgets (<200ms) remain out of reach for API-based LLMs. The De
 
 The confidence-threshold sweep reveals a fundamental tension: higher thresholds reduce false positives but increase false negatives. In the stress regime with confidence_threshold=0.7, the FN rate rose from 6.9% (normal) to 65.5% (stress). This asymmetry is economically significant — a single missed fake in the stress regime costs $600K, while a single false positive costs at most `$10,000 × $40 × 0.5 = $200K`. The optimal threshold thus depends on the relative cost of FP vs FN, which is regime-dependent.
 
+### 4.4 The Base Rate Fallacy and Bayesian Precision
+
+In our experimental evaluations (Phases 1-7), we assumed a roughly balanced distribution of authentic and fake financial news. However, in live markets, the base rate ($p$) of crash-inducing fake news is extremely low—historically estimated at less than 1 in 10,000 headlines ($p \le 10^{-4}$). This extreme sparsity exposes the system to the **Base Rate Fallacy**. Using Bayes' Theorem, the Positive Predictive Value (PPV) or Bayesian Precision represents the probability that a headline is indeed fake given a verifier alert:
+$$PPV = \frac{TPR \times p}{TPR \times p + FPR \times (1-p)}$$
+With our Phase 7a verifier ($TPR = 100\%$, $FPR = 9.52\%$), if the base rate is 1 in 10,000 ($p = 10^{-4}$), the PPV drops to a mere **0.105%**. For every correct detection, the system triggers **951 false alarms** on legitimate news. 
+
+Applying the realized P&L metrics from Phase 7a normal execution (TP savings $S_{\text{TP}} = \$5,791.62$, FN cost $C_{\text{FN}} = \$40,000.00$, FP cost $C_{\text{FP}} = \$16,874.00$), the expected net P&L added by the verifier per 10,000 headlines processed is:
+$$\Delta E[\text{P\&L}] = 10000 \times [p \cdot TPR \cdot (S_{\text{TP}} + C_{\text{FN}}) - (1-p) \cdot FPR \cdot C_{\text{FP}}]$$
+Our numerical sweep shows that the verifier's expected net P&L remains negative unless the base rate of fake news exceeds **3.94%** (1 in 25 headlines). Even with an optimized FPR of 1% (crossover base rate of 0.38% or 1 in 259) or 0.1% (crossover base rate of 0.038% or 1 in 2,656), the verifier generates net losses in realistic market streams where $p \le 10^{-4}$. Thus, the cumulative cost of false interventions on legitimate news completely erodes the savings from catching fakes, meaning the verifier must be coupled with strict pre-filtering or a substantially lower FPR to be economically viable.
+
+### 4.5 Reflexivity and Market Feedback Loops
+
+Our flash crash price simulator is deterministic and piecewise-linear, assuming the market's price path is exogenous to the bot's interventions. In reality, modern financial markets are highly reflexive. If an institutional participant (or a cluster of algorithms using similar verifiers) decides to reverse a trade by shorting the asset to hedge against fake news, this collective selling pressure will drain the remaining bid depth, accelerating the price drop. Instead of saving P&L, mass-adoption of this framework would create a self-fulfilling prophecy, deepening the flash crash trough and widening the realized execution gap. Future modeling must incorporate agent-based reflexivity to capture these feedback loops.
+
+### 4.6 Edge Cases: Grey Swans and Adversarial Attacks
+
+Two major vulnerabilities exist in the verifier's logical reasoning:
+1. **Grey Swans (Real but Absurd News):** When a highly unusual but authentic event occurs (e.g., Elon Musk actually acquiring Twitter or a sudden regulatory halt), the RAG retriever will pull context showing historical normalcy contradicting the headline. The System 2 LLM, reasoning over this lack of historical precedent, is highly likely to classify the event as FAKE. Reversing the trade in this scenario incurs massive opportunity costs and misses out on historic market moves.
+2. **Adversarial LLM Attacks:** Bad actors can construct headlines containing prompt injections or semantic anomalies designed to jailbreak or confuse the CoT logic of System 2 (e.g., adding instructions to ignore contradictions, or using double negatives that bypass the CoT flags). This would drop the TPR to near-zero, leaving the system fully exposed to the crash.
+
 ## 5. Conclusion
 
 We present the first integrated framework connecting fake financial news detection accuracy, latency profiling, and dollar-quantified flash crash intervention profit. The dual-system architecture, combined with a parameterized crash model and Latin Hypercube Sensitivity Analysis, fills the gap between detection-focused NLP research and trading-impact quantification. Key findings: (1) P&L tracks budget violations linearly (~$4-5K per 1% violation at 1,000 shares), (2) position size and trough depth dominate parameter sensitivity, and (3) the framework generalizes to non-financial domains via a configurable adapter. Future work should evaluate on contemporaneous real news with verified labels, explore streaming API verdict extraction, and extend to additional domains (political misinformation, cybersecurity threat intelligence).

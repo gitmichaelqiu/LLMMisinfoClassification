@@ -373,7 +373,28 @@ Two paths to true HFT latency:
 
 The confidence threshold phase transition at 0.5 is the most actionable finding. Above 0.5, the system goes from 93% recall to 34% — a catastrophic drop. The optimal from LHS is 0.47. In practice, this suggests a *soft threshold* approach: between 0.3-0.7, use additional signals (position size, sector volatility, time of day) to decide. A hard cutoff at any single value is fragile.
 
-### 4.6 Limitations
+### 4.6 The Base Rate Fallacy and Bayesian Precision
+
+Our experimental evaluations in Phases 1-7 assume a roughly balanced distribution of real vs. fake news (350 headlines total). In live markets, however, the base rate ($p$) of crash-inducing fake news is extremely low (historically less than 1 in 10,000 headlines, or $p \le 10^{-4}$). This extreme sparsity exposes the system to the **Base Rate Fallacy**.
+Using Bayes' Theorem, the Positive Predictive Value (PPV) or Bayesian Precision represents the probability that a headline is indeed fake given a verifier alert:
+$$PPV = \frac{TPR \times p}{TPR \times p + FPR \times (1-p)}$$
+With our Phase 7a verifier ($TPR = 100\%$, $FPR = 9.52\%$), if the base rate is 1 in 10,000 ($p = 10^{-4}$), the PPV drops to a mere **0.105%**. For every correct detection, the system triggers **951 false alarms** on legitimate news. 
+
+Applying the realized P&L metrics from Phase 7a normal execution (TP savings $S_{\text{TP}} = \$5,791.62$, FN cost $C_{\text{FN}} = \$40,000.00$, FP cost $C_{\text{FP}} = \$16,874.00$), the expected net P&L added by the verifier per 10,000 headlines processed is:
+$$\Delta E[\text{P\&L}] = 10000 \times [p \cdot TPR \cdot (S_{\text{TP}} + C_{\text{FN}}) - (1-p) \cdot FPR \cdot C_{\text{FP}}]$$
+Our numerical sweep shows that the verifier's expected net P&L remains negative unless the base rate of fake news exceeds **3.94%** (1 in 25 headlines). Even with an optimized FPR of 1% (crossover base rate of 0.38% or 1 in 259) or 0.1% (crossover base rate of 0.038% or 1 in 2,656), the verifier generates net losses in realistic market streams where $p \le 10^{-4}$. Thus, the cumulative cost of false interventions on legitimate news completely erodes the savings from catching fakes, meaning the verifier must be coupled with strict pre-filtering or a substantially lower FPR to be economically viable.
+
+### 4.7 Reflexivity and Market Feedback Loops
+
+Our flash crash price simulator is deterministic and piecewise-linear, assuming the market's price path is exogenous to the bot's interventions. In reality, modern financial markets are highly reflexive. If an institutional participant (or a cluster of algorithms using similar verifiers) decides to reverse a trade by shorting the asset to hedge against fake news, this collective selling pressure will drain the remaining bid depth, accelerating the price drop. Instead of saving P&L, mass-adoption of this framework would create a self-fulfilling prophecy, deepening the flash crash trough and widening the realized execution gap. Future modeling must incorporate agent-based reflexivity to capture these feedback loops.
+
+### 4.8 Edge Cases: Grey Swans and Adversarial Attacks
+
+Two major vulnerabilities exist in the verifier's logical reasoning:
+1. **Grey Swans (Real but Absurd News):** When a highly unusual but authentic event occurs (e.g., Elon Musk actually acquiring Twitter or a sudden regulatory halt), the RAG retriever will pull context showing historical normalcy contradicting the headline. The System 2 LLM, reasoning over this lack of historical precedent, is highly likely to classify the event as FAKE. Reversing the trade in this scenario incurs massive opportunity costs and misses out on historic market moves.
+2. **Adversarial LLM Attacks:** Bad actors can construct headlines containing prompt injections or semantic anomalies designed to jailbreak or confuse the CoT logic of System 2 (e.g., adding instructions to ignore contradictions, or using double negatives that bypass the CoT flags). This would drop the TPR to near-zero, leaving the system fully exposed to the crash.
+
+### 4.9 Limitations
 
 1. **Synthetic evaluation**: All detection metrics are measured on template-generated data. The real-world performance gap may be substantial.
 2. **Deterministic crash model**: The flash crash simulator is a piecewise-linear model. Real crashes are stochastic, multi-regime, and influenced by market microstructure.
