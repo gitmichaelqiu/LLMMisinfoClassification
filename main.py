@@ -1108,6 +1108,7 @@ def run_latency_sweep(
             ollama_model=ollama_model,
             position_size=position_size,
             thinking=thinking,
+            heuristic_predictor=heuristic_predict,
         )
 
         results = []
@@ -1290,6 +1291,7 @@ def run_sensitivity_analysis(
         ollama_model=ollama_model,
         position_size=1000,
         thinking=thinking,
+        heuristic_predictor=heuristic_predict,
     )
 
     per_sample_results = []
@@ -1438,6 +1440,7 @@ def run_phase7(target_size=1000, test_size=0.2, model="deepseek",
         position_size=1000,
         thinking=thinking,
         use_system0=True,
+        heuristic_predictor=heuristic_predict,
     )
 
     detection_results = []
@@ -1567,6 +1570,7 @@ def run_cross_domain_comparison(domains=None, target_size=1000, max_samples=None
             model=model,
             position_size=1000,
             thinking=thinking,
+            heuristic_predictor=heuristic_predict,
         )
 
         results = []

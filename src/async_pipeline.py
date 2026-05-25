@@ -119,6 +119,7 @@ class AsyncDualPipeline:
         base_price=190.0,
         thinking="enabled",
         use_system0=False,
+        heuristic_predictor=None,
     ):
         self.finbert = finbert_model
         self.rag_retriever = rag_retriever
@@ -131,6 +132,7 @@ class AsyncDualPipeline:
         self.pnl = PnLCalculator(position_size, base_price)
         self.system0 = System0Filter(enabled=use_system0)
         self.executor = ThreadPoolExecutor(max_workers=2)
+        self.heuristic_predictor = heuristic_predictor
 
         # Lazy-init Ollama client
         self._ollama_client = None
@@ -174,7 +176,7 @@ class AsyncDualPipeline:
             model="deepseek-v4-flash",
             messages=[{"role": "system", "content": system_msg}, {"role": "user", "content": user_msg}],
             max_tokens=600,
-            thinking={"type": self.thinking},
+            extra_body={"thinking": {"type": self.thinking}},
         )
         latency = (time.time() - t0) * 1000
 
@@ -240,12 +242,15 @@ class AsyncDualPipeline:
                 # Mock mode
                 time.sleep(0.3)
                 llm_latency = 300
-                try:
-                    from main import heuristic_predict
-                    verdict = heuristic_predict(content)
-                    confidence = 0.85 if verdict == 1 else 0.6
-                except Exception:
-                    pass
+                if self.heuristic_predictor is not None:
+                    verdict = self.heuristic_predictor(content)
+                else:
+                    try:
+                        from main import heuristic_predict
+                        verdict = heuristic_predict(content)
+                    except Exception:
+                        verdict = 0
+                confidence = 0.85 if verdict == 1 else 0.6
 
         elif self.model.startswith("ollama:"):
             try:
