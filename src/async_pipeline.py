@@ -240,6 +240,12 @@ class AsyncDualPipeline:
                 # Mock mode
                 time.sleep(0.3)
                 llm_latency = 300
+                try:
+                    from main import heuristic_predict
+                    verdict = heuristic_predict(content)
+                    confidence = 0.85 if verdict == 1 else 0.6
+                except Exception:
+                    pass
 
         elif self.model.startswith("ollama:"):
             try:

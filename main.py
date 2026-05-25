@@ -1420,6 +1420,10 @@ def run_phase7(target_size=1000, test_size=0.2, model="deepseek",
     train_df, test_df = train_test_split(
         df, test_size=test_size, random_state=42, stratify=df["label"])
 
+    DEEPSEEK_AVAIL = bool(DEEPSEEK_API_KEY) and DEEPSEEK_API_KEY != "your_actual_api_key_here"
+    if not DEEPSEEK_AVAIL:
+        train_heuristic_baseline(train_df)
+
     n_test = len(test_df)
     print(f"  Test samples: {n_test} (fake={test_df['label'].sum()}, "
           f"real={len(test_df) - test_df['label'].sum()})")
