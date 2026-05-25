@@ -5,6 +5,8 @@ AND contain at least one crash-inducing panic keyword. Filters out 99.9% of news
 saving System 2 LLM costs and preventing false positive intervention losses.
 """
 
+import re
+
 class System0Filter:
     """Fast heuristic pre-filtering for incoming financial news headlines."""
     
@@ -20,14 +22,30 @@ class System0Filter:
 
     # Crash-inducing or panic-related keywords indicating high market anomaly risk
     PANIC_KEYWORDS = {
-        "bankrupt", "bankruptcy", "explosion", "explod", "fraud", "investigat", "indict", "halt",
-        "hack", "terror", "sec", "doj", "regulatory", "crash", "collapse", "arrest", "assassinate",
-        "bomb", "attack", "raid", "suicide", "insolvent", "default", "manipulation", "fired",
-        "lawsuit", "illegal", "prosecut", "scandal", "leak", "charges", "probe"
+        "bankrupt", "bankruptcy", "explosion", "explode", "exploded", "exploding",
+        "fraud", "fraudulent", "investigate", "investigation", "investigating", "investigated", "probe", "probed", "probes",
+        "indict", "indicted", "indictment", "halt", "halted", "halting", "hack", "hacked", "hacking", "hacks",
+        "terror", "terrorist", "terrorism", "sec", "doj", "regulatory", "regulation", "regulations",
+        "crash", "crashed", "crashing", "collapse", "collapsed", "collapsing", "arrest", "arrested",
+        "assassinate", "assassinated", "assassination", "bomb", "bombed", "attack", "attacked", "attacking", "attacks",
+        "raid", "raided", "raids", "suicide", "insolvent", "insolvency", "default", "defaulted", "defaults",
+        "manipulate", "manipulation", "manipulated", "fire", "fired", "lawsuit", "lawsuits", "illegal",
+        "prosecute", "prosecution", "prosecutor", "prosecuted", "scandal", "scandals", "leak", "leaked", "leaks",
+        "charges", "charged", "charging"
     }
 
     def __init__(self, enabled=True):
         self.enabled = enabled
+        
+        # Compile regex patterns for fast, boundary-aware matching
+        self.entity_pattern = re.compile(
+            r'\b(' + '|'.join(sorted(self.HIGH_IMPACT_ENTITIES, key=len, reverse=True)) + r')\b',
+            re.IGNORECASE
+        )
+        self.keyword_pattern = re.compile(
+            r'\b(' + '|'.join(sorted(self.PANIC_KEYWORDS, key=len, reverse=True)) + r')\b',
+            re.IGNORECASE
+        )
 
     def should_evaluate(self, content):
         """Returns True if the headline should be evaluated by System 2.
@@ -37,13 +55,9 @@ class System0Filter:
         if not self.enabled:
             return True
             
-        content_lower = content.lower()
-        
-        # Check if the content mentions any high-impact index constituent
-        has_entity = any(entity in content_lower for entity in self.HIGH_IMPACT_ENTITIES)
-        
-        # Check if the content contains any critical panic keywords
-        has_keyword = any(keyword in content_lower for keyword in self.PANIC_KEYWORDS)
+        # Check boundary-aware entity and keyword matches
+        has_entity = bool(self.entity_pattern.search(content))
+        has_keyword = bool(self.keyword_pattern.search(content))
         
         # System 0 pre-filter triggers only when BOTH a major constituent and a panic keyword are present
         return has_entity and has_keyword
