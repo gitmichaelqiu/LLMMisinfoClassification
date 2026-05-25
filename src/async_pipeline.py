@@ -118,7 +118,7 @@ class AsyncDualPipeline:
         position_size=1000,
         base_price=190.0,
         thinking="enabled",
-        use_system0=True,
+        use_system0=False,
     ):
         self.finbert = finbert_model
         self.rag_retriever = rag_retriever
@@ -226,8 +226,8 @@ class AsyncDualPipeline:
         confidence = 0.5
         cot_flags = {}
 
-        if self.model == "deepseek" and self.client is not None:
-            ds_key_avail = bool(self.deepseek_key) and self.deepseek_key != "your_actual_api_key_here"
+        if self.model == "deepseek":
+            ds_key_avail = bool(self.deepseek_key) and self.deepseek_key != "your_actual_api_key_here" and self.client is not None
             if ds_key_avail:
                 try:
                     parsed, llm_latency = self._deepseek_evaluate(content, rag_context)
