@@ -1,4 +1,6 @@
 import os
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
+os.environ["HF_HUB_OFFLINE"] = "1"
 import time
 import random
 import pandas as pd
@@ -1435,6 +1437,7 @@ def run_phase7(target_size=1000, test_size=0.2, model="deepseek",
         latency_budget_ms=None,
         position_size=1000,
         thinking=thinking,
+        use_system0=True,
     )
 
     detection_results = []

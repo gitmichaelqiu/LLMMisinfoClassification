@@ -5,6 +5,8 @@ and retrieves relevant context for a given headline via cosine similarity.
 """
 
 import os
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
+os.environ["HF_HUB_OFFLINE"] = "1"
 import re
 import json
 import time
