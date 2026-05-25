@@ -1406,7 +1406,7 @@ def run_sensitivity_analysis(
 
 
 def run_phase7(target_size=1000, test_size=0.2, model="deepseek",
-               run_7a=True, run_7b=True, thinking="enabled"):
+               run_7a=True, run_7b=True, thinking="enabled", use_system0=True):
     """Phase 7: Institutional backtesting — execution realism + vectorbt sweep.
 
     Runs detection pipeline once, then feeds results to both sub-phases.
@@ -1414,7 +1414,7 @@ def run_phase7(target_size=1000, test_size=0.2, model="deepseek",
     print()
     print("=" * 60)
     print("PHASE 7: INSTITUTIONAL BACKTESTING")
-    print(f"Model: {model} | 7a (execution realism): {run_7a} | 7b (vectorbt): {run_7b}")
+    print(f"Model: {model} | 7a (execution realism): {run_7a} | 7b (vectorbt): {run_7b} | System0: {use_system0}")
     print("=" * 60)
 
     # Step 1: Run pipeline to collect per-sample detection results
@@ -1439,7 +1439,7 @@ def run_phase7(target_size=1000, test_size=0.2, model="deepseek",
         latency_budget_ms=None,
         position_size=1000,
         thinking=thinking,
-        use_system0=True,
+        use_system0=use_system0,
         heuristic_predictor=heuristic_predict,
     )
 
@@ -1675,6 +1675,7 @@ if __name__ == "__main__":
     parser.add_argument("--phase7b", action="store_true", help="Run Phase 7b vectorbt signal sweep")
     parser.add_argument("--thinking", type=str, default="enabled", choices=["enabled", "disabled"],
                         help="DeepSeek thinking mode: enabled (CoT reasoning) or disabled (direct response)")
+    parser.add_argument("--no-system0", action="store_true", help="Disable System 0 pre-filtering in Phase 7")
     args = parser.parse_args()
 
     test_size_frac = args.test_size / args.target_size if args.target_size > 0 else 0.2
@@ -1687,6 +1688,7 @@ if __name__ == "__main__":
             run_7a=args.phase7 or args.phase7a,
             run_7b=args.phase7 or args.phase7b,
             thinking=args.thinking,
+            use_system0=not args.no_system0,
         )
     elif args.phase6:
         # Default: both domains. --domain overrides to specific domain(s).
