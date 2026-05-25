@@ -40,19 +40,19 @@ class FlashCrashL2Config:
     # Spread parameters
     normal_spread_bps: float = 0.5          # 0.5 bps = 0.005%
     crash_max_spread_bps: float = 50.0       # 50 bps max during trough
-    spread_widening_ms: float = 100.0        # time constant for spread widening
+    spread_widening_ms: float = 400.0        # time constant for spread widening (0.4s)
 
     # Depth parameters
     normal_bid_depth: int = 1000             # shares at best bid (normal)
     normal_ask_depth: int = 1000             # shares at best ask (normal)
     min_bid_depth: int = 10                  # shares at worst (trough)
-    depth_decay_ms: float = 200.0            # time constant for depth decay
+    depth_decay_ms: float = 1200.0           # time constant for depth decay (1.2s)
     depth_levels: int = 10                   # number of price levels per side
     price_tick: float = 0.01
 
     # Fill probability during crash
     min_fill_prob: float = 0.05             # worst-case fill probability at trough
-    fill_decay_ms: float = 150.0             # time constant for fill prob decay
+    fill_decay_ms: float = 800.0             # time constant for fill prob decay (0.8s)
 
     def price_at(self, t_ms):
         """Mid price at time t during flash crash."""
@@ -67,27 +67,79 @@ class FlashCrashL2Config:
         return self.base_price
 
     def spread_bps_at(self, t_ms):
-        """Spread in basis points at time t. Widens during crash, narrows during recovery."""
-        crash_magnitude = self.base_price - self.price_at(t_ms)
-        max_crash = self.base_price - self.trough_price
-        crash_frac = crash_magnitude / max_crash if max_crash > 0 else 0
-        extra_spread = (self.crash_max_spread_bps - self.normal_spread_bps) * crash_frac
-        return self.normal_spread_bps + extra_spread
+        """Spread in basis points at time t. Widens exponentially during crash, narrows during recovery."""
+        if t_ms is None or t_ms < 0:
+            return self.normal_spread_bps
+        
+        t_drop = self.drop_duration_ms
+        t_rec = self.recovery_duration_ms
+        tau_w = self.spread_widening_ms
+        tau_n = tau_w * 3.0  # Spread narrowing recovery is 3x slower
+        
+        max_extra = self.crash_max_spread_bps - self.normal_spread_bps
+        
+        if t_ms <= t_drop:
+            # Exponential widening from normal -> max during drop
+            denom = 1.0 - np.exp(-t_drop / tau_w) if tau_w > 0 else 1.0
+            factor = (1.0 - np.exp(-t_ms / tau_w)) / denom if denom > 0 else 1.0
+            return self.normal_spread_bps + max_extra * factor
+        elif t_ms <= t_drop + t_rec:
+            # Exponential narrowing from max -> normal during recovery
+            t_r = t_ms - t_drop
+            denom = 1.0 - np.exp(-t_rec / tau_n) if tau_n > 0 else 1.0
+            factor = (np.exp(-t_r / tau_n) - np.exp(-t_rec / tau_n)) / denom if denom > 0 else 0.0
+            return self.normal_spread_bps + max_extra * factor
+        return self.normal_spread_bps
 
     def bid_depth_at(self, t_ms):
-        """Best bid depth (shares) at time t."""
-        crash_magnitude = self.base_price - self.price_at(t_ms)
-        max_crash = self.base_price - self.trough_price
-        crash_frac = crash_magnitude / max_crash if max_crash > 0 else 0
-        return int(self.normal_bid_depth +
-                   (self.min_bid_depth - self.normal_bid_depth) * crash_frac)
+        """Best bid depth (shares) at time t. Evaporates exponentially during crash, recovers during recovery."""
+        if t_ms is None or t_ms < 0:
+            return self.normal_bid_depth
+            
+        t_drop = self.drop_duration_ms
+        t_rec = self.recovery_duration_ms
+        tau_d = self.depth_decay_ms
+        tau_r = tau_d * 2.5  # Depth recovery is 2.5x slower
+        
+        depth_range = self.normal_bid_depth - self.min_bid_depth
+        
+        if t_ms <= t_drop:
+            # Exponential decay of depth from normal -> min during drop
+            denom = 1.0 - np.exp(-t_drop / tau_d) if tau_d > 0 else 1.0
+            factor = (np.exp(-t_ms / tau_d) - np.exp(-t_drop / tau_d)) / denom if denom > 0 else 0.0
+            return int(self.min_bid_depth + depth_range * factor)
+        elif t_ms <= t_drop + t_rec:
+            # Exponential recovery of depth from min -> normal during recovery
+            t_r = t_ms - t_drop
+            denom = 1.0 - np.exp(-t_rec / tau_r) if tau_r > 0 else 1.0
+            factor = (1.0 - np.exp(-t_r / tau_r)) / denom if denom > 0 else 1.0
+            return int(self.min_bid_depth + depth_range * factor)
+        return self.normal_bid_depth
 
     def fill_probability_at(self, t_ms):
         """Probability a limit order fills within reasonable time at time t."""
-        crash_magnitude = self.base_price - self.price_at(t_ms)
-        max_crash = self.base_price - self.trough_price
-        crash_frac = crash_magnitude / max_crash if max_crash > 0 else 0
-        return 1.0 - (1.0 - self.min_fill_prob) * crash_frac
+        if t_ms is None or t_ms < 0:
+            return 1.0
+            
+        t_drop = self.drop_duration_ms
+        t_rec = self.recovery_duration_ms
+        tau_f = self.fill_decay_ms
+        tau_r = tau_f * 2.5  # Recovery is 2.5x slower
+        
+        prob_range = 1.0 - self.min_fill_prob
+        
+        if t_ms <= t_drop:
+            # Exponential decay from 1.0 -> min_fill_prob during drop
+            denom = 1.0 - np.exp(-t_drop / tau_f) if tau_f > 0 else 1.0
+            factor = (np.exp(-t_ms / tau_f) - np.exp(-t_drop / tau_f)) / denom if denom > 0 else 0.0
+            return self.min_fill_prob + prob_range * factor
+        elif t_ms <= t_drop + t_rec:
+            # Exponential recovery from min_fill_prob -> 1.0 during recovery
+            t_r = t_ms - t_drop
+            denom = 1.0 - np.exp(-t_rec / tau_r) if tau_r > 0 else 1.0
+            factor = (1.0 - np.exp(-t_r / tau_r)) / denom if denom > 0 else 1.0
+            return self.min_fill_prob + prob_range * factor
+        return 1.0
 
 
 def generate_depth_snapshot(t_ms, config=None):
