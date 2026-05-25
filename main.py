@@ -1030,6 +1030,7 @@ def run_latency_sweep(
     model="deepseek",
     ollama_model="qwen3.5:2b",
     position_size=1000,
+    thinking="enabled",
 ):
     """Sweep across latency budgets, measure accuracy + P&L at each budget.
 
@@ -1104,6 +1105,7 @@ def run_latency_sweep(
             model=model,
             ollama_model=ollama_model,
             position_size=position_size,
+            thinking=thinking,
         )
 
         results = []
@@ -1234,6 +1236,7 @@ def run_sensitivity_analysis(
     model="deepseek",
     ollama_model="qwen3.5:2b",
     n_lhs_samples=30,
+    thinking="enabled",
 ):
     """Phase 5: LHS-based sensitivity analysis over crash parameters.
 
@@ -1284,6 +1287,7 @@ def run_sensitivity_analysis(
         model=model,
         ollama_model=ollama_model,
         position_size=1000,
+        thinking=thinking,
     )
 
     per_sample_results = []
@@ -1398,7 +1402,7 @@ def run_sensitivity_analysis(
 
 
 def run_phase7(target_size=1000, test_size=0.2, model="deepseek",
-               run_7a=True, run_7b=True):
+               run_7a=True, run_7b=True, thinking="enabled"):
     """Phase 7: Institutional backtesting — execution realism + vectorbt sweep.
 
     Runs detection pipeline once, then feeds results to both sub-phases.
@@ -1426,6 +1430,7 @@ def run_phase7(target_size=1000, test_size=0.2, model="deepseek",
         model=model,
         latency_budget_ms=None,
         position_size=1000,
+        thinking=thinking,
     )
 
     detection_results = []
@@ -1480,7 +1485,7 @@ def run_phase7(target_size=1000, test_size=0.2, model="deepseek",
     print("=" * 60)
 
 
-def run_cross_domain_comparison(domains=None, target_size=1000, max_samples=None, model="deepseek"):
+def run_cross_domain_comparison(domains=None, target_size=1000, max_samples=None, model="deepseek", thinking="enabled"):
     """Phase 6: Cross-domain generalization evaluation.
 
     Runs the detection pipeline on each domain (finance, health),
@@ -1554,6 +1559,7 @@ def run_cross_domain_comparison(domains=None, target_size=1000, max_samples=None
             latency_budget_ms=None,
             model=model,
             position_size=1000,
+            thinking=thinking,
         )
 
         results = []
@@ -1669,6 +1675,7 @@ if __name__ == "__main__":
             model=args.model,
             run_7a=args.phase7 or args.phase7a,
             run_7b=args.phase7 or args.phase7b,
+            thinking=args.thinking,
         )
     elif args.phase6:
         # Default: both domains. --domain overrides to specific domain(s).
@@ -1681,6 +1688,7 @@ if __name__ == "__main__":
             target_size=args.target_size,
             max_samples=args.test_size,
             model=args.model,
+            thinking=args.thinking,
         )
     elif args.phase5:
         run_sensitivity_analysis(
@@ -1688,6 +1696,7 @@ if __name__ == "__main__":
             test_size=test_size_frac,
             model=args.model,
             n_lhs_samples=args.lhs_samples,
+            thinking=args.thinking,
         )
     else:
         budgets = []
@@ -1707,4 +1716,5 @@ if __name__ == "__main__":
             budgets_ms=budgets,
             model=args.model,
             position_size=args.position_size,
+            thinking=args.thinking,
         )
