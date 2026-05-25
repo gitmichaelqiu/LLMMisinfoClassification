@@ -11,6 +11,12 @@ set -euo pipefail
 
 export PYTHONUNBUFFERED=1
 
+# Check for mock flag
+if [[ "${1:-}" == "--mock" ]]; then
+    echo "Running in MOCK mode (overriding DEEPSEEK_API_KEY)"
+    export DEEPSEEK_API_KEY="your_actual_api_key_here"
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
