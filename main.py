@@ -19,6 +19,8 @@ from src.async_pipeline import AsyncDualPipeline, PnLCalculator
 from src.sensitivity_analysis import SensitivityAnalyzer, flash_crash_price
 from src.domain_adapter import set_domain, get_adapter, DomainAdapter
 from src.prompts import get_domain_prompts
+from src.hft_backtest import run_execution_realism_analysis
+from src.vectorbt_sweep import run_phase7b
 
 # 1. Environment Setup
 load_dotenv()
@@ -1375,6 +1377,89 @@ def run_sensitivity_analysis(
     return report
 
 
+def run_phase7(target_size=1000, test_size=0.2, model="deepseek",
+               run_7a=True, run_7b=True):
+    """Phase 7: Institutional backtesting — execution realism + vectorbt sweep.
+
+    Runs detection pipeline once, then feeds results to both sub-phases.
+    """
+    print()
+    print("=" * 60)
+    print("PHASE 7: INSTITUTIONAL BACKTESTING")
+    print(f"Model: {model} | 7a (execution realism): {run_7a} | 7b (vectorbt): {run_7b}")
+    print("=" * 60)
+
+    # Step 1: Run pipeline to collect per-sample detection results
+    print("\n[7.0] Running detection pipeline to collect results...")
+    df = load_combined_dataset(target_size=target_size)
+
+    train_df, test_df = train_test_split(
+        df, test_size=test_size, random_state=42, stratify=df["label"])
+
+    n_test = len(test_df)
+    print(f"  Test samples: {n_test} (fake={test_df['label'].sum()}, "
+          f"real={len(test_df) - test_df['label'].sum()})")
+
+    rag = RAGRetriever()
+    pipeline = AsyncDualPipeline(
+        rag_retriever=rag,
+        model=model,
+        latency_budget_ms=None,
+        position_size=1000,
+    )
+
+    detection_results = []
+    sample_limit = min(n_test, 50)
+    print(f"  Processing {sample_limit} samples...")
+
+    for i, (_, row) in enumerate(test_df.head(sample_limit).iterrows()):
+        result = pipeline.process_sample(row["headline"])
+        detection_results.append({
+            "actual": int(row["label"]),
+            "verdict": int(result.get("verdict", 0)),
+            "confidence": float(result.get("confidence", 0.5)),
+            "intervention_time_ms": result.get("intervention_time_ms", 0),
+        })
+        if (i + 1) % 10 == 0:
+            print(f"  [{i+1}/{sample_limit}]")
+
+    print(f"  Detection complete: {sum(1 for r in detection_results if r['verdict']==1)} "
+          f"flagged as FAKE")
+
+    # Step 2: Run Phase 7a — execution realism analysis
+    if run_7a:
+        print("\n[7a] Execution realism analysis...")
+        report_7a = run_execution_realism_analysis(
+            detection_results,
+            base_price=190.0,
+            output_dir="./output",
+            plots_dir="./plots",
+        )
+        print(f"  Key finding: {report_7a['key_finding']}")
+
+    # Step 3: Run Phase 7b — vectorbt signal sweep
+    if run_7b:
+        print("\n[7b] Vectorbt signal sweep...")
+        report_7b = run_phase7b(
+            detection_results,
+            output_dir="./output",
+            plots_dir="./plots",
+        )
+        best_ct = report_7b.get("vectorbt_results", {}).get("best_threshold", "N/A")
+        phase5_ct = report_7b.get("phase5_comparison", {}).get("phase5_optimal_threshold", "N/A")
+        print(f"  vectorbt best threshold: {best_ct} (Phase 5 optimal: {phase5_ct})")
+
+    # Step 4: Combined summary
+    print()
+    print("=" * 60)
+    print("PHASE 7 COMPLETE")
+    print(f"  Outputs: output/phase7a_execution_realism.json")
+    print(f"           output/phase7b_signal_sweep.json")
+    print(f"           plots/ideal_vs_realized_pnl.png")
+    print(f"           plots/vectorbt_heatmaps.png")
+    print("=" * 60)
+
+
 def run_cross_domain_comparison(domains=None, target_size=1000, max_samples=None, model="deepseek"):
     """Phase 6: Cross-domain generalization evaluation.
 
@@ -1548,11 +1633,22 @@ if __name__ == "__main__":
     parser.add_argument("--phase6", action="store_true", help="Run Phase 6 cross-domain comparison")
     parser.add_argument("--domain", type=str, default="finance",
                         help="Domain for cross-domain eval: finance, health (Phase 6)")
+    parser.add_argument("--phase7", action="store_true", help="Run Phase 7 institutional backtesting")
+    parser.add_argument("--phase7a", action="store_true", help="Run Phase 7a execution realism analysis")
+    parser.add_argument("--phase7b", action="store_true", help="Run Phase 7b vectorbt signal sweep")
     args = parser.parse_args()
 
     test_size_frac = args.test_size / args.target_size if args.target_size > 0 else 0.2
 
-    if args.phase6:
+    if args.phase7 or args.phase7a or args.phase7b:
+        run_phase7(
+            target_size=args.target_size,
+            test_size=test_size_frac,
+            model=args.model,
+            run_7a=args.phase7 or args.phase7a,
+            run_7b=args.phase7 or args.phase7b,
+        )
+    elif args.phase6:
         # Default: both domains. --domain overrides to specific domain(s).
         if args.domain == "finance":
             domains = None  # let run_cross_domain_comparison use default [finance, health]

@@ -7,3 +7,5 @@ matplotlib
 seaborn
 transformers
 sentence-transformers
+hftbacktest
+vectorbt
