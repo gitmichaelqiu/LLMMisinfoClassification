@@ -105,7 +105,7 @@ News Ingest → [System 1: FinBERT Sentiment] → Trading Signal (fast, ~50-200m
 
 | Metric | Value |
 |---|---|
-| Accuracy | 82.0% |
+| Accuracy | 82.0\% |
 | Precision | 0.814 |
 | Recall | 0.873 |
 | **F1 Score** | **0.842** |
