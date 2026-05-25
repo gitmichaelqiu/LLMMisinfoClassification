@@ -14,6 +14,7 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError
 
 from src.cot_parser import parse_cot_output
 from src.prompts import COT_RAG_SYSTEM_PROMPT, COT_RAG_USER_PROMPT, NON_RAG_SYSTEM_PROMPT
+from src.system0_filter import System0Filter
 
 
 class PnLCalculator:
@@ -117,6 +118,7 @@ class AsyncDualPipeline:
         position_size=1000,
         base_price=190.0,
         thinking="enabled",
+        use_system0=True,
     ):
         self.finbert = finbert_model
         self.rag_retriever = rag_retriever
@@ -127,6 +129,7 @@ class AsyncDualPipeline:
         self.ollama_model = ollama_model
         self.thinking = thinking
         self.pnl = PnLCalculator(position_size, base_price)
+        self.system0 = System0Filter(enabled=use_system0)
         self.executor = ThreadPoolExecutor(max_workers=2)
 
         # Lazy-init Ollama client
@@ -259,43 +262,50 @@ class AsyncDualPipeline:
         }
 
     def process_sample(self, content):
-        """Concurrent System 1 + System 2 with latency budget.
+        """Concurrent System 1 + System 2 with latency budget and System 0 pre-filtering.
 
         Returns dict with full pipeline trace.
         """
-        fut2 = self.executor.submit(self._run_system2, content)
+        # System 0 pre-filter
+        system0_passed = self.system0.should_evaluate(content)
+
+        if system0_passed:
+            fut2 = self.executor.submit(self._run_system2, content)
+        else:
+            fut2 = None
 
         # System 1 runs immediately (in main thread)
         system1 = self._finbert_sentiment(content)
 
         # Wait for System 2 with timeout
-        max_wait = self.latency_budget_ms / 1000.0 if self.latency_budget_ms else 60.0
-        system2_start = time.time()
         budget_violation = False
         system2 = {
             "verdict": 0,
-            "confidence": 0.5,
+            "confidence": 0.0,
             "cot_flags": {},
-            "retrieval_latency_ms": 0,
-            "llm_latency_ms": 0,
-            "total_latency_ms": self.latency_budget_ms if self.latency_budget_ms else 0,
+            "retrieval_latency_ms": 0.0,
+            "llm_latency_ms": 0.0,
+            "total_latency_ms": 0.0,
             "rag_found": False,
         }
 
-        if self.latency_budget_ms is not None:
-            try:
-                system2 = fut2.result(timeout=max_wait)
-            except TimeoutError:
-                budget_violation = True
-                # Cancel the future (best-effort)
-                fut2.cancel()
-        else:
-            system2 = fut2.result()
+        wall_clock = 0.0
+        if system0_passed:
+            max_wait = self.latency_budget_ms / 1000.0 if self.latency_budget_ms else 60.0
+            system2_start = time.time()
+            if self.latency_budget_ms is not None:
+                try:
+                    system2 = fut2.result(timeout=max_wait)
+                except TimeoutError:
+                    budget_violation = True
+                    # Cancel the future (best-effort)
+                    fut2.cancel()
+            else:
+                system2 = fut2.result()
 
-        wall_clock = (time.time() - system2_start) * 1000
-
-        if not budget_violation:
-            wall_clock = system2.get("total_latency_ms", wall_clock)
+            wall_clock = (time.time() - system2_start) * 1000
+            if not budget_violation:
+                wall_clock = system2.get("total_latency_ms", wall_clock)
 
         # P&L calculation
         is_fake = system2.get("verdict", 0) == 1
@@ -309,15 +319,16 @@ class AsyncDualPipeline:
 
         return {
             "verdict": final_verdict,
-            "confidence": system2.get("confidence", 0.5),
+            "confidence": system2.get("confidence", 0.0),
             "sentiment": system1["sentiment"],
             "finbert_latency_ms": system1["latency_ms"],
-            "retrieval_latency_ms": system2.get("retrieval_latency_ms", 0),
-            "llm_latency_ms": system2.get("llm_latency_ms", 0),
+            "retrieval_latency_ms": system2.get("retrieval_latency_ms", 0.0),
+            "llm_latency_ms": system2.get("llm_latency_ms", 0.0),
             "total_latency_ms": round(wall_clock, 2),
             "budget_violation": budget_violation,
             "intervention_time_ms": inter_time,
             "pnl_saved": round(pnl_saved, 2),
+            "system0_passed": system0_passed,
         }
 
     def cleanup(self):
