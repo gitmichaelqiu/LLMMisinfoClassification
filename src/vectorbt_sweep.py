@@ -257,7 +257,7 @@ def run_phase7b(results, output_dir="./output", plots_dir="./plots"):
             "note": (
                 f"Phase 5 LHS optimum = {phase5_optimal}, "
                 f"vectorbt grid optimum = {best_vbt_threshold:.4f}. "
-                "Delta = {:.4f}. Small delta confirms Phase 5 findings at scale."
+                f"Delta = {abs(best_vbt_threshold - phase5_optimal):.4f}."
             ),
         },
     }
