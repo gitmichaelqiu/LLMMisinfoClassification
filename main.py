@@ -559,12 +559,23 @@ def run_rag_vs_baseline(target_size=1000, test_size=0.2):
     # In real mode: baseline = non-RAG Deepseek
     use_rag = True  # will be False for baseline run
 
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    # --- Run 1: Baseline ---
+    print("\n" + "="*60)
+    print("RUNNING BASELINE (TF-IDF + Logistic Regression)")
+    print("="*60)
+
+    # In mock mode: baseline = heuristic_predict
+    # In real mode: baseline = non-RAG Deepseek
+    use_rag = True  # will be False for baseline run
+
     base_results = []
-    for i, (idx, row) in enumerate(test_df.iterrows()):
+    DEEPSEEK_KEY_AVAIL = bool(DEEPSEEK_API_KEY) and DEEPSEEK_API_KEY != "your_actual_api_key_here"
+
+    def process_baseline(idx, row):
         content = row['content']
         actual = int(row['label'])
-        DEEPSEEK_KEY_AVAIL = bool(DEEPSEEK_API_KEY) and DEEPSEEK_API_KEY != "your_actual_api_key_here"
-
         if not DEEPSEEK_KEY_AVAIL:
             # Mock mode: baseline = heuristic_predict
             time.sleep(0.5)
@@ -574,16 +585,21 @@ def run_rag_vs_baseline(target_size=1000, test_size=0.2):
             t0 = time.time()
             v, _ = system_2_evaluate(content, use_rag=False)
             lat = (time.time() - t0) * 1000
-
-        base_results.append({
+        return {
             'index': idx, 'actual': actual, 'verdict': v,
             'latency_ms': lat, 'source': row['source'],
             'subset': _subset_label(row),
-        })
+        }
 
-        if (i + 1) % 10 == 0 or i == 0:
-            print(f"  Baseline [{i+1}/{len(test_df)}]")
+    with ThreadPoolExecutor(max_workers=30) as executor:
+        futures = {executor.submit(process_baseline, idx, row): idx for idx, row in test_df.iterrows()}
+        for i, fut in enumerate(as_completed(futures)):
+            base_results.append(fut.result())
+            if (i + 1) % 10 == 0 or i == 0:
+                print(f"  Baseline [{i+1}/{len(test_df)}]")
 
+    # Sort to preserve index order
+    base_results.sort(key=lambda x: list(test_df.index).index(x['index']))
     base_metrics = _compute_metrics(base_results)
 
     # --- Run 2: RAG-enhanced ---
@@ -595,8 +611,8 @@ def run_rag_vs_baseline(target_size=1000, test_size=0.2):
     print("="*60)
 
     rag_results = []
-    rag_retrieval_times = []
-    for i, (idx, row) in enumerate(test_df.iterrows()):
+
+    def process_rag(idx, row):
         content = row['content']
         actual = int(row['label'])
         DEEPSEEK_KEY_AVAIL = bool(DEEPSEEK_API_KEY) and DEEPSEEK_API_KEY != "your_actual_api_key_here"
@@ -629,22 +645,32 @@ def run_rag_vs_baseline(target_size=1000, test_size=0.2):
                 time.sleep(0.5)
                 v = heuristic_predict(content)
                 lat = 500 + retrieval_ms
+            rl_val = retrieval_ms
         else:
             t0 = time.time()
             v, rl = system_2_evaluate(content, use_rag=True)
             lat = (time.time() - t0) * 1000
+            rl_val = rl
 
-        rag_retrieval_times.append(retrieval_ms if not DEEPSEEK_KEY_AVAIL else rl)
-
-        rag_results.append({
+        return {
             'index': idx, 'actual': actual, 'verdict': v,
             'latency_ms': lat, 'source': row['source'],
             'subset': _subset_label(row),
-        })
+            'retrieval_time': rl_val,
+        }
 
-        if (i + 1) % 10 == 0 or i == 0:
-            print(f"  RAG [{i+1}/{len(test_df)}]")
+    with ThreadPoolExecutor(max_workers=30) as executor:
+        futures = {executor.submit(process_rag, idx, row): idx for idx, row in test_df.iterrows()}
+        for i, fut in enumerate(as_completed(futures)):
+            rag_results.append(fut.result())
+            if (i + 1) % 10 == 0 or i == 0:
+                print(f"  RAG [{i+1}/{len(test_df)}]")
 
+    # Sort to preserve index order
+    rag_results.sort(key=lambda x: list(test_df.index).index(x['index']))
+    rag_retrieval_times = [r['retrieval_time'] for r in rag_results]
+    for r in rag_results:
+        del r['retrieval_time']
     rag_metrics = _compute_metrics(rag_results)
 
     # --- Per-subset breakdown ---
@@ -1112,13 +1138,11 @@ def run_latency_sweep(
         )
 
         results = []
-        for i, (idx, row) in enumerate(test_df.iterrows()):
-            content = row['content']
-            actual = int(row['label'])
-            out = pipeline.process_sample(content)
-            results.append({
+        def process_sample_parallel(idx, row):
+            out = pipeline.process_sample(row['content'])
+            return {
                 'index': idx,
-                'actual': actual,
+                'actual': int(row['label']),
                 'verdict': out['verdict'],
                 'latency_ms': out['total_latency_ms'],
                 'finbert_latency_ms': out['finbert_latency_ms'],
@@ -1127,11 +1151,18 @@ def run_latency_sweep(
                 'budget_violation': out['budget_violation'],
                 'pnl_saved': out['pnl_saved'],
                 'source': row['source'],
-            })
+            }
 
-            if (i + 1) % 5 == 0 or i == 0:
-                print(f"  [{i+1}/{len(test_df)}] lat={out['total_latency_ms']:.0f}ms pnl=${out['pnl_saved']:.0f}")
+        with ThreadPoolExecutor(max_workers=30) as pool:
+            futures = {pool.submit(process_sample_parallel, idx, row): idx for idx, row in test_df.iterrows()}
+            for i, fut in enumerate(as_completed(futures)):
+                res = fut.result()
+                results.append(res)
+                if (i + 1) % 10 == 0 or i == 0:
+                    print(f"  [{i+1}/{len(test_df)}] lat={res['latency_ms']:.0f}ms pnl=${res['pnl_saved']:.0f}")
 
+        # Sort to match original test_df order
+        results.sort(key=lambda x: list(test_df.index).index(x['index']))
         pipeline.cleanup()
 
         # Compute metrics
@@ -1295,19 +1326,31 @@ def run_sensitivity_analysis(
     )
 
     per_sample_results = []
-    for i, (idx, row) in enumerate(test_df.iterrows()):
-        content = row['content']
-        actual = int(row['label'])
-        out = pipeline.process_sample(content)
-        per_sample_results.append({
-            "actual": actual,
+    def process_sample_sensitivity(idx, row):
+        out = pipeline.process_sample(row['content'])
+        return {
+            'index': idx,
+            "actual": int(row['label']),
             "verdict": out["verdict"],
             "confidence": out["confidence"],
             "intervention_time_ms": out["intervention_time_ms"],
-        })
-        if (i + 1) % 10 == 0 or i == 0:
-            print(f"  [{i+1}/{len(test_df)}] lat={out['total_latency_ms']:.0f}ms "
-                  f"verdict={out['verdict']} conf={out['confidence']:.2f}")
+            "total_latency_ms": out["total_latency_ms"],
+        }
+
+    with ThreadPoolExecutor(max_workers=30) as pool:
+        futures = {pool.submit(process_sample_sensitivity, idx, row): idx for idx, row in test_df.iterrows()}
+        for i, fut in enumerate(as_completed(futures)):
+            res = fut.result()
+            per_sample_results.append(res)
+            if (i + 1) % 10 == 0 or i == 0:
+                print(f"  [{i+1}/{len(test_df)}] lat={res['total_latency_ms']:.0f}ms "
+                      f"verdict={res['verdict']} conf={res['confidence']:.2f}")
+
+    # Sort to preserve index order
+    per_sample_results.sort(key=lambda x: list(test_df.index).index(x['index']))
+    for r in per_sample_results:
+        del r['index']
+        del r['total_latency_ms']
 
     pipeline.cleanup()
 
@@ -1447,16 +1490,30 @@ def run_phase7(target_size=1000, test_size=0.2, model="deepseek",
     sample_limit = min(n_test, 50)
     print(f"  Processing {sample_limit} samples...")
 
-    for i, (_, row) in enumerate(test_df.head(sample_limit).iterrows()):
+    df_subset = test_df.head(sample_limit)
+
+    def process_sample_phase7(idx, row):
         result = pipeline.process_sample(row["content"])
-        detection_results.append({
+        return {
+            'index': idx,
             "actual": int(row["label"]),
             "verdict": int(result.get("verdict", 0)),
             "confidence": float(result.get("confidence", 0.5)),
             "intervention_time_ms": result.get("intervention_time_ms", 0),
-        })
-        if (i + 1) % 10 == 0:
-            print(f"  [{i+1}/{sample_limit}]")
+        }
+
+    with ThreadPoolExecutor(max_workers=30) as pool:
+        futures = {pool.submit(process_sample_phase7, idx, row): idx for idx, row in df_subset.iterrows()}
+        for i, fut in enumerate(as_completed(futures)):
+            res = fut.result()
+            detection_results.append(res)
+            if (i + 1) % 10 == 0 or i == 0:
+                print(f"  [{i+1}/{sample_limit}]")
+
+    # Sort to match original test_df order
+    detection_results.sort(key=lambda x: list(df_subset.index).index(x['index']))
+    for r in detection_results:
+        del r['index']
 
     print(f"  Detection complete: {sum(1 for r in detection_results if r['verdict']==1)} "
           f"flagged as FAKE")
@@ -1574,20 +1631,29 @@ def run_cross_domain_comparison(domains=None, target_size=1000, max_samples=None
         )
 
         results = []
-        for i, (idx, row) in enumerate(df.iterrows()):
-            content = row["content"]
-            actual = int(row["label"])
-            out = pipeline.process_sample(content)
-            results.append({
-                "actual": actual,
+        def process_sample_cross(idx, row):
+            out = pipeline.process_sample(row["content"])
+            return {
+                'index': idx,
+                "actual": int(row["label"]),
                 "verdict": out["verdict"],
                 "confidence": out["confidence"],
                 "latency_ms": out["total_latency_ms"],
-            })
+            }
 
-            if (i + 1) % 10 == 0 or i == 0:
-                print(f"  [{i+1}/{len(df)}] lat={out['total_latency_ms']:.0f}ms "
-                      f"verdict={out['verdict']} conf={out['confidence']:.2f}")
+        with ThreadPoolExecutor(max_workers=30) as pool:
+            futures = {pool.submit(process_sample_cross, idx, row): idx for idx, row in df.iterrows()}
+            for i, fut in enumerate(as_completed(futures)):
+                res = fut.result()
+                results.append(res)
+                if (i + 1) % 10 == 0 or i == 0:
+                    print(f"  [{i+1}/{len(df)}] lat={res['latency_ms']:.0f}ms "
+                          f"verdict={res['verdict']} conf={res['confidence']:.2f}")
+
+        # Sort to match original order
+        results.sort(key=lambda x: list(df.index).index(x['index']))
+        for r in results:
+            del r['index']
 
         pipeline.cleanup()
 
