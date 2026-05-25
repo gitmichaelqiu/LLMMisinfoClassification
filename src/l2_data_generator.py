@@ -301,9 +301,9 @@ def compute_realized_pnl(intervention_t_ms, position_size, config=None, seed=42)
     realized -= spread_cost
     realized -= adverse_cost
 
-    # Unfilled shares lose full crash value
-    if unfilled_qty > 0:
-        realized -= unfilled_qty * (config.base_price - config.trough_price)
+    # Unfilled shares ride to trough — same outcome as no-intervention
+    # baseline, so they contribute $0 to P&L_saved (not negative).
+    # No penalty term needed.
 
     slippage_pct = ((ideal - realized) / ideal * 100) if ideal > 0 else 0.0
 
