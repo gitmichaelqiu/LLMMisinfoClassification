@@ -104,7 +104,7 @@ class MarketSimulator:
         else:
             return self.base_price
 
-def load_combined_dataset():
+def load_combined_dataset(target_size=None):
     """
     Integrates Synthetic and Kaggle datasets into a unified format.
     Synthetic follows binary: 0=Authentic, 1=Anomaly
@@ -133,10 +133,30 @@ def load_combined_dataset():
     else:
         kaggle_df = pd.DataFrame(columns=['content', 'label', 'source', 'type'])
 
-    # Combine
-    combined = pd.concat([synth_df[['content', 'label', 'source', 'type']],
-                          kaggle_df[['content', 'label', 'source', 'type']]],
-                         ignore_index=True)
+    # Downsample if target_size is specified
+    if target_size is not None:
+        synth_n = len(synth_df)
+        kaggle_target = target_size - synth_n
+        if kaggle_target > 0:
+            kaggle0 = kaggle_df[kaggle_df['label'] == 0]
+            kaggle1 = kaggle_df[kaggle_df['label'] == 1]
+            per_class = max(1, kaggle_target // 2)
+            kaggle_sample = pd.concat([
+                kaggle0.sample(n=min(len(kaggle0), per_class), random_state=42),
+                kaggle1.sample(n=min(len(kaggle1), per_class), random_state=42),
+            ], ignore_index=True)
+            combined = pd.concat([
+                synth_df[['content', 'label', 'source', 'type']],
+                kaggle_sample[['content', 'label', 'source', 'type']]
+            ], ignore_index=True)
+        else:
+            combined = synth_df[['content', 'label', 'source', 'type']].copy()
+    else:
+        # Combine full
+        combined = pd.concat([
+            synth_df[['content', 'label', 'source', 'type']],
+            kaggle_df[['content', 'label', 'source', 'type']]
+        ], ignore_index=True)
     return combined
 
 def system_2_evaluate(content, use_rag=False):
@@ -1413,7 +1433,7 @@ def run_phase7(target_size=1000, test_size=0.2, model="deepseek",
     print(f"  Processing {sample_limit} samples...")
 
     for i, (_, row) in enumerate(test_df.head(sample_limit).iterrows()):
-        result = pipeline.process_sample(row["headline"])
+        result = pipeline.process_sample(row["content"])
         detection_results.append({
             "actual": int(row["label"]),
             "verdict": int(result.get("verdict", 0)),
