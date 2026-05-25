@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# reproduce.sh — Single-command reproduction of all Phase 1-6 results.
+# reproduce.sh — Single-command reproduction of all Phase 1-7 results and tradeoff analysis.
 #
 # Usage:
 #   bash reproduce.sh                  # full pipeline (requires Deepseek API key)
@@ -24,7 +24,7 @@ python -c "import vectorbt" 2>/dev/null || PHASE7_AVAIL=false
 
 # Step 0: Install dependencies
 echo ""
-echo "[0/11] Installing dependencies..."
+echo "[0/12] Installing dependencies..."
 pip install -r requirements.txt -q
 if $PHASE7_AVAIL || pip install hftbacktest vectorbt -q 2>/dev/null; then
     PHASE7_AVAIL=true
@@ -35,27 +35,27 @@ fi
 
 # Step 1: Download FinBERT model
 echo ""
-echo "[1/11] Downloading FinBERT model..."
+echo "[1/12] Downloading FinBERT model..."
 python models/download_model.py
 
 # Step 2: Generate synthetic financial dataset
 echo ""
-echo "[2/11] Generating synthetic financial dataset..."
+echo "[2/12] Generating synthetic financial dataset..."
 python generate_dataset.py
 
 # Step 3: Generate synthetic health dataset
 echo ""
-echo "[3/11] Generating synthetic health dataset..."
+echo "[3/12] Generating synthetic health dataset..."
 python src/health_dataset.py
 
 # Step 4: Phase 1 — Baseline batch backtest
 echo ""
-echo "[4/11] Phase 1 — Baseline batch backtest (200 samples)..."
+echo "[4/12] Phase 1 — Baseline batch backtest (200 samples)..."
 python main.py --test-size 200 || true
 
 # Step 5: Phase 3 — CoT + Ensemble comparison
 echo ""
-echo "[5/11] Phase 3 — CoT + Ensemble comparison..."
+echo "[5/12] Phase 3 — CoT + Ensemble comparison..."
 # Run via python if available; Phase 3 is run_ensemble_comparison
 python -c "
 from main import run_ensemble_comparison
@@ -64,22 +64,22 @@ run_ensemble_comparison(target_size=1000, test_size=0.2)
 
 # Step 6: Phase 4 — Latency sweep
 echo ""
-echo "[6/11] Phase 4 — Latency sweep (50 samples, 3 budgets)..."
+echo "[6/12] Phase 4 — Latency sweep (50 samples, 3 budgets)..."
 python main.py --test-size 50 --budgets none,5000,1000
 
 # Step 7: Phase 5 — Sensitivity analysis
 echo ""
-echo "[7/11] Phase 5 — Sensitivity analysis (50 samples, 20 LHS points)..."
+echo "[7/12] Phase 5 — Sensitivity analysis (50 samples, 20 LHS points)..."
 python main.py --phase5 --test-size 50 --lhs-samples 20
 
 # Step 8: Phase 6 — Cross-domain comparison
 echo ""
-echo "[8/11] Phase 6 — Cross-domain comparison..."
+echo "[8/12] Phase 6 — Cross-domain comparison..."
 python main.py --phase6 --test-size 50
 
 # Step 9: Phase 7a — Execution realism analysis
 echo ""
-echo "[9/11] Phase 7a — Execution realism analysis (50 samples)..."
+echo "[9/12] Phase 7a — Execution realism analysis (50 samples)..."
 if $PHASE7_AVAIL; then
     python main.py --phase7a --test-size 50
 else
@@ -88,7 +88,7 @@ fi
 
 # Step 10: Phase 7b — vectorbt signal sweep
 echo ""
-echo "[10/11] Phase 7b — vectorbt signal sweep (221 combos)..."
+echo "[10/12] Phase 7b — vectorbt signal sweep (221 combos)..."
 if $PHASE7_AVAIL; then
     python main.py --phase7b --test-size 50
 else
@@ -97,8 +97,13 @@ fi
 
 # Step 11: Base Rate Analysis
 echo ""
-echo "[11/11] Step 11 — Base Rate Fallacy Analysis..."
+echo "[11/12] Step 11 — Base Rate Fallacy Analysis..."
 python src/base_rate_analysis.py
+
+# Step 12: Verify-First vs. Trade-First Tradeoff Analysis
+echo ""
+echo "[12/12] Step 12 — Verify-First vs. Trade-First Tradeoff Analysis..."
+python src/verify_first_model.py
 
 echo ""
 echo "============================================"
@@ -114,5 +119,6 @@ echo "   output/phase7a_execution_realism.json"
 echo "   output/phase7b_signal_sweep.json"
 echo "   output/phase7_detection_results.json"
 echo "   output/base_rate_analysis.json"
-echo "   plots/ (confusion matrices, Pareto frontiers, heatmaps, ideal_vs_realized_pnl, vectorbt_heatmaps, base_rate_analysis)"
+echo "   output/verify_first_tradeoff.json"
+echo "   plots/ (confusion matrices, Pareto frontiers, heatmaps, ideal_vs_realized_pnl, vectorbt_heatmaps, base_rate_analysis, verify_first_tradeoff)"
 echo "============================================"
