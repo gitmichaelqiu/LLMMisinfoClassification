@@ -122,7 +122,11 @@ With our Phase 7a verifier ($TPR = 100\%$, $FPR = 9.52\%$), if the base rate is 
 
 Applying the realized P&L metrics from Phase 7a normal execution (TP savings $S_{\text{TP}} = \$5,791.62$, FN cost $C_{\text{FN}} = \$40,000.00$, FP cost $C_{\text{FP}} = \$16,874.00$), the expected net P&L added by the verifier per 10,000 headlines processed is:
 $$\Delta E[\text{P\&L}] = 10000 \times [p \cdot TPR \cdot (S_{\text{TP}} + C_{\text{FN}}) - (1-p) \cdot FPR \cdot C_{\text{FP}}]$$
-Our numerical sweep shows that the verifier's expected net P&L remains negative unless the base rate of fake news exceeds **3.94%** (1 in 25 headlines). Even with an optimized FPR of 1% (crossover base rate of 0.38% or 1 in 259) or 0.1% (crossover base rate of 0.038% or 1 in 2,656), the verifier generates net losses in realistic market streams where $p \le 10^{-4}$. Thus, the cumulative cost of false interventions on legitimate news completely erodes the savings from catching fakes, meaning the verifier must be coupled with strict pre-filtering or a substantially lower FPR to be economically viable.
+Our numerical sweep shows that the verifier's expected net P&L remains negative unless the base rate of fake news exceeds **3.94%** (1 in 25 headlines). Thus, the cumulative cost of false interventions on legitimate news completely erodes the savings from catching fakes, meaning the verifier must be coupled with strict pre-filtering or a substantially lower FPR to be economically viable.
+
+To address this, we introduce **System 0 Pre-Filtering**, which uses boundary-aware regular expressions to filter out $99.9\%$ of routine headlines lacking S&P 500 index constituent mentions and panic keywords. This pre-filter successfully elevates the post-filter base rate and preserves System 2's Bayesian precision.
+
+Furthermore, we model the architectural tradeoff between entering instantly on sentiment (**Trade-First**) vs. waiting $5$ seconds for verification (**Verify-First**, entering late on real news and capturing only $50\%$ of the profit). At a verifier FPR of $9.52\%$, the crossover point where Verify-First dominates occurs at $p \approx 8.30\%$ (1 in 12 headlines). When the fake news base rate $p < 8.30\%$, **Trade-First is economically superior** because the opportunity cost of late entry slippage on the other $99.9\%$ of legitimate real headlines outweighs the cost of occasional fake news crashes. This microstructurally explains why HFT firms default to Trade-First.
 
 ### 4.5 Reflexivity and Market Feedback Loops
 
