@@ -116,6 +116,7 @@ class AsyncDualPipeline:
         ollama_model="qwen3.5:2b",
         position_size=1000,
         base_price=190.0,
+        thinking="enabled",
     ):
         self.finbert = finbert_model
         self.rag_retriever = rag_retriever
@@ -124,6 +125,7 @@ class AsyncDualPipeline:
         self.latency_budget_ms = latency_budget_ms
         self.model = model
         self.ollama_model = ollama_model
+        self.thinking = thinking
         self.pnl = PnLCalculator(position_size, base_price)
         self.executor = ThreadPoolExecutor(max_workers=2)
 
@@ -169,6 +171,7 @@ class AsyncDualPipeline:
             model="deepseek-v4-flash",
             messages=[{"role": "system", "content": system_msg}, {"role": "user", "content": user_msg}],
             max_tokens=600,
+            thinking={"type": self.thinking},
         )
         latency = (time.time() - t0) * 1000
 

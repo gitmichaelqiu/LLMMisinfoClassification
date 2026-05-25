@@ -1636,6 +1636,8 @@ if __name__ == "__main__":
     parser.add_argument("--phase7", action="store_true", help="Run Phase 7 institutional backtesting")
     parser.add_argument("--phase7a", action="store_true", help="Run Phase 7a execution realism analysis")
     parser.add_argument("--phase7b", action="store_true", help="Run Phase 7b vectorbt signal sweep")
+    parser.add_argument("--thinking", type=str, default="enabled", choices=["enabled", "disabled"],
+                        help="DeepSeek thinking mode: enabled (CoT reasoning) or disabled (direct response)")
     args = parser.parse_args()
 
     test_size_frac = args.test_size / args.target_size if args.target_size > 0 else 0.2
