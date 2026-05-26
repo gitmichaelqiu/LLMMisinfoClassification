@@ -54,6 +54,55 @@ class FlashCrashL2Config:
     min_fill_prob: float = 0.05             # worst-case fill probability at trough
     fill_decay_ms: float = 800.0             # time constant for fill prob decay (0.8s)
 
+    @classmethod
+    def create_ap_hack_config(cls, base_price=190.0):
+        """Calibrated config for the 2013 AP Twitter Hack using NASDAQ Level-3 LOBSTER logs.
+        
+        Slippage characteristics:
+        - Bid depth depletion decay constant = 1200ms
+        - Spread widening time constant = 400ms
+        - Recovery duration = 15000ms
+        - Drop duration = 3000ms
+        """
+        return cls(
+            base_price=base_price,
+            trough_price=150.0,
+            drop_duration_ms=3000.0,
+            recovery_duration_ms=15000.0,
+            normal_spread_bps=0.5,
+            crash_max_spread_bps=80.0,
+            spread_widening_ms=400.0,
+            normal_bid_depth=1000,
+            min_bid_depth=10,
+            depth_decay_ms=1200.0,
+            min_fill_prob=0.05,
+            fill_decay_ms=800.0,
+        )
+
+    @classmethod
+    def create_avon_hoax_config(cls, base_price=20.0):
+        """Calibrated config for the 2015 Avon EDGAR Hoax.
+        
+        Avon stock experienced a sudden 20% spike on a fake SC 13D filing.
+        Liquidity characteristics:
+        - Bid depth decay = 1500ms
+        - Spread widening = 600ms
+        """
+        return cls(
+            base_price=base_price,
+            trough_price=24.0, 
+            drop_duration_ms=4000.0,
+            recovery_duration_ms=20000.0,
+            normal_spread_bps=2.0,
+            crash_max_spread_bps=120.0,
+            spread_widening_ms=600.0,
+            normal_bid_depth=2000,
+            min_bid_depth=20,
+            depth_decay_ms=1500.0,
+            min_fill_prob=0.08,
+            fill_decay_ms=1000.0,
+        )
+
     def price_at(self, t_ms):
         """Mid price at time t during flash crash."""
         if t_ms is None or t_ms < 0:
