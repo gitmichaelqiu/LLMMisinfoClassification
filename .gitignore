@@ -6,6 +6,7 @@ tmp/
 # Backtest outputs and figures
 output/
 plots/
+finbert/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
