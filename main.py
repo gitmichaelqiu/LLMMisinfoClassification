@@ -1455,111 +1455,125 @@ def run_sensitivity_analysis(
 
 
 def run_phase7(target_size=1000, test_size=0.2, model="deepseek",
-               run_7a=True, run_7b=True, thinking="enabled", use_system0=True):
+               run_7a=True, run_7b=True, thinking="enabled", use_system0="all"):
     """Phase 7: Institutional backtesting — execution realism + vectorbt sweep.
 
-    Runs detection pipeline once, then feeds results to both sub-phases.
+    Runs detection pipeline, then feeds results to both sub-phases.
     """
-    print()
-    print("=" * 60)
-    print("PHASE 7: INSTITUTIONAL BACKTESTING")
-    print(f"Model: {model} | 7a (execution realism): {run_7a} | 7b (vectorbt): {run_7b} | System0: {use_system0}")
-    print("=" * 60)
+    if use_system0 == "all":
+        modes = [True, False]
+    elif use_system0 in (True, "on"):
+        modes = [True]
+    elif use_system0 in (False, "off"):
+        modes = [False]
+    else:
+        raise ValueError(f"Invalid use_system0 value: {use_system0}")
 
-    # Step 1: Run pipeline to collect per-sample detection results
-    print("\n[7.0] Running detection pipeline to collect results...")
-    df = load_combined_dataset(target_size=target_size)
+    for mode in modes:
+        mode_str = "system0" if mode else "no_system0"
+        print()
+        print("=" * 60)
+        print(f"PHASE 7: INSTITUTIONAL BACKTESTING ({mode_str.upper()})")
+        print(f"Model: {model} | 7a (execution realism): {run_7a} | 7b (vectorbt): {run_7b} | System0: {mode}")
+        print("=" * 60)
 
-    train_df, test_df = train_test_split(
-        df, test_size=test_size, random_state=42, stratify=df["label"])
+        # Step 1: Run pipeline to collect per-sample detection results
+        print(f"\n[7.0] Running detection pipeline to collect results for {mode_str}...")
+        df = load_combined_dataset(target_size=target_size)
 
-    DEEPSEEK_AVAIL = bool(DEEPSEEK_API_KEY) and DEEPSEEK_API_KEY != "your_actual_api_key_here"
-    if not DEEPSEEK_AVAIL:
-        train_heuristic_baseline(train_df)
+        train_df, test_df = train_test_split(
+            df, test_size=test_size, random_state=42, stratify=df["label"])
 
-    n_test = len(test_df)
-    print(f"  Test samples: {n_test} (fake={test_df['label'].sum()}, "
-          f"real={len(test_df) - test_df['label'].sum()})")
+        DEEPSEEK_AVAIL = bool(DEEPSEEK_API_KEY) and DEEPSEEK_API_KEY != "your_actual_api_key_here"
+        if not DEEPSEEK_AVAIL:
+            train_heuristic_baseline(train_df)
 
-    rag = RAGRetriever()
-    pipeline = AsyncDualPipeline(
-        rag_retriever=rag,
-        model=model,
-        latency_budget_ms=None,
-        position_size=1000,
-        thinking=thinking,
-        use_system0=use_system0,
-        heuristic_predictor=heuristic_predict,
-    )
+        n_test = len(test_df)
+        print(f"  Test samples: {n_test} (fake={test_df['label'].sum()}, "
+              f"real={len(test_df) - test_df['label'].sum()})")
 
-    detection_results = []
-    sample_limit = min(n_test, 50)
-    print(f"  Processing {sample_limit} samples...")
-
-    df_subset = test_df.head(sample_limit)
-
-    def process_sample_phase7(idx, row):
-        result = pipeline.process_sample(row["content"])
-        return {
-            'index': idx,
-            "actual": int(row["label"]),
-            "verdict": int(result.get("verdict", 0)),
-            "confidence": float(result.get("confidence", 0.5)),
-            "intervention_time_ms": result.get("intervention_time_ms", 0),
-        }
-
-    with ThreadPoolExecutor(max_workers=30) as pool:
-        futures = {pool.submit(process_sample_phase7, idx, row): idx for idx, row in df_subset.iterrows()}
-        for i, fut in enumerate(as_completed(futures)):
-            res = fut.result()
-            detection_results.append(res)
-            if (i + 1) % 10 == 0 or i == 0:
-                print(f"  [{i+1}/{sample_limit}]")
-
-    # Sort to match original test_df order
-    detection_results.sort(key=lambda x: list(df_subset.index).index(x['index']))
-    for r in detection_results:
-        del r['index']
-
-    print(f"  Detection complete: {sum(1 for r in detection_results if r['verdict']==1)} "
-          f"flagged as FAKE")
-
-    # Step 2: Run Phase 7a — execution realism analysis
-    if run_7a:
-        print("\n[7a] Execution realism analysis...")
-        report_7a = run_execution_realism_analysis(
-            detection_results,
-            base_price=190.0,
-            output_dir="./output",
-            plots_dir="./plots",
-            model_name=model,
+        rag = RAGRetriever()
+        pipeline = AsyncDualPipeline(
+            rag_retriever=rag,
+            model=model,
+            latency_budget_ms=None,
+            position_size=1000,
             thinking=thinking,
+            use_system0=mode,
+            heuristic_predictor=heuristic_predict,
         )
-        print(f"  Key finding: {report_7a['key_finding']}")
 
-    # Step 3: Run Phase 7b — vectorbt signal sweep
-    if run_7b:
-        print("\n[7b] Vectorbt signal sweep...")
-        report_7b = run_phase7b(
-            detection_results,
-            output_dir="./output",
-            plots_dir="./plots",
-            model_name=model,
-            thinking=thinking,
-        )
-        best_ct = report_7b.get("vectorbt_results", {}).get("best_threshold", "N/A")
-        phase5_ct = report_7b.get("phase5_comparison", {}).get("phase5_optimal_threshold", "N/A")
-        print(f"  vectorbt best threshold: {best_ct} (Phase 5 optimal: {phase5_ct})")
+        detection_results = []
+        sample_limit = min(n_test, 50)
+        print(f"  Processing {sample_limit} samples...")
 
-    # Step 4: Combined summary
-    print()
-    print("=" * 60)
-    print("PHASE 7 COMPLETE")
-    print(f"  Outputs: output/phase7a_execution_realism.json")
-    print(f"           output/phase7b_signal_sweep.json")
-    print(f"           plots/ideal_vs_realized_pnl.png")
-    print(f"           plots/vectorbt_heatmaps.png")
-    print("=" * 60)
+        df_subset = test_df.head(sample_limit)
+
+        def process_sample_phase7(idx, row):
+            result = pipeline.process_sample(row["content"])
+            return {
+                'index': idx,
+                "actual": int(row["label"]),
+                "verdict": int(result.get("verdict", 0)),
+                "confidence": float(result.get("confidence", 0.5)),
+                "intervention_time_ms": result.get("intervention_time_ms", 0),
+            }
+
+        with ThreadPoolExecutor(max_workers=30) as pool:
+            futures = {pool.submit(process_sample_phase7, idx, row): idx for idx, row in df_subset.iterrows()}
+            for i, fut in enumerate(as_completed(futures)):
+                res = fut.result()
+                detection_results.append(res)
+                if (i + 1) % 10 == 0 or i == 0:
+                    print(f"  [{i+1}/{sample_limit}]")
+
+        # Sort to match original test_df order
+        detection_results.sort(key=lambda x: list(df_subset.index).index(x['index']))
+        for r in detection_results:
+            del r['index']
+
+        print(f"  Detection complete: {sum(1 for r in detection_results if r['verdict']==1)} "
+              f"flagged as FAKE")
+
+        # Step 2: Run Phase 7a — execution realism analysis
+        if run_7a:
+            print("\n[7a] Execution realism analysis...")
+            report_7a = run_execution_realism_analysis(
+                detection_results,
+                base_price=190.0,
+                output_dir="./output",
+                plots_dir="./plots",
+                model_name=model,
+                thinking=thinking,
+                use_system0=mode,
+            )
+            print(f"  Key finding: {report_7a['key_finding']}")
+
+        # Step 3: Run Phase 7b — vectorbt signal sweep
+        if run_7b:
+            print("\n[7b] Vectorbt signal sweep...")
+            report_7b = run_phase7b(
+                detection_results,
+                output_dir="./output",
+                plots_dir="./plots",
+                model_name=model,
+                thinking=thinking,
+                use_system0=mode,
+            )
+            best_ct = report_7b.get("vectorbt_results", {}).get("best_threshold", "N/A")
+            phase5_ct = report_7b.get("phase5_comparison", {}).get("phase5_optimal_threshold", "N/A")
+            print(f"  vectorbt best threshold: {best_ct} (Phase 5 optimal: {phase5_ct})")
+
+        # Step 4: Combined summary
+        thinking_str = f"_thinking_{thinking}" if model == "deepseek" else ""
+        print()
+        print("=" * 60)
+        print(f"PHASE 7 COMPLETE ({mode_str.upper()})")
+        print(f"  Outputs: output/{model}{thinking_str}_{mode_str}_phase7a_execution_realism.json")
+        print(f"           output/{model}{thinking_str}_{mode_str}_phase7b_signal_sweep.json")
+        print(f"           plots/{model}{thinking_str}_{mode_str}_ideal_vs_realized_pnl.png")
+        print(f"           plots/{model}{thinking_str}_{mode_str}_vectorbt_heatmaps.png")
+        print("=" * 60)
 
 
 def run_cross_domain_comparison(domains=None, target_size=1000, max_samples=None, model="deepseek", thinking="enabled"):
@@ -1752,12 +1766,17 @@ if __name__ == "__main__":
     parser.add_argument("--phase7b", action="store_true", help="Run Phase 7b vectorbt signal sweep")
     parser.add_argument("--thinking", type=str, default="enabled", choices=["enabled", "disabled"],
                         help="DeepSeek thinking mode: enabled (CoT reasoning) or disabled (direct response)")
-    parser.add_argument("--no-system0", action="store_true", help="Disable System 0 pre-filtering in Phase 7")
+    parser.add_argument("--system0", type=str, default="all", choices=["on", "off", "all"],
+                        help="System 0 pre-filtering in Phase 7: 'on', 'off', or 'all' (runs both) (default: all)")
+    parser.add_argument("--no-system0", action="store_true", help="Disable System 0 pre-filtering in Phase 7 (shortcut for --system0 off)")
     args = parser.parse_args()
 
     test_size_frac = args.test_size / args.target_size if args.target_size > 0 else 0.2
 
     if args.phase7 or args.phase7a or args.phase7b:
+        system0_val = args.system0
+        if args.no_system0:
+            system0_val = "off"
         run_phase7(
             target_size=args.target_size,
             test_size=test_size_frac,
@@ -1765,7 +1784,7 @@ if __name__ == "__main__":
             run_7a=args.phase7 or args.phase7a,
             run_7b=args.phase7 or args.phase7b,
             thinking=args.thinking,
-            use_system0=not args.no_system0,
+            use_system0=system0_val,
         )
     elif args.phase6:
         # Default: both domains. --domain overrides to specific domain(s).

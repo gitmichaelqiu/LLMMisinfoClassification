@@ -304,7 +304,7 @@ def run_hftbacktest_validation(results, config=None, save_dir="./output"):
 
 
 def run_execution_realism_analysis(results, base_price=190.0, output_dir="./output",
-                                   plots_dir="./plots", model_name="deepseek", thinking="enabled"):
+                                   plots_dir="./plots", model_name="deepseek", thinking="enabled", use_system0=True):
     """Full Phase 7a analysis: quantify execution realism gap.
 
     Args:
@@ -329,7 +329,8 @@ def run_execution_realism_analysis(results, base_price=190.0, output_dir="./outp
 
     # Plot
     thinking_str = f"_thinking_{thinking}" if model_name == "deepseek" else ""
-    save_path = f"{plots_dir}/{model_name}{thinking_str}_ideal_vs_realized_pnl.png"
+    system0_str = "_system0" if use_system0 else "_no_system0"
+    save_path = f"{plots_dir}/{model_name}{thinking_str}{system0_str}_ideal_vs_realized_pnl.png"
     simulator.plot_comparison(comparison, save_path=save_path)
 
     # Find key metrics for flagship claim
@@ -346,6 +347,7 @@ def run_execution_realism_analysis(results, base_price=190.0, output_dir="./outp
             "n_samples": len(results),
             "model_name": model_name,
             "thinking": thinking,
+            "use_system0": use_system0,
         },
         "comparison": comparison,
         "flagship_metrics": {
@@ -362,7 +364,7 @@ def run_execution_realism_analysis(results, base_price=190.0, output_dir="./outp
     }
 
     os.makedirs(output_dir, exist_ok=True)
-    output_path = f"{output_dir}/{model_name}{thinking_str}_phase7a_execution_realism.json"
+    output_path = f"{output_dir}/{model_name}{thinking_str}{system0_str}_phase7a_execution_realism.json"
     with open(output_path, "w") as f:
         json.dump(report, f, indent=2)
     print(f"Phase 7a report saved to {output_path}")
