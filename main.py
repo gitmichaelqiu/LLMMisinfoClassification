@@ -1576,6 +1576,120 @@ def run_phase7(target_size=1000, test_size=0.2, model="deepseek",
         print("=" * 60)
 
 
+def run_phase8_liquidity_sensitivity(target_size=1000, test_size=0.2, model="deepseek",
+                                     thinking="enabled", n_samples=30):
+    """Phase 8: Liquidity sensitivity study.
+
+    Runs pipeline to collect results, then sweeps liquidity parameters.
+    """
+    print()
+    print("=" * 60)
+    print("PHASE 8: LIQUIDITY SENSITIVITY STUDY")
+    print(f"Model: {model} | Thinking: {thinking} | LHS Samples: {n_samples}")
+    print("=" * 60)
+
+    # Step 1: Run pipeline to collect per-sample detection results (without System 0 filtering to test full capacity)
+    print("\n[8.0] Running detection pipeline to collect results...")
+    df = load_combined_dataset(target_size=target_size)
+
+    train_df, test_df = train_test_split(
+        df, test_size=test_size, random_state=42, stratify=df["label"])
+
+    DEEPSEEK_AVAIL = bool(DEEPSEEK_API_KEY) and DEEPSEEK_API_KEY != "your_actual_api_key_here"
+    if not DEEPSEEK_AVAIL:
+        train_heuristic_baseline(train_df)
+
+    n_test = len(test_df)
+    print(f"  Test samples: {n_test} (fake={test_df['label'].sum()}, "
+          f"real={len(test_df) - test_df['label'].sum()})")
+
+    rag = RAGRetriever()
+    # Disable System 0 filter here so we get a comprehensive sweep over all news items
+    pipeline = AsyncDualPipeline(
+        rag_retriever=rag,
+        model=model,
+        latency_budget_ms=None,
+        position_size=1000,
+        thinking=thinking,
+        use_system0=False,
+        heuristic_predictor=heuristic_predict,
+    )
+
+    detection_results = []
+    sample_limit = min(n_test, 50)
+    print(f"  Processing {sample_limit} samples...")
+
+    df_subset = test_df.head(sample_limit)
+
+    def process_sample_phase8(idx, row):
+        result = pipeline.process_sample(row["content"])
+        return {
+            'index': idx,
+            "actual": int(row["label"]),
+            "verdict": int(result.get("verdict", 0)),
+            "confidence": float(result.get("confidence", 0.5)),
+            "intervention_time_ms": result.get("intervention_time_ms", 0),
+        }
+
+    with ThreadPoolExecutor(max_workers=30) as pool:
+        futures = {pool.submit(process_sample_phase8, idx, row): idx for idx, row in df_subset.iterrows()}
+        for i, fut in enumerate(as_completed(futures)):
+            res = fut.result()
+            detection_results.append(res)
+            if (i + 1) % 10 == 0 or i == 0:
+                print(f"  [{i+1}/{sample_limit}]")
+
+    # Sort to match original test_df order
+    detection_results.sort(key=lambda x: list(df_subset.index).index(x['index']))
+    for r in detection_results:
+        del r['index']
+
+    print(f"  Detection complete: {sum(1 for r in detection_results if r['verdict']==1)} flagged as FAKE")
+
+    # Step 2: Run Phase 8 analyzer
+    from src.liquidity_sensitivity import LiquiditySensitivityAnalyzer
+    analyzer = LiquiditySensitivityAnalyzer(detection_results, base_price=190.0)
+    sweep_results = analyzer.run_sweep(n_samples=n_samples, seed=42)
+    thresholds = analyzer.analyze_thresholds(sweep_results)
+
+    print()
+    print("=" * 40)
+    print("PHASE 8 KEY THRESHOLDS")
+    print(f"  Crossover Capacity Ratio (Sign Flip): {thresholds['crossover_capacity_ratio']}")
+    print(f"  Max Scalable Position Size: {thresholds['max_scalable_position_shares']} shares")
+    print("  Parameter Importance Ranking:")
+    for rank in thresholds["importance_ranking"]:
+        print(f"    - {rank['param']:<20} (coeff={rank['coefficient']:>6.2f}, direction={rank['direction']})")
+    print("=" * 40)
+
+    # Plot
+    thinking_str = f"_thinking_{thinking}" if model == "deepseek" else ""
+    plot_path = f"./plots/{model}{thinking_str}_phase8_liquidity_heatmaps.png"
+    analyzer.plot_heatmaps(sweep_results, save_path=plot_path)
+
+    # Save JSON report
+    report = {
+        "phase": "8",
+        "timestamp": time.asctime(),
+        "params": {
+            "target_size": target_size,
+            "test_size": test_size,
+            "model_name": model,
+            "thinking": thinking,
+            "n_samples": n_samples,
+        },
+        "thresholds": thresholds,
+        "sweep_results": sweep_results,
+    }
+
+    output_path = f"./output/{model}{thinking_str}_phase8_liquidity_sensitivity.json"
+    with open(output_path, "w") as f:
+        json.dump(report, f, indent=2)
+    print(f"\nPhase 8 report saved to {output_path}")
+
+    return report
+
+
 def run_cross_domain_comparison(domains=None, target_size=1000, max_samples=None, model="deepseek", thinking="enabled"):
     """Phase 6: Cross-domain generalization evaluation.
 
@@ -1764,6 +1878,7 @@ if __name__ == "__main__":
     parser.add_argument("--phase7", action="store_true", help="Run Phase 7 institutional backtesting")
     parser.add_argument("--phase7a", action="store_true", help="Run Phase 7a execution realism analysis")
     parser.add_argument("--phase7b", action="store_true", help="Run Phase 7b vectorbt signal sweep")
+    parser.add_argument("--phase8", action="store_true", help="Run Phase 8 liquidity sensitivity study")
     parser.add_argument("--thinking", type=str, default="enabled", choices=["enabled", "disabled"],
                         help="DeepSeek thinking mode: enabled (CoT reasoning) or disabled (direct response)")
     parser.add_argument("--system0", type=str, default="all", choices=["on", "off", "all"],
@@ -1773,7 +1888,15 @@ if __name__ == "__main__":
 
     test_size_frac = args.test_size / args.target_size if args.target_size > 0 else 0.2
 
-    if args.phase7 or args.phase7a or args.phase7b:
+    if args.phase8:
+        run_phase8_liquidity_sensitivity(
+            target_size=args.target_size,
+            test_size=test_size_frac,
+            model=args.model,
+            thinking=args.thinking,
+            n_samples=args.lhs_samples,
+        )
+    elif args.phase7 or args.phase7a or args.phase7b:
         system0_val = args.system0
         if args.no_system0:
             system0_val = "off"
