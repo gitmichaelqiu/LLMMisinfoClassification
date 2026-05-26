@@ -1455,7 +1455,7 @@ def run_sensitivity_analysis(
 
 
 def run_phase7(target_size=1000, test_size=0.2, model="deepseek",
-               run_7a=True, run_7b=True, thinking="enabled", use_system0="all"):
+               run_7a=True, run_7b=True, thinking="enabled", use_system0="all", dynamic_sizing=True):
     """Phase 7: Institutional backtesting — execution realism + vectorbt sweep.
 
     Runs detection pipeline, then feeds results to both sub-phases.
@@ -1546,6 +1546,7 @@ def run_phase7(target_size=1000, test_size=0.2, model="deepseek",
                 model_name=model,
                 thinking=thinking,
                 use_system0=mode,
+                dynamic_sizing=dynamic_sizing,
             )
             print(f"  Key finding: {report_7a['key_finding']}")
 
@@ -1884,6 +1885,7 @@ if __name__ == "__main__":
     parser.add_argument("--system0", type=str, default="all", choices=["on", "off", "all"],
                         help="System 0 pre-filtering in Phase 7: 'on', 'off', or 'all' (runs both) (default: all)")
     parser.add_argument("--no-system0", action="store_true", help="Disable System 0 pre-filtering in Phase 7 (shortcut for --system0 off)")
+    parser.add_argument("--no-dynamic-sizing", action="store_true", help="Disable dynamic position sizing in Phase 7")
     args = parser.parse_args()
 
     test_size_frac = args.test_size / args.target_size if args.target_size > 0 else 0.2
@@ -1908,6 +1910,7 @@ if __name__ == "__main__":
             run_7b=args.phase7 or args.phase7b,
             thinking=args.thinking,
             use_system0=system0_val,
+            dynamic_sizing=not args.no_dynamic_sizing,
         )
     elif args.phase6:
         # Default: both domains. --domain overrides to specific domain(s).

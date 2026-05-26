@@ -54,12 +54,13 @@ class MicrostructureSimulator:
         if missing:
             raise ValueError(f"Results missing columns: {missing}")
 
-    def run(self, confidence_threshold=0.5, regime=None):
+    def run(self, confidence_threshold=0.5, regime=None, dynamic_sizing=True):
         """Compute ideal and realized P&L for each sample.
 
         Args:
             confidence_threshold: min System 2 confidence to intervene
             regime: 'normal' (default config) or 'stress' (overrides config)
+            dynamic_sizing: if True, size intervention to min(position_size, depth)
 
         Returns:
             dict with summary metrics + per-sample DataFrames
@@ -93,7 +94,12 @@ class MicrostructureSimulator:
             inter_time = row["intervention_time_ms"]
 
             intervened = (verdict == 1 and confidence >= confidence_threshold)
+            
+            # Dynamic position sizing: size the reversal trade to the predicted depth at t
             ps = self.position_size
+            if dynamic_sizing and intervened and inter_time is not None:
+                predicted_bid_depth = config.bid_depth_at(inter_time)
+                ps = min(self.position_size, predicted_bid_depth)
 
             # Ideal P&L
             if actual == 1 and intervened:
@@ -102,12 +108,12 @@ class MicrostructureSimulator:
                     config.base_price, config.trough_price,
                     config.drop_duration_ms, config.recovery_duration_ms)
             elif actual == 0 and intervened:
-                # FP: opportunity cost
+                # FP: opportunity cost on sized trade
                 p_intervention = config.price_at(inter_time)
                 ideal = -ps * max(0.0, config.base_price - p_intervention) * 0.5
             elif actual == 1 and not intervened:
-                # FN: full crash loss
-                ideal = -ps * (config.base_price - config.trough_price)
+                # FN: full crash loss on original unmitigated position size
+                ideal = -self.position_size * (config.base_price - config.trough_price)
             else:
                 ideal = 0.0
 
@@ -180,7 +186,7 @@ class MicrostructureSimulator:
             "details": details,
         }
 
-    def run_comparison(self, confidence_thresholds=None, regimes=None):
+    def run_comparison(self, confidence_thresholds=None, regimes=None, dynamic_sizing=True):
         """Run across multiple thresholds and regimes. Returns comparison table."""
         if confidence_thresholds is None:
             confidence_thresholds = [0.3, 0.5, 0.7]
@@ -191,7 +197,7 @@ class MicrostructureSimulator:
         for regime in regimes:
             for ct in confidence_thresholds:
                 print(f"  Simulating: regime={regime}, threshold={ct}")
-                metrics = self.run(confidence_threshold=ct, regime=regime)
+                metrics = self.run(confidence_threshold=ct, regime=regime, dynamic_sizing=dynamic_sizing)
                 comparison.append({
                     "regime": regime,
                     "threshold": ct,
@@ -304,7 +310,7 @@ def run_hftbacktest_validation(results, config=None, save_dir="./output"):
 
 
 def run_execution_realism_analysis(results, base_price=190.0, output_dir="./output",
-                                   plots_dir="./plots", model_name="deepseek", thinking="enabled", use_system0=True):
+                                   plots_dir="./plots", model_name="deepseek", thinking="enabled", use_system0=True, dynamic_sizing=True):
     """Full Phase 7a analysis: quantify execution realism gap.
 
     Args:
@@ -322,6 +328,7 @@ def run_execution_realism_analysis(results, base_price=190.0, output_dir="./outp
     comparison = simulator.run_comparison(
         confidence_thresholds=[0.3, 0.5, 0.7],
         regimes=["normal", "stress"],
+        dynamic_sizing=dynamic_sizing,
     )
 
     # Run hftbacktest validation
@@ -348,6 +355,7 @@ def run_execution_realism_analysis(results, base_price=190.0, output_dir="./outp
             "model_name": model_name,
             "thinking": thinking,
             "use_system0": use_system0,
+            "dynamic_sizing": dynamic_sizing,
         },
         "comparison": comparison,
         "flagship_metrics": {
