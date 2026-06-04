@@ -1,14 +1,33 @@
-"""CoT output parser for structured flag extraction from LLM reasoning."""
+"""CoT output parser for MFT verification arbitrage.
+
+Parses structured LLM outputs supporting three verdicts:
+- FAKE (verdict=1): Hoax detected, reverse the trade
+- REAL (verdict=0): Authentic news, no intervention
+- ESCALATE (verdict=2): Grey Swan, flag for human reviewer
+"""
 
 import re
+import json
+import os
 
 FLAG_NAMES = [
     "contradiction",
     "entity_mismatch",
     "temporal_inconsistency",
     "metric_implausibility",
-    "source_unverifiable",
+    "social_velocity_anomaly",
 ]
+
+# Verdict constants
+VERDICT_REAL = 0
+VERDICT_FAKE = 1
+VERDICT_ESCALATE = 2
+
+VERDICT_MAP = {
+    "FAKE": VERDICT_FAKE,
+    "REAL": VERDICT_REAL,
+    "ESCALATE": VERDICT_ESCALATE,
+}
 
 
 def parse_cot_output(response_text: str) -> dict:
@@ -18,22 +37,22 @@ def parse_cot_output(response_text: str) -> dict:
     the structured output, infers verdict from reasoning body.
 
     Returns dict with:
-        verdict (int): 0=REAL, 1=FAKE
+        verdict (int): 0=REAL, 1=FAKE, 2=ESCALATE
         confidence (float): 0.0-1.0
         contradiction_flag (int): 0/1
         entity_mismatch (int): 0/1
         temporal_inconsistency (int): 0/1
         metric_implausibility (int): 0/1
-        source_unverifiable (int): 0/1
+        social_velocity_anomaly (int): 0/1
     """
     result = {
-        "verdict": 0,
+        "verdict": VERDICT_REAL,
         "confidence": 0.5,
         "contradiction_flag": 0,
         "entity_mismatch": 0,
         "temporal_inconsistency": 0,
         "metric_implausibility": 0,
-        "source_unverifiable": 0,
+        "social_velocity_anomaly": 0,
     }
 
     if not response_text:
@@ -42,9 +61,10 @@ def parse_cot_output(response_text: str) -> dict:
     text = response_text.strip()
 
     # --- Structured format parsing (preferred) ---
-    verdict_match = re.search(r'Verdict:\s*(FAKE|REAL)', text, re.IGNORECASE)
+    verdict_match = re.search(r'Verdict:\s*(FAKE|REAL|ESCALATE)', text, re.IGNORECASE)
     if verdict_match:
-        result["verdict"] = 1 if verdict_match.group(1).upper() == "FAKE" else 0
+        raw_verdict = verdict_match.group(1).upper()
+        result["verdict"] = VERDICT_MAP.get(raw_verdict, VERDICT_REAL)
 
     conf_match = re.search(r'Confidence:\s*(\d+)', text, re.IGNORECASE)
     if conf_match:
@@ -57,14 +77,25 @@ def parse_cot_output(response_text: str) -> dict:
         if "none" not in raw_flags:
             for flag_name in FLAG_NAMES:
                 if flag_name in raw_flags:
+                    result[flag_name.replace("social_velocity_anomaly", "social_velocity_anomaly")] = 1
+                    # Map human-readable flag names to internal keys
+                    if flag_name == "social_velocity_anomaly":
+                        result["social_velocity_anomaly"] = 1
+                if flag_name in raw_flags:
                     result[flag_name] = 1
         return result  # Structured format found and parsed
 
     # --- Fallback: no structured format (truncated or loose output) ---
-    # Search entire text for FAKE/REAL keywords
     text_upper = text.upper()
     has_fake = "FAKE" in text_upper
     has_real = "REAL" in text_upper
+    has_escalate = "ESCALATE" in text_upper
+
+    # If ESCALATE appears and neither FAKE nor REAL is decisive
+    if has_escalate and not has_fake:
+        result["verdict"] = VERDICT_ESCALATE
+        result["confidence"] = 0.5
+        return result
 
     # Keyword-based inference from reasoning body
     contradiction_keywords = [
@@ -72,23 +103,31 @@ def parse_cot_output(response_text: str) -> dict:
         "far beyond", "wildly above", "not plausible", "seems fabricated",
         "is fabricated", "appears fake", "is fake", "anomaly",
         "cannot be true", "not credible", "misleading", "fictitious",
+        "hoax", "debunk", "fabricated", "spoofed",
     ]
     real_keywords = [
         "appears authentic", "is authentic", "appears real", "is real",
-        "consistent with", "plausible", "no contradiction",
+        "consistent with", "plausible", "no contradiction", "genuine",
+    ]
+    escalate_keywords = [
+        "ambiguous", "uncertain", "grey swan", "gray swan",
+        "unclear", "cannot determine", "not enough information",
+        "escalate", "further review", "human review",
     ]
 
     body = text.lower()
     fake_score = sum(1 for kw in contradiction_keywords if kw in body)
     real_score = sum(1 for kw in real_keywords if kw in body)
+    escalate_score = sum(1 for kw in escalate_keywords if kw in body)
 
     if has_fake and not has_real:
-        result["verdict"] = 1
+        result["verdict"] = VERDICT_FAKE
     elif has_real and not has_fake:
-        result["verdict"] = 0
+        result["verdict"] = VERDICT_REAL
+    elif escalate_score > max(fake_score, real_score):
+        result["verdict"] = VERDICT_ESCALATE
     else:
-        # Both present or neither — use keyword scoring
-        result["verdict"] = 1 if fake_score > real_score else 0
+        result["verdict"] = VERDICT_FAKE if fake_score > real_score else VERDICT_REAL
 
     # Infer confidence from contradiction density
     n_contradictions = body.count("contradict")
@@ -104,7 +143,36 @@ def parse_cot_output(response_text: str) -> dict:
         result["temporal_inconsistency"] = 1
     if re.search(r'metric|implausib|revenue.*(far|wildly|impossible|beyond)|valuation.*(too|inflated)', body):
         result["metric_implausibility"] = 1
-    if re.search(r'source|unverifiable|cannot be verified|no source', body):
-        result["source_unverifiable"] = 1
+    if re.search(r'social.*velocity|social.*consensus|debunk.*velocity|amplification.*rate|sentiment.*shift', body):
+        result["social_velocity_anomaly"] = 1
 
     return result
+
+
+def save_parsed_samples(samples, output_path="./output/phase3_prompt_samples.json"):
+    """Save a sample of parsed LLM outputs for audit/inspection.
+
+    Args:
+        samples: list of dicts, each with keys:
+            - event_id: str
+            - raw_output: str
+            - parsed: dict (output of parse_cot_output)
+            - headline: str
+        output_path: JSON output path
+    """
+    os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
+
+    # Only keep last 300 chars of raw output for readability
+    display_samples = []
+    for s in samples:
+        display = {
+            "event_id": s.get("event_id", "unknown"),
+            "headline_preview": s.get("headline", "")[:100],
+            "raw_output_suffix": s.get("raw_output", "")[-300:],
+            "parsed": {k: v for k, v in s.get("parsed", {}).items()},
+        }
+        display_samples.append(display)
+
+    with open(output_path, "w") as f:
+        json.dump(display_samples, f, indent=2)
+    print(f"[CoTParser] Saved {len(display_samples)} parsed samples to {output_path}")
