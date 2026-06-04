@@ -259,35 +259,39 @@ class MFTPipeline:
         # Actual P&L based on what the LLM decided
         if llm_intervened and is_fake_headline is True:
             # True Positive: LLM correctly reversed a fake → use intervene P&L
+            # pnl_saved = intervene - hold = smaller_loss - bigger_loss = positive
             actual_pnl = intervene_pnl["pnl"]
-            pnl_saved = hold_pnl["pnl"] - intervene_pnl["pnl"]  # positive
+            pnl_saved = intervene_pnl["pnl"] - hold_pnl["pnl"]
+            missed_profit = 0.0
             outcome = "true_positive"
         elif llm_intervened and is_fake_headline is False:
             # False Positive: LLM reversed a REAL event → missed momentum profit
-            # Cost = missed profit between T1 and T2 on REAL curve
+            # pnl_saved = intervene - hold = smaller_profit - larger_profit = negative
             real_price_t1 = self.simulator.price_at(self.simulator.T1, is_fake=False)
             real_price_t2 = self.simulator.price_at(self.simulator.T2, is_fake=False)
             missed_profit = (real_price_t2 - real_price_t1) * pos
 
             actual_pnl = intervene_pnl["pnl"]
-            pnl_saved = hold_pnl["pnl"] - intervene_pnl["pnl"]  # negative (intervention hurt)
+            pnl_saved = intervene_pnl["pnl"] - hold_pnl["pnl"]  # negative (intervention hurt)
             outcome = "false_positive"
         elif not llm_intervened and is_fake_headline is True:
             # False Negative: LLM missed a FAKE → held to max drawdown
             actual_pnl = hold_pnl["pnl"]
             pnl_saved = 0.0
+            missed_profit = 0.0
             outcome = "false_negative"
         elif not llm_intervened and is_fake_headline is False:
             # True Negative: LLM correctly held a REAL → full profit
             actual_pnl = hold_pnl["pnl"]
             pnl_saved = 0.0
+            missed_profit = 0.0
             outcome = "true_negative"
         else:
             # Unknown ground truth
             actual_pnl = intervene_pnl["pnl"] if llm_intervened else hold_pnl["pnl"]
-            pnl_saved = 0.0 if not llm_intervened else (hold_pnl["pnl"] - intervene_pnl["pnl"])
-            outcome = "unknown"
+            pnl_saved = 0.0 if not llm_intervened else (intervene_pnl["pnl"] - hold_pnl["pnl"])
             missed_profit = 0.0
+            outcome = "unknown"
 
         result = {
             "event_id": event_id or "unknown",
@@ -307,6 +311,7 @@ class MFTPipeline:
             "intervene_pnl": round(intervene_pnl["pnl"], 2),
             "actual_pnl": round(actual_pnl, 2),
             "pnl_saved": round(pnl_saved, 2),
+            "missed_profit": round(missed_profit, 2),
             "outcome": outcome,
             "entry_price": hold_pnl["entry_price"],
             "hold_exit_price": hold_pnl["exit_price"],
@@ -421,7 +426,7 @@ class MFTPipeline:
         latencies = df["system2_latency_ms"].dropna()
         latency_mean = float(latencies.mean()) if len(latencies) > 0 else 0.0
 
-        # FP cost details
+        # FP cost details (explicit missed profit, not derived from sign-inverted pnl_saved)
         fp_details = None
         if fp > 0:
             fp_df = df[df["outcome"] == "false_positive"]
@@ -430,7 +435,8 @@ class MFTPipeline:
                 "total_cost": round(float(fp_df["actual_pnl"].sum()), 2),
                 "mean_cost": round(float(fp_df["actual_pnl"].mean()), 2),
                 "max_cost": round(float(fp_df["actual_pnl"].max()), 2),
-                "missed_profit": round(float(fp_df["pnl_saved"].sum()), 2),
+                "total_missed_profit": round(float(fp_df["missed_profit"].sum()), 2),
+                "mean_missed_profit": round(float(fp_df["missed_profit"].mean()), 2),
             }
 
         # Build report

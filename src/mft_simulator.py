@@ -281,6 +281,8 @@ class MFTMarketSimulator:
             fill_ratio = pos / bid_depth
             reflexivity_penalty = half_spread * min(5.0, fill_ratio * 2.0)
         else:
+            # No liquidity — extreme penalty and sentinel fill_ratio
+            fill_ratio = float("inf")
             reflexivity_penalty = half_spread * 5.0  # extreme if no liquidity
 
         total_cost = slippage_cost + reflexivity_penalty
