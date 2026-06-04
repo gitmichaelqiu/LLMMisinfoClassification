@@ -1,11 +1,13 @@
 import pandas as pd
 import random
+import os
+import numpy as np
 
 # Categories for diversity
 SECTORS = ["Tech", "Macro", "Banking", "Energy", "Retail", "Automotive", "Pharma"]
 CURRENCIES = ["USD", "EUR", "GBP", "JPY", "CNY", "CHF"]
 COUNTRIES = ["US", "UK", "Germany", "Japan", "China", "France", "Switzerland", "Canada", "India"]
-ENTITIES = ["Apple", "Microsoft", "Amazon", "Alphabet", "Meta", "Tesla", "NVIDIA", "JPMorgan", "Wells Fargo", "Goldman Sachs", 
+ENTITIES = ["Apple", "Microsoft", "Amazon", "Alphabet", "Meta", "Tesla", "NVIDIA", "JPMorgan", "Wells Fargo", "Goldman Sachs",
             "ExxonMobil", "Chevron", "Pfizer", "Moderna", "Disney", "Ford", "Toyota", "Walmart", "Home Depot", "Nike",
             "FedEx", "Visa", "Mastercard", "Netflix", "Oracle", "IBM", "Intel", "Adobe", "Salesforce", "Verizon"]
 
@@ -83,7 +85,7 @@ REALISTIC_ANOMALY_PATTERNS = [
 KNOWLEDGE_GATED_ANOMALY_PATTERNS = [
     # Revenue/earnings contradictions (10)
     "{entity} reports {quarter} revenue of ${val}B, far exceeding analyst consensus of ${val2}B.",
-    "{entity} posts record annual net income of ${val}B, nearly double the previous year's ${prev_val}B.",
+    "{entity} posts record annual net income of ${val}B, nearly double the previous year's {prev_val}B.",
     "{entity} {quarter} earnings show revenue jumped {pct}% year-over-year to ${val}B.",
     "{entity} reports ${val}B in {quarter} sales, beating estimates for the {nth} straight quarter.",
     "{entity} announces {quarter} operating income of ${val}B, representing a {pct}% profit margin.",
@@ -138,6 +140,7 @@ KNOWLEDGE_GATED_ANOMALY_PATTERNS = [
     "{entity} employee count doubles to {num_k}k but total compensation falls {pct}%.",
     "{entity} spends ${billion}B on buybacks in {quarter} despite negative free cash flow of ${val}B.",
 ]
+
 
 def generate_unique_df(count=350):
     random.seed(42)
@@ -298,6 +301,90 @@ def generate_unique_df(count=350):
     df = pd.DataFrame(rows)
     df.to_csv("./input/headlines.csv", index=False)
     print(f"Generated {len(df)} headlines to headlines.csv (100 authentic, 100 absurdist, 100 realistic, 50 knowledge_gated).")
+    return df
+
+
+# --- Temporal Event Generation (Phase 1.1) ---
+
+BASE_RATE_CLASSES = {
+    "authentic": "trusted_source",
+    "absurdist": "obvious_fabrication",
+    "realistic": "plausible_fabrication",
+    "knowledge_gated": "expert_fabrication",
+}
+
+
+def _assign_sector(entity):
+    """Assign a sector based on entity name."""
+    entity_sector_map = {
+        "Apple": "Tech", "Microsoft": "Tech", "Amazon": "Tech", "Alphabet": "Tech",
+        "Meta": "Tech", "NVIDIA": "Tech", "Intel": "Tech", "Oracle": "Tech",
+        "IBM": "Tech", "Adobe": "Tech", "Salesforce": "Tech", "Netflix": "Tech",
+        "Tesla": "Automotive", "Ford": "Automotive", "Toyota": "Automotive",
+        "JPMorgan": "Banking", "Wells Fargo": "Banking", "Goldman Sachs": "Banking",
+        "Visa": "Banking", "Mastercard": "Banking",
+        "ExxonMobil": "Energy", "Chevron": "Energy",
+        "Pfizer": "Pharma", "Moderna": "Pharma",
+        "Disney": "Retail", "Walmart": "Retail", "Home Depot": "Retail", "Nike": "Retail",
+        "FedEx": "Macro", "Verizon": "Tech",
+    }
+    return entity_sector_map.get(entity, "Macro")
+
+
+def generate_temporal_events(headlines_df=None):
+    """Generate temporal events for the MFT pipeline.
+
+    Takes the existing headlines DataFrame (or generates one) and wraps
+    each row as a temporal event with event_id, T2_human_verdict, and
+    base_rate_class for use in the Dual-System MFT backtest.
+
+    Output: output/temporal_events.csv
+    """
+    if headlines_df is None:
+        headlines_df = generate_unique_df()
+
+    os.makedirs("./output", exist_ok=True)
+    rng = np.random.default_rng(42)
+
+    events = []
+    for i, row in headlines_df.iterrows():
+        # Determine the anomaly type for base_rate_class mapping
+        event_type = row.get("type", "authentic") if row["label"] == 0 else row.get("type", "realistic")
+        if row["label"] == 0:
+            event_type = "authentic"
+        base_rate_class = BASE_RATE_CLASSES.get(str(event_type).lower(), "plausible_fabrication")
+
+        # Extract entity from headline for sector assignment
+        headline_text = str(row["headline"])
+        entity_found = "UNKNOWN"
+        for ent in sorted(ENTITIES, key=len, reverse=True):
+            if ent.lower() in headline_text.lower():
+                entity_found = ent
+                break
+
+        event_id = f"EVT-{i:05d}"
+        events.append({
+            "event_id": event_id,
+            "T0_headline": headline_text,
+            "T2_human_verdict": int(row["label"]),
+            "base_rate_class": base_rate_class,
+            "label": int(row["label"]),
+            "type": event_type,
+            "entity": entity_found,
+            "sector": _assign_sector(entity_found),
+        })
+
+    output_df = pd.DataFrame(events)
+    output_path = "./output/temporal_events.csv"
+    output_df.to_csv(output_path, index=False)
+    print(f"Generated {len(output_df)} temporal events to {output_path}.")
+    print(f"  Base rate class distribution:")
+    for brc, count in output_df["base_rate_class"].value_counts().items():
+        fake_count = len(output_df[(output_df["base_rate_class"] == brc) & (output_df["label"] == 1)])
+        print(f"    {brc}: {count} events ({fake_count} fake, {count - fake_count} real)")
+    return output_df
+
 
 if __name__ == "__main__":
-    generate_unique_df()
+    df = generate_unique_df()
+    generate_temporal_events(df)
