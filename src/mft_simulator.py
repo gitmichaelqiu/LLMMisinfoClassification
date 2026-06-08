@@ -20,6 +20,36 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 
+# ── Liquidity Profiles ──────────────────────────────────────────
+
+LIQUIDITY_PROFILES = {
+    "high_cap": {
+        "normal_bid_depth": 20000,
+        "min_bid_depth": 500,
+        "panic_depth_decay_s": 2.5,
+        "spread_normal_bps": 0.3,
+        "spread_max_bps": 40.0,
+        "description": "Mega-cap tech / large-cap financial (AAPL, MSFT, JPM)",
+    },
+    "mid_cap": {
+        "normal_bid_depth": 5000,
+        "min_bid_depth": 100,
+        "panic_depth_decay_s": 1.5,
+        "spread_normal_bps": 0.5,
+        "spread_max_bps": 80.0,
+        "description": "Mid-cap equities, moderate liquidity (default)",
+    },
+    "low_cap": {
+        "normal_bid_depth": 500,
+        "min_bid_depth": 20,
+        "panic_depth_decay_s": 0.8,
+        "spread_normal_bps": 2.0,
+        "spread_max_bps": 200.0,
+        "description": "Small-cap / micro-cap biotech (high volatility, thin books)",
+    },
+}
+
+
 class MFTMarketSimulator:
     """Sustained dislocation market model for MFT verification arbitrage.
 
@@ -38,7 +68,8 @@ class MFTMarketSimulator:
                  snapback_recovery_pct=0.97, permanent_impact_pct=0.02,
                  normal_bid_depth=5000, min_bid_depth=100,
                  panic_depth_decay_s=1.5, spread_normal_bps=0.5,
-                 spread_max_bps=80.0, position_size=1000):
+                 spread_max_bps=80.0, position_size=1000,
+                 liquidity_profile=None):
         """
         Args:
             base_price: Entry price at T0 ($)
@@ -53,6 +84,8 @@ class MFTMarketSimulator:
             spread_normal_bps: Normal bid-ask spread (bps)
             spread_max_bps: Maximum spread during panic (bps)
             position_size: Default position size for P&L calculations (shares)
+            liquidity_profile: str key into LIQUIDITY_PROFILES, or None for manual params.
+                              Overrides depth/spread params when set.
         """
         self.base_price = base_price
         self.panic_drop_pct = panic_drop_pct
@@ -60,12 +93,23 @@ class MFTMarketSimulator:
         self.real_appreciation_pct = real_appreciation_pct
         self.snapback_recovery_pct = snapback_recovery_pct
         self.permanent_impact_pct = permanent_impact_pct
-        self.normal_bid_depth = normal_bid_depth
-        self.min_bid_depth = min_bid_depth
-        self.panic_depth_decay_s = panic_depth_decay_s
-        self.spread_normal_bps = spread_normal_bps
-        self.spread_max_bps = spread_max_bps
         self.position_size = position_size
+        self.liquidity_profile = liquidity_profile
+
+        # Apply liquidity profile if specified (overrides individual params)
+        if liquidity_profile and liquidity_profile in LIQUIDITY_PROFILES:
+            prof = LIQUIDITY_PROFILES[liquidity_profile]
+            self.normal_bid_depth = prof["normal_bid_depth"]
+            self.min_bid_depth = prof["min_bid_depth"]
+            self.panic_depth_decay_s = prof["panic_depth_decay_s"]
+            self.spread_normal_bps = prof["spread_normal_bps"]
+            self.spread_max_bps = prof["spread_max_bps"]
+        else:
+            self.normal_bid_depth = normal_bid_depth
+            self.min_bid_depth = min_bid_depth
+            self.panic_depth_decay_s = panic_depth_decay_s
+            self.spread_normal_bps = spread_normal_bps
+            self.spread_max_bps = spread_max_bps
 
     # ── Price Model ──────────────────────────────────────────────
 
@@ -395,41 +439,45 @@ class MFTMarketSimulator:
         ax2.legend(fontsize=10)
         ax2.grid(True, alpha=0.3)
 
-        plt.tight_layout()
         plt.savefig(save_path, dpi=150, bbox_inches="tight")
         plt.close()
         print(f"[MFTSim] Price curves saved to {save_path}")
 
 
 def demo():
-    """Run a demo of the MFT market simulator."""
-    sim = MFTMarketSimulator(base_price=100.0)
-    sim.generate_price_curves()
+    """Run a demo of the MFT market simulator across all liquidity profiles."""
+    for prof_name in LIQUIDITY_PROFILES:
+        print(f"\n{'='*60}")
+        print(f"  LIQUIDITY PROFILE: {prof_name}")
+        print(f"  {LIQUIDITY_PROFILES[prof_name]['description']}")
+        print(f"{'='*60}")
+        sim = MFTMarketSimulator(base_price=100.0, liquidity_profile=prof_name)
+        sim.generate_price_curves(save_path=f"./plots/mft_price_curves_{prof_name}.png")
 
-    print("\n=== HOLD-FOR-HUMAN P&L ===")
-    for is_fake in [True, False]:
-        result = sim.compute_hold_for_human_pnl(is_fake=is_fake)
-        label = "FAKE" if is_fake else "REAL"
-        print(f"  {label}: P&L=${result['pnl']:.2f}  "
-              f"Entry=${result['entry_price']}  Exit=${result['exit_price']}  "
-              f"Slippage=${result['slippage_cost']:.2f}")
+        print("\n=== HOLD-FOR-HUMAN P&L ===")
+        for is_fake in [True, False]:
+            result = sim.compute_hold_for_human_pnl(is_fake=is_fake)
+            label = "FAKE" if is_fake else "REAL"
+            print(f"  {label}: P&L=${result['pnl']:.2f}  "
+                  f"Entry=${result['entry_price']}  Exit=${result['exit_price']}  "
+                  f"Slippage=${result['slippage_cost']:.2f}")
 
-    print("\n=== LLM-INTERVENE P&L (at T₁=5s) ===")
-    for is_fake in [True, False]:
-        result = sim.compute_llm_intervene_pnl(is_fake=is_fake)
-        label = "FAKE" if is_fake else "REAL"
-        print(f"  {label}: P&L=${result['pnl']:.2f}  "
-              f"Exit=${result['exit_price']:.2f}  "
-              f"ReflexPen=${result['reflexivity_penalty']:.2f}  "
-              f"FillRatio={result['fill_ratio']:.3f}")
+        print("\n=== LLM-INTERVENE P&L (at T₁=5s) ===")
+        for is_fake in [True, False]:
+            result = sim.compute_llm_intervene_pnl(is_fake=is_fake)
+            label = "FAKE" if is_fake else "REAL"
+            print(f"  {label}: P&L=${result['pnl']:.2f}  "
+                  f"Exit=${result['exit_price']:.2f}  "
+                  f"ReflexPen=${result['reflexivity_penalty']:.2f}  "
+                  f"FillRatio={result['fill_ratio']:.3f}")
 
-    print("\n=== P&L SAVED (Intervene vs Hold) ===")
-    for is_fake in [True, False]:
-        result = sim.compute_pnl_saved(is_fake=is_fake)
-        label = "FAKE" if is_fake else "REAL"
-        print(f"  {label}: Hold=${result['hold_pnl']:.2f}  "
-              f"Intervene=${result['intervene_pnl']:.2f}  "
-              f"Saved=${result['pnl_saved']:.2f}")
+        print("\n=== P&L SAVED (Intervene vs Hold) ===")
+        for is_fake in [True, False]:
+            result = sim.compute_pnl_saved(is_fake=is_fake)
+            label = "FAKE" if is_fake else "REAL"
+            print(f"  {label}: Hold=${result['hold_pnl']:.2f}  "
+                  f"Intervene=${result['intervene_pnl']:.2f}  "
+                  f"Saved=${result['pnl_saved']:.2f}")
 
 
 if __name__ == "__main__":
