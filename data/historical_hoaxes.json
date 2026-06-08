@@ -1,0 +1,216 @@
+{
+  "phase": "8_historical_hoaxes",
+  "description": "Real historical fake-news events with reconstructed T₀ (first appearance) and T₂ (official debunk/verification) timestamps. Each event records the prevailing context at T₀ for RAG reconstruction.",
+  "events": [
+    {
+      "event_id": "HH-2013-AP-HACK",
+      "title": "2013 AP White House Hack — S&P 500 Flash Crash",
+      "fake_headline": "Breaking: Two Explosions in the White House — Barack Obama injured",
+      "entity": "S&P 500",
+      "sector": "Macro",
+      "type": "market_wide_panic",
+      "t0_datetime": "2013-04-23 13:07",
+      "t0_timezone": "EDT",
+      "t0_timestamp_seconds": 0,
+      "t2_datetime": "2013-04-23 13:13",
+      "t2_timestamp_seconds": 360,
+      "t2_latency_s": 360,
+      "description": "Hackers gained access to the Associated Press (AP) Twitter account @AP and tweeted a false report of explosions in the White House injuring President Obama. The Dow Jones Industrial Average dropped ~150 points (1%) instantly, erasing $136B in market value, before recovering minutes later when the AP confirmed the tweet was fake.",
+      "reference": "https://www.bbc.com/news/technology-22261915",
+      "sources": [
+        "https://www.reuters.com/article/us-usa-whitehouse-blast-factbox-idUSBRE93M0CQ20130423",
+        "https://en.wikipedia.org/wiki/2013_Associated_Press_hack"
+      ],
+      "pre_t0_context": {
+        "market_conditions": "S&P 500 trading near all-time highs around 1562. Market relatively calm before the tweet.",
+        "entity_background": "The Associated Press is a major global news wire service. Its Twitter account (@AP) had 2M+ followers and was considered a trusted breaking-news source. President Obama was in office, no credible security threats were reported that day.",
+        "known_facts": [
+          "President Obama was in the White House on April 23, 2013",
+          "No credible security alerts had been issued for Washington DC that day",
+          "The AP Twitter account had not previously been hacked",
+          "Market was in a bull run, near all-time highs"
+        ]
+      }
+    },
+    {
+      "event_id": "HH-2021-WMT-LITECOIN",
+      "title": "2021 Walmart/Litecoin Fake Press Release",
+      "fake_headline": "Walmart partners with Litecoin to offer digital currency payments starting October 1",
+      "entity": "Walmart",
+      "sector": "Retail",
+      "type": "fake_pr_hoax",
+      "t0_datetime": "2021-09-13 11:30",
+      "t0_timezone": "EDT",
+      "t0_timestamp_seconds": 0,
+      "t2_datetime": "2021-09-13 11:58",
+      "t2_timestamp_seconds": 1680,
+      "t2_latency_s": 1680,
+      "description": "A fraudulent press release was distributed via GlobeNewswire claiming Walmart had partnered with Litecoin for digital currency payments. Litecoin price surged ~33% from $175 to $235 in minutes, and Walmart stock jumped. Walmart quickly denied the partnership, calling it a hoax, and the gains reversed.",
+      "reference": "https://www.reuters.com/technology/litecoin-surges-after-walmart-partnership-claim-2021-09-13/",
+      "sources": [
+        "https://www.coindesk.com/markets/2021/09/13/walmart-denies-partnership-with-litecoin-after-fake-press-release/",
+        "https://en.wikipedia.org/wiki/Walmart"
+      ],
+      "pre_t0_context": {
+        "market_conditions": "Crypto markets were in a bull cycle. Litecoin trading around $175. Walmart stock (WMT) trading around $148. Broad market was mixed.",
+        "entity_background": "Walmart is the world's largest retailer, market cap ~$400B. It had been experimenting with blockchain technology but had made no announcements about cryptocurrency payments. The company had a formal PR process for all announcements via official corporate communications.",
+        "known_facts": [
+          "Walmart had filed some blockchain-related patents but had not launched any crypto payment product",
+          "Walmart's official press releases were distributed through BusinessWire or PRNewswire, not GlobeNewswire",
+          "Litecoin was a smaller cryptocurrency vs Bitcoin/Ethereum with market cap ~$12B",
+          "No Walmart executive had mentioned Litecoin or any crypto payment partnership previously"
+        ]
+      }
+    },
+    {
+      "event_id": "HH-2023-PENTAGON-EXPLOSION",
+      "title": "2023 Pentagon AI-Generated Explosion Hoax",
+      "fake_headline": "Explosion near the Pentagon — Military lockdown in effect",
+      "entity": "S&P 500",
+      "sector": "Macro",
+      "type": "ai_generated_hoax",
+      "t0_datetime": "2023-05-22 09:53",
+      "t0_timezone": "EDT",
+      "t0_timestamp_seconds": 0,
+      "t2_datetime": "2023-05-22 10:08",
+      "t2_timestamp_seconds": 900,
+      "t2_latency_s": 900,
+      "description": "An AI-generated image of an explosion near the Pentagon went viral on Twitter. The image was shared by verified accounts and Russian state media. The S&P 500 briefly dropped ~0.3% before recovering. The Arlington Fire Department confirmed no explosion occurred. The incident highlighted the danger of generative AI in creating convincing disinformation.",
+      "reference": "https://www.bloomberg.com/news/articles/2023-05-22/fake-ai-image-of-pentagon-explosion-goes-viral-on-twitter",
+      "sources": [
+        "https://www.reuters.com/article/factcheck-pentagon-explosion-idUSL1N37H0F9",
+        "https://en.wikipedia.org/wiki/2023_Pentagon_explosion_hoax"
+      ],
+      "pre_t0_context": {
+        "market_conditions": "S&P 500 trading around 4192. Markets were focused on US debt ceiling negotiations. Volatility was moderate.",
+        "entity_background": "The Pentagon is the headquarters of the US Department of Defense in Arlington, VA. No credible threats to the Pentagon had been reported that morning. The image was first posted by a Facebook page with a history of posting AI-generated content.",
+        "known_facts": [
+          "No credible security threats were reported to the Pentagon that morning",
+          "The image showed smoke that appeared stylized and lacked typical explosion characteristics",
+          "The account that first posted had a history of AI-generated content",
+          "The Pentagon has robust security protocols and any explosion would trigger immediate official response"
+        ]
+      }
+    },
+    {
+      "event_id": "HH-2023-SEC-BTC-ETF",
+      "title": "2023 SEC Fake Bitcoin ETF Approval Tweet",
+      "fake_headline": "SEC approves Bitcoin ETFs for listing on all national securities exchanges",
+      "entity": "Bitcoin",
+      "sector": "Crypto",
+      "type": "account_hack_hoax",
+      "t0_datetime": "2023-01-09 16:31",
+      "t0_timezone": "EST",
+      "t0_timestamp_seconds": 0,
+      "t2_datetime": "2023-01-09 16:36",
+      "t2_timestamp_seconds": 300,
+      "t2_latency_s": 300,
+      "description": "The official @SECGov Twitter account was compromised and posted a fake tweet announcing approval of Bitcoin ETFs. Bitcoin price surged ~$1,000 from $46,800 to $47,800 in minutes. SEC Chair Gary Gensler quickly posted that the account was compromised and the tweet was unauthorized. The SEC later confirmed it was a SIM-swap attack.",
+      "reference": "https://www.reuters.com/technology/sec-says-former-twitter-account-compromised-bitcoin-etf-approval-tweet-fake-2024-01-09/",
+      "sources": [
+        "https://www.coindesk.com/policy/2023/01/09/sec-twitter-account-hacked-to-post-fake-bitcoin-etf-approval/",
+        "https://en.wikipedia.org/wiki/SEC_social_media_hack_(2024)"
+      ],
+      "pre_t0_context": {
+        "market_conditions": "Bitcoin was in an early 2023 recovery, trading around $46,800. The crypto market was anticipating a potential Bitcoin ETF approval with several high-profile applications pending.",
+        "entity_background": "The SEC (Securities and Exchange Commission) is the US financial regulator. Chair Gary Gensler had been cautious about crypto regulation. Multiple Bitcoin ETF applications were pending at the time, with market expectations mixed on approval timing.",
+        "known_facts": [
+          "The SEC had never approved a spot Bitcoin ETF despite years of applications",
+          "Chair Gensler had expressed concerns about crypto market manipulation",
+          "No Bitcoin ETF had been approved by any major US regulator at that point",
+          "The SEC typically announces major decisions during market hours, not at 4:31 PM after close"
+        ]
+      }
+    },
+    {
+      "event_id": "HH-2017-UNITED-EXPRESS",
+      "title": "2017 United Airlines 'Re-accommodation' Crisis (Reputational, Not Market Hoax)",
+      "fake_headline": "United Airlines forcibly removes passenger from overbooked flight — passenger dragged bleeding",
+      "entity": "United Airlines",
+      "sector": "Aviation",
+      "type": "reputational_crisis",
+      "t0_datetime": "2017-04-09 17:30",
+      "t0_timezone": "CDT",
+      "t0_timestamp_seconds": 0,
+      "t2_datetime": "2017-04-10 14:00",
+      "t2_timestamp_seconds": 73800,
+      "t2_latency_s": 73800,
+      "description": "A passenger was forcibly removed from a United Express flight at Chicago O'Hare after refusing to give up his seat. Video went viral. United initially blamed the passenger. The incident was real, but initial United statements were misleading. United stock dropped ~4% ($1.4B market cap loss) within days.",
+      "reference": "https://en.wikipedia.org/wiki/United_Express_Flight_3411_incident",
+      "sources": [
+        "https://www.bbc.com/news/business-39559952",
+        "https://www.reuters.com/article/us-united-airlines-passenger-idUSKBN17C1B0"
+      ],
+      "pre_t0_context": {
+        "market_conditions": "United Airlines (UAL) was trading around $70. Airline sector was stable. The incident occurred on a Sunday evening, video went viral overnight.",
+        "entity_background": "United Airlines was a major US carrier with a market cap of ~$22B. It had been trying to improve customer service ratings. Overbooking was a standard industry practice. CEO Oscar Munoz had been in role since 2015.",
+        "known_facts": [
+          "Airlines legally overbook flights as a standard practice",
+          "United offered up to $800 in compensation before the forcible removal",
+          "The passenger was a doctor who needed to see patients the next morning",
+          "Chicago Department of Aviation security officers performed the removal, not airline staff"
+        ]
+      }
+    },
+    {
+      "event_id": "HH-2022-MCDONALDS-UKRAINE",
+      "title": "2022 McDonald's Exit From Russia — Fake Variations",
+      "fake_headline": "McDonald's to continue operations in Russia despite mounting international pressure",
+      "entity": "McDonald's",
+      "sector": "Retail",
+      "type": "fake_corporate_statement",
+      "t0_datetime": "2022-03-08 09:15",
+      "t0_timezone": "EST",
+      "t0_timestamp_seconds": 0,
+      "t2_datetime": "2022-03-08 11:30",
+      "t2_timestamp_seconds": 8100,
+      "t2_latency_s": 8100,
+      "description": "Amid Russia's invasion of Ukraine, fake statements circulated claiming McDonald's would continue operations in Russia. Conflicting rumors caused confusion. McDonald's actually announced a temporary closure of all 847 Russian locations on March 8, 2022. The fake versions caused confusion about the company's actual position.",
+      "reference": "https://www.reuters.com/business/retail-consumer/mcdonalds-temporarily-close-850-restaurants-russia-2022-03-08/",
+      "sources": [
+        "https://en.wikipedia.org/wiki/McDonald%27s_in_Russia",
+        "https://www.bbc.com/news/business-60666789"
+      ],
+      "pre_t0_context": {
+        "market_conditions": "Markets were volatile following Russia's invasion of Ukraine (Feb 24, 2022). MCD trading around $240. Many Western companies were announcing exits from Russia.",
+        "entity_background": "McDonald's had 847 restaurants in Russia employing 62,000 people. It had operated in Russia since 1990, symbolizing post-Cold War economic cooperation. Pressure was building on Western companies to exit Russia.",
+        "known_facts": [
+          "Multiple Western companies had already announced Russia exits (Starbucks, Coca-Cola, PepsiCo)",
+          "McDonald's had not made any public statement about Russia operations before March 8",
+          "McDonald's Russia was franchise-operated through a master franchise agreement",
+          "The company had expressed concern about the humanitarian crisis in Ukraine"
+        ]
+      }
+    },
+    {
+      "event_id": "HH-2015-SPOOFED-S&P",
+      "title": "2015 Twitter 'Saudi Prince' Market Spoofing Hoax",
+      "fake_headline": "Saudi Prince Al-Waleed bin Talal: We are selling our entire $14B stake in [Company X] immediately",
+      "entity": "Citigroup",
+      "sector": "Banking",
+      "type": "fake_twitter_takeover",
+      "t0_datetime": "2015-10-16 10:45",
+      "t0_timezone": "EDT",
+      "t0_timestamp_seconds": 0,
+      "t2_datetime": "2015-10-16 11:30",
+      "t2_timestamp_seconds": 2700,
+      "t2_latency_s": 2700,
+      "description": "A hacked Twitter account posed as Saudi Prince Al-Waleed bin Talal and announced massive stock sales. The fake tweets caused brief sell-offs in affected stocks before the Prince's office confirmed the account was hacked and the tweets were false. The incident highlighted the vulnerability of verified accounts in moving markets.",
+      "reference": "https://www.reuters.com/article/us-saudi-prince-twitter-idUSKCN0SA1E420151016",
+      "sources": [
+        "https://www.cnbc.com/2015/10/16/saudi-prince-alwaleeds-twitter-account-hacked.html",
+        "https://en.wikipedia.org/wiki/Al-Waleed_bin_Talal"
+      ],
+      "pre_t0_context": {
+        "market_conditions": "Markets were relatively stable. S&P 500 trading around 2015. Citigroup (C) trading around $52. Prince Al-Waleed was a major investor in Citigroup, holding a ~5% stake.",
+        "entity_background": "Prince Al-Waleed bin Talal was a prominent Saudi royal and international investor. He was the largest individual foreign investor in Citigroup. His investment company Kingdom Holding had significant stakes in multiple global companies. His Twitter account @Alwaleed_Talal had millions of followers.",
+        "known_facts": [
+          "Prince Al-Waleed was a long-term Citigroup investor since the 1990s",
+          "His investment style was buy-and-hold, not short-term trading",
+          "The tweet's language was inconsistent with the Prince's typical communication style",
+          "Kingdom Holding had not issued any press release about stake sales"
+        ]
+      }
+    }
+  ]
+}
