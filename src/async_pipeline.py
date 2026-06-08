@@ -27,6 +27,8 @@ from src.rag_retriever import DualRAGRetriever, extract_entity
 from src.mft_simulator import MFTMarketSimulator
 from src.system0_filter import System0Filter
 
+from src.moa_agents import MoADebate
+
 
 class MFTPipeline:
     """T0 → T1 → T2 pipeline for MFT verification arbitrage.
@@ -53,6 +55,7 @@ class MFTPipeline:
         base_price=100.0,
         use_system0=False,
         thinking="enabled",
+        use_moa=False,
     ):
         """
         Args:
@@ -65,6 +68,7 @@ class MFTPipeline:
             base_price: Base price for the asset
             use_system0: Enable System 0 pre-filter
             thinking: DeepSeek thinking mode
+            use_moa: Enable Mixture of Agents debate (Phase 9)
         """
         self.finbert = finbert_model
         self.dual_rag = dual_rag or DualRAGRetriever()
@@ -74,8 +78,24 @@ class MFTPipeline:
         self.position_size = position_size
         self.base_price = base_price
         self.thinking = thinking
+        self.use_moa = use_moa
         self.system0 = System0Filter(enabled=use_system0)
         self.simulator = MFTMarketSimulator(base_price=base_price)
+
+        # MoA debate engine (Phase 9)
+        self.moa = None
+        if use_moa:
+            api_avail = (
+                bool(self.deepseek_key)
+                and self.deepseek_key != "your_actual_api_key_here"
+                and self.client is not None
+            )
+            self.moa = MoADebate(
+                client=self.client if api_avail else None,
+                model="deepseek-v4-flash",
+                thinking=thinking,
+            )
+            print(f"[MFT] MoA debate engine initialized (api_avail={api_avail})")
 
         # Results accumulator
         self.results = []
@@ -131,6 +151,27 @@ class MFTPipeline:
 
         parsed = parse_cot_output(raw)
         return parsed, latency, raw
+
+    def _llm_evaluate_moa(self, headline, entity, news_context, social_context):
+        """Evaluate headline using MoA debate (Believer + Skeptic + Risk Officer).
+
+        Phase 9 audit: Believer and Skeptic run CONCURRENTLY.
+        Total T1 latency = max(T_believer, T_skeptic) + T_risk_officer.
+        """
+        moa_result = self.moa.evaluate(
+            headline=headline,
+            entity=entity,
+            news_context=news_context,
+            social_context=social_context,
+            liquidity_profile=getattr(self.simulator, "liquidity_profile", "mid_cap") or "mid_cap",
+        )
+
+        verdict = moa_result["verdict"]
+        confidence = moa_result["confidence"]
+        cot_flags = moa_result["cot_flags"]
+        total_latency = moa_result["latencies"].get("total_moa_ms", 0)
+
+        return moa_result, verdict, confidence, cot_flags, total_latency
 
     # ── System 2: Dual RAG Retrieval ────────────────────────────
 
@@ -203,20 +244,33 @@ class MFTPipeline:
                     and self.client is not None
                 )
                 if deepseek_avail:
-                    parsed, llm_latency, raw_output = self._llm_evaluate(
-                        headline, entity, news_context, social_context
-                    )
-                    verdict = parsed.get("verdict", self.HOLD)
-                    confidence = parsed.get("confidence", 0.5)
-                    cot_flags = parsed
+                    if self.use_moa:
+                        # ── MoA Debate (Phase 9) ──
+                        moa_result, verdict, confidence, cot_flags, llm_latency = self._llm_evaluate_moa(
+                            headline, entity, news_context, social_context
+                        )
+                        raw_output = moa_result.get("raw_output", "")
+                    else:
+                        # ── Single-Shot LLM (Phase 3-8) ──
+                        parsed, llm_latency, raw_output = self._llm_evaluate(
+                            headline, entity, news_context, social_context
+                        )
+                        verdict = parsed.get("verdict", self.HOLD)
+                        confidence = parsed.get("confidence", 0.5)
+                        cot_flags = parsed
 
                     # Save for sample output
-                    self.parsed_samples.append({
+                    sample = {
                         "event_id": event_id or "unknown",
                         "headline": headline[:200],
                         "raw_output": raw_output,
-                        "parsed": parsed,
-                    })
+                        "parsed": cot_flags,
+                    }
+                    if self.use_moa:
+                        sample["believer_output"] = moa_result.get("believer_output", "")
+                        sample["skeptic_output"] = moa_result.get("skeptic_output", "")
+                        sample["moa_latencies"] = moa_result.get("latencies", {})
+                    self.parsed_samples.append(sample)
                 else:
                     # Mock mode — no API key
                     parsed = {"verdict": self.HOLD, "confidence": 0.5}
@@ -319,7 +373,16 @@ class MFTPipeline:
             "reflexivity_penalty": intervene_pnl.get("reflexivity_penalty", 0),
             "fill_ratio": intervene_pnl.get("fill_ratio", 0),
             "is_fake_event": is_fake_headline,
+            "use_moa": self.use_moa,
         }
+
+        # Add MoA-specific outputs if available
+        if self.use_moa and self.parsed_samples:
+            last_sample = self.parsed_samples[-1]
+            if "believer_output" in last_sample:
+                result["believer_output"] = last_sample.get("believer_output", "")
+                result["skeptic_output"] = last_sample.get("skeptic_output", "")
+                result["moa_latencies"] = last_sample.get("moa_latencies", {})
 
         self.results.append(result)
         return result
@@ -486,7 +549,23 @@ class MFTPipeline:
                 "system1_mean": float(df["system1_latency_ms"].mean()),
                 "retrieval_mean": float(df["retrieval_latency_ms"].mean()),
             },
+            "use_moa": self.use_moa,
         }
+
+        # Add MoA latency breakdown if applicable
+        if self.use_moa and "moa_latencies" in df.columns:
+            moa_lat = df["moa_latencies"].dropna()
+            if len(moa_lat) > 0:
+                # Extract mean per component
+                believer_ms = [l.get("believer_ms", 0) for l in moa_lat if isinstance(l, dict)]
+                skeptic_ms = [l.get("skeptic_ms", 0) for l in moa_lat if isinstance(l, dict)]
+                risk_ms = [l.get("risk_officer_ms", 0) for l in moa_lat if isinstance(l, dict)]
+                report["moa_latency_ms"] = {
+                    "believer_mean": round(float(np.mean(believer_ms)), 2) if believer_ms else 0.0,
+                    "skeptic_mean": round(float(np.mean(skeptic_ms)), 2) if skeptic_ms else 0.0,
+                    "risk_officer_mean": round(float(np.mean(risk_ms)), 2) if risk_ms else 0.0,
+                    "total_moa_mean": round(float(np.mean([l.get("total_moa_ms", 0) for l in moa_lat if isinstance(l, dict)])), 2) if len(moa_lat) > 0 else 0.0,
+                }
 
         # Save JSON
         json_path = os.path.join(output_dir, "mft_backtest_results.json")
@@ -545,40 +624,46 @@ class MFTPipeline:
         fig, ax = plt.subplots(figsize=(10, 6))
 
         esc_df = df[df["llm_verdict"] == self.ESCALATE]
-        esc_fake = len(esc_df[esc_df["is_fake_event"] == True]) if esc_df["is_fake_event"].notna().any() else 0
-        esc_real = len(esc_df[esc_df["is_fake_event"] == False]) if esc_df["is_fake_event"].notna().any() else 0
 
-        categories = ["FAKE Events Escalated", "REAL Events Escalated", "Total Escalated"]
-        values = [esc_fake, esc_real, len(esc_df)]
-        colors = ["#d62728", "#2ca02c", "#1f77b4"]
+        if len(esc_df) == 0:
+            ax.text(0.5, 0.5, "No grey swan escalations in this batch",
+                    transform=ax.transAxes, ha="center", va="center",
+                    fontsize=14, fontstyle="italic", color="gray")
+            ax.set_axis_off()
+        else:
+            has_valid_labels = esc_df["is_fake_event"].notna().any()
+            esc_fake = len(esc_df[esc_df["is_fake_event"] == True]) if has_valid_labels else 0
+            esc_real = len(esc_df[esc_df["is_fake_event"] == False]) if has_valid_labels else 0
 
-        bars = ax.bar(categories, values, color=colors, alpha=0.8, edgecolor="white")
-        for bar, val in zip(bars, values):
-            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.5,
-                    str(val), ha="center", fontsize=12, fontweight="bold")
+            categories = ["FAKE Events Escalated", "REAL Events Escalated", "Total Escalated"]
+            values = [esc_fake, esc_real, len(esc_df)]
 
-        # Add verdict distribution sub-bars
-        verdict_counts = df["llm_verdict"].value_counts()
+            bars = ax.bar(categories, values,
+                          color=["#d62728", "#2ca02c", "#1f77b4"],
+                          alpha=0.8, edgecolor="white")
+            for bar, val in zip(bars, values):
+                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.5,
+                        str(val), ha="center", fontsize=12, fontweight="bold")
+            ax.grid(True, alpha=0.3, axis="y")
+
         ax.set_ylabel("Count")
         ax.set_title("Grey Swan Escalation Rates", fontsize=14, fontweight="bold")
-        ax.grid(True, alpha=0.3, axis="y")
-
-        # Add annotation
         total = len(df)
         esc_rate = len(esc_df) / total * 100 if total > 0 else 0
-        ax.text(0.5, -0.12, f"Escalation Rate: {esc_rate:.1f}% ({len(esc_df)}/{total})",
-                transform=ax.transAxes, ha="center", fontsize=11,
-                bbox=dict(facecolor="orange", alpha=0.2))
+        fig.text(0.5, 0.01, f"Escalation Rate: {esc_rate:.1f}% ({len(esc_df)}/{total})",
+                 ha="center", fontsize=11, fontweight="bold",
+                 bbox=dict(facecolor="orange", alpha=0.2))
 
-        plt.subplots_adjust(bottom=0.2)
         grey_path = os.path.join(plots_dir, "grey_swan_escalation_rates.png")
         fig.savefig(grey_path, dpi=150, bbox_inches="tight")
         plt.close(fig)
         print(f"[MFT] Grey swan escalation rates saved to {grey_path}")
 
     def cleanup(self):
-        """Release thread pool resources."""
+        """Release thread pool and MoA resources."""
         self.executor.shutdown(wait=False)
+        if self.moa is not None:
+            self.moa.shutdown()
 
 
 def run_mft_backtest(
@@ -590,6 +675,7 @@ def run_mft_backtest(
     thinking="enabled",
     use_system0=False,
     max_events=None,
+    use_moa=False,
 ):
     """Run the full MFT backtest end-to-end.
 
@@ -607,6 +693,7 @@ def run_mft_backtest(
         thinking: DeepSeek thinking mode
         use_system0: Enable System 0 pre-filter
         max_events: Cap test set size for quick testing
+        use_moa: Enable MoA debate architecture (Phase 9)
 
     Returns:
         Dict with full metrics
@@ -680,6 +767,7 @@ def run_mft_backtest(
         base_price=base_price,
         use_system0=use_system0,
         thinking=thinking,
+        use_moa=use_moa,
     )
 
     # Run test set
@@ -702,6 +790,7 @@ if __name__ == "__main__":
     parser.add_argument("--base-price", type=float, default=100.0, help="Entry price")
     parser.add_argument("--thinking", default="enabled", choices=["enabled", "disabled"])
     parser.add_argument("--system0", action="store_true", help="Enable System 0 filter")
+    parser.add_argument("--moa", action="store_true", help="Enable MoA debate architecture (Phase 9)")
     args = parser.parse_args()
 
     run_mft_backtest(
@@ -712,4 +801,5 @@ if __name__ == "__main__":
         thinking=args.thinking,
         use_system0=args.system0,
         max_events=args.test_size,
+        use_moa=args.moa,
     )
