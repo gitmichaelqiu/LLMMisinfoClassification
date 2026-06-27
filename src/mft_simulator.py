@@ -11,6 +11,37 @@ Key behaviors:
 2. REAL events: genuine sustained move in news direction, no snapback
 3. Reflexivity: firm's own intervention at T1 moves price against it
 4. Liquidity: bid depth evaporates during panic, recovers at T2
+
+── Dynamic Sizing Multiplier Reconciliation ──────────────────────
+The external review flags a gap between three "improvement factor" claims.
+Here is the reconciliation:
+
+1. Per-share execution cost (42.4x):
+   Full reversal Q=1000 into V=100 at mid=$82 yields ~$50/share in total
+   execution cost (slippage + reflexivity + adverse selection). With dynamic
+   sizing (cap to 0.5 * V = 50 shares), cost drops to ~$1.18/share.
+   Ratio: 50 / 1.18 ≈ 42.4x. This is the single-trade execution cost
+   improvement, NOT the aggregate P&L improvement.
+
+2. Square-root scaling (≈4.47x):
+   Theoretical reduction from sqrt(Q_intervene / Q_full) = sqrt(50 / 1000) =
+   sqrt(0.05) ≈ 0.224. The inverse (1/0.224) ≈ 4.47x represents the
+   theoretical impact reduction from the square-root market impact formula
+   ΔP ∝ √(Q/V). This only captures the reflexivity HALF of the cost, not
+   the full slippage + reflexivity cost.
+
+3. Aggregate P&L improvement (1.2x - 2.3x):
+   Portfolio-level improvement across ALL trades. This is lower than the
+   single-trade 42.4x because: (a) real events (no intervention) dilute
+   the metric, (b) TP trades already had positive savings, so the
+   improvement is on the delta rather than the base cost, (c) FP trades
+   can become MORE costly with dynamic sizing (partial exposure drag).
+
+The 124x number referenced in some materials appears to be 42.4x * 2.9
+(an interaction factor), but is not consistently reproducible across
+parameter regimes. Each metric (execution cost, sqrt-impact, aggregate
+P&L) measures a different level of analysis and should be reported with
+its methodological scope clearly documented.
 """
 
 import os
