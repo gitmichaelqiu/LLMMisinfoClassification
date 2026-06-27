@@ -842,3 +842,74 @@ if __name__ == "__main__":
         max_events=args.test_size,
         use_moa=args.moa,
     )
+
+
+# ── Backward-compatible aliases ──────────────────────────────────
+# AsyncDualPipeline and PnLCalculator were the original HFT pipeline
+# classes. They are retained as aliases so that main.py (which still
+# references the old names) continues to work after the MFT refactor.
+
+class PnLCalculator:
+    """Legacy PnLCalculator — delegates to MFTPipeline's simulator P&L logic."""
+    @staticmethod
+    def compute_pnl(position_size, entry_price, exit_price):
+        return (exit_price - entry_price) * position_size
+
+
+class AsyncDualPipeline(MFTPipeline):
+    """Legacy AsyncDualPipeline — delegate wrapper around MFTPipeline.
+
+    The original interface used latency_budget_ms and process_sample().
+    This wrapper translates to the MFT pipeline interface.
+    """
+    def __init__(self, finbert_model=None, rag_retriever=None,
+                 deepseek_client=None, deepseek_key=None,
+                 latency_budget_ms=None, model="deepseek",
+                 ollama_model="qwen3.5:2b", position_size=1000,
+                 thinking="enabled", heuristic_predictor=None,
+                 use_system0=False):
+        import warnings
+        warnings.warn("AsyncDualPipeline is deprecated; use MFTPipeline.", DeprecationWarning, stacklevel=2)
+        # Convert rag_retriever -> dual_rag
+        from src.rag_retriever import DualRAGRetriever
+        if rag_retriever is not None and not isinstance(rag_retriever, DualRAGRetriever):
+            # Wrap legacy RAGRetriever in DualRAGRetriever
+            dual_rag = DualRAGRetriever()
+            dual_rag.news_retriever = rag_retriever
+        elif rag_retriever is not None:
+            dual_rag = rag_retriever
+        else:
+            dual_rag = DualRAGRetriever()
+
+        super().__init__(
+            finbert_model=finbert_model,
+            dual_rag=dual_rag,
+            deepseek_client=deepseek_client,
+            deepseek_key=deepseek_key,
+            model=model,
+            position_size=position_size,
+            base_price=190.0,
+            use_system0=use_system0,
+            thinking=thinking,
+            heuristic_predictor=heuristic_predictor,
+        )
+        self._latency_budget_ms = latency_budget_ms
+
+    def process_sample(self, content):
+        """Legacy process_sample — returns {verdict, total_latency_ms, pnl_saved, ...}."""
+        result = self.process_event(headline=content)
+        return {
+            "verdict": result["llm_verdict"],
+            "total_latency_ms": result["system2_latency_ms"],
+            "finbert_latency_ms": result["system1_latency_ms"],
+            "retrieval_latency_ms": result["retrieval_latency_ms"],
+            "llm_latency_ms": result["system2_latency_ms"],
+            "budget_violation": self._latency_budget_ms is not None and result["system2_latency_ms"] > self._latency_budget_ms,
+            "pnl_saved": result["pnl_saved"],
+            "confidence": result["llm_confidence"],
+            "intervention_time_ms": self.simulator.T1 * 1000,
+        }
+
+    def cleanup(self):
+        """Legacy cleanup."""
+        super().cleanup()
