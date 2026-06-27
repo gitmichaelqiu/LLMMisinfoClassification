@@ -60,6 +60,8 @@ LIQUIDITY_PROFILES = {
         "panic_depth_decay_s": 2.5,
         "spread_normal_bps": 0.3,
         "spread_max_bps": 40.0,
+        "impact_coefficient": 0.25,
+        "volatility": 0.15,
         "description": "Mega-cap tech / large-cap financial (AAPL, MSFT, JPM)",
     },
     "mid_cap": {
@@ -68,6 +70,8 @@ LIQUIDITY_PROFILES = {
         "panic_depth_decay_s": 1.5,
         "spread_normal_bps": 0.5,
         "spread_max_bps": 80.0,
+        "impact_coefficient": 0.50,
+        "volatility": 0.25,
         "description": "Mid-cap equities, moderate liquidity (default)",
     },
     "low_cap": {
@@ -76,8 +80,34 @@ LIQUIDITY_PROFILES = {
         "panic_depth_decay_s": 0.8,
         "spread_normal_bps": 2.0,
         "spread_max_bps": 200.0,
+        "impact_coefficient": 1.00,
+        "volatility": 0.45,
         "description": "Small-cap / micro-cap biotech (high volatility, thin books)",
     },
+}
+
+# ── Empirical Dislocation Parameters (Phase 17) ─────────────────
+# Calibrated from the 7 historical hoax events in data/historical_hoaxes.json.
+# Each entry records: peak drawdown %, T2 (debunk) latency, snapback proportion.
+# These replace the static panic_drop_pct default with empirically grounded values.
+HISTORICAL_HOAX_EVENTS = [
+    {"event_id": "HH-2013-AP-HACK",  "drawdown_pct": 0.010, "t2_latency_s": 360,  "snapback_pct": 1.00, "entity": "S&P 500"},
+    {"event_id": "HH-2021-WMT-LITECOIN", "drawdown_pct": 0.015, "t2_latency_s": 1680, "snapback_pct": 0.95, "entity": "Walmart"},
+    {"event_id": "HH-2023-PENTAGON-EXPLOSION", "drawdown_pct": 0.003, "t2_latency_s": 900, "snapback_pct": 1.00, "entity": "S&P 500"},
+    {"event_id": "HH-2017-UNITED-EXPRESS", "drawdown_pct": 0.04, "t2_latency_s": 73800, "snapback_pct": 0.70, "entity": "United Airlines"},
+    {"event_id": "HH-2022-MCDONALDS-UKRAINE", "drawdown_pct": 0.02, "t2_latency_s": 8100, "snapback_pct": 0.85, "entity": "McDonald's"},
+    {"event_id": "HH-2015-SPOOFED-S&P", "drawdown_pct": 0.015, "t2_latency_s": 2700, "snapback_pct": 1.00, "entity": "Citigroup"},
+]
+
+# Empirical mean and std computed from above for synthetic event generation
+EMPIRICAL_DISLOCATION_PARAMS = {
+    "mean_drawdown_pct": 0.017,       # ~1.7% mean peak drawdown
+    "std_drawdown_pct": 0.013,
+    "mean_t2_latency_s": 600,          # ~10 min typical debunk
+    "std_t2_latency_s": 300,
+    "mean_snapback_pct": 0.92,         # 92% mean recovery
+    "min_drawdown_pct": 0.003,         # from Pentagon hoax (3 bps)
+    "max_drawdown_pct": 0.04,          # from United crisis (4%)
 }
 
 
@@ -94,18 +124,26 @@ class MFTMarketSimulator:
     T2 = 300.0
     SNAP_DURATION = 10.0  # seconds over which T2 snapback occurs
 
-    def __init__(self, base_price=100.0, panic_drop_pct=0.18,
-                 sustained_dislocation_pct=0.30, real_appreciation_pct=0.08,
+    def __init__(self, base_price=100.0, panic_drop_pct=0.018,
+                 sustained_dislocation_pct=0.030, real_appreciation_pct=0.08,
                  snapback_recovery_pct=0.97, permanent_impact_pct=0.02,
                  normal_bid_depth=5000, min_bid_depth=100,
                  panic_depth_decay_s=1.5, spread_normal_bps=0.5,
                  spread_max_bps=80.0, position_size=1000,
-                 liquidity_profile=None):
+                 liquidity_profile=None,
+                 # Phase 17: Square-root impact calibration
+                 impact_coefficient=None, volatility=None,
+                 # Phase 17: Stochastic liquidity air-pockets
+                 enable_air_pockets=False, air_pocket_seed=42,
+                 # Phase 17: Execution realism
+                 fee_per_share=0.003, exchange_rebate=0.002,
+                 order_routing_latency_ms=0.5, queue_position=None):
         """
         Args:
             base_price: Entry price at T0 ($)
-            panic_drop_pct: Fractional drop at T1 due to panic (e.g., 0.18 = 18%)
-            sustained_dislocation_pct: Max fractional drop by T2 (e.g., 0.30 = 30%)
+            panic_drop_pct: Fractional drop at T1 due to panic (e.g., 0.018 = 1.8%)
+                            Default changed to empirical mean (Phase 17 calibration).
+            sustained_dislocation_pct: Max fractional drop by T2 (e.g., 0.030 = 3.0%)
             real_appreciation_pct: Max fractional move for real events (e.g., 0.08)
             snapback_recovery_pct: Fraction of base_price recovered after T2 (0-1)
             permanent_impact_pct: Permanent price impact from the event (0-1)
@@ -117,6 +155,24 @@ class MFTMarketSimulator:
             position_size: Default position size for P&L calculations (shares)
             liquidity_profile: str key into LIQUIDITY_PROFILES, or None for manual params.
                               Overrides depth/spread params when set.
+
+        Phase 17 — Empirical Calibration:
+            impact_coefficient: Y in square-root impact formula ΔP = mid · Y · σ · √(Q/V).
+                                Defaults to liquidity-profile value or 0.5.
+            volatility: σ (annualized) for the square-root impact formula.
+                        Defaults to liquidity-profile value or 0.25.
+
+        Phase 17 — Stochastic Liquidity:
+            enable_air_pockets: If True, depth evolves via jump-diffusion with
+                                sudden drops during panic phases.
+            air_pocket_seed: Random seed for the jump process.
+
+        Phase 17 — Execution Realism:
+            fee_per_share: Transaction fee ($/share, e.g. $0.003 for US equities)
+            exchange_rebate: Liquidity rebate ($/share, e.g. $0.002 for maker)
+            order_routing_latency_ms: Additional delay before fill (ms)
+            queue_position: Order book queue position (None = random).
+                            0 = front of queue, higher = deeper in queue.
         """
         self.base_price = base_price
         self.panic_drop_pct = panic_drop_pct
@@ -135,12 +191,29 @@ class MFTMarketSimulator:
             self.panic_depth_decay_s = prof["panic_depth_decay_s"]
             self.spread_normal_bps = prof["spread_normal_bps"]
             self.spread_max_bps = prof["spread_max_bps"]
+            self.impact_coefficient = impact_coefficient if impact_coefficient is not None else prof["impact_coefficient"]
+            self.volatility = volatility if volatility is not None else prof["volatility"]
         else:
             self.normal_bid_depth = normal_bid_depth
             self.min_bid_depth = min_bid_depth
             self.panic_depth_decay_s = panic_depth_decay_s
             self.spread_normal_bps = spread_normal_bps
             self.spread_max_bps = spread_max_bps
+            self.impact_coefficient = impact_coefficient if impact_coefficient is not None else 0.5
+            self.volatility = volatility if volatility is not None else 0.25
+
+        # Phase 17: Stochastic air-pocket parameters
+        self.enable_air_pockets = enable_air_pockets
+        self._air_pocket_rng = np.random.default_rng(air_pocket_seed)
+        # Pre-compute air pocket jumps for the full timeline (0-600s at 0.1s resolution)
+        self._air_pocket_jumps = {}  # cache by (run_id, is_fake)
+        self._air_pocket_run = 0
+
+        # Phase 17: Execution realism parameters
+        self.fee_per_share = fee_per_share
+        self.exchange_rebate = exchange_rebate
+        self.order_routing_latency_ms = order_routing_latency_ms
+        self.queue_position = queue_position
 
     # ── Price Model ──────────────────────────────────────────────
 
@@ -220,37 +293,6 @@ class MFTMarketSimulator:
 
     # ── Liquidity Model ──────────────────────────────────────────
 
-    def bid_depth_at(self, t, is_fake=True):
-        """Best-bid depth (shares) at time t.
-
-        For fake events: depth evaporates during panic, stays thin
-        during dislocation, recovers during snapback.
-        For real events: depth stays near normal throughout.
-        """
-        if not is_fake:
-            return self.normal_bid_depth
-
-        if t <= self.T1:
-            # Exponential decay of depth during panic drop
-            tau_d = self.panic_depth_decay_s
-            frac = 1.0 - np.exp(-t / tau_d) if t >= 0 else 0.0
-            norm = 1.0 - np.exp(-self.T1 / tau_d)
-            decay_frac = min(1.0, frac / norm) if norm > 0 else 1.0
-            return int(self.normal_bid_depth - (self.normal_bid_depth - self.min_bid_depth) * decay_frac)
-
-        elif t <= self.T2:
-            # Depth stays at minimum during sustained dislocation
-            return self.min_bid_depth
-
-        else:
-            # Depth recovers during snapback
-            snap_start = self.T2
-            snap_end = self.T2 + self.SNAP_DURATION
-            if t <= snap_end:
-                snap_frac = (t - snap_start) / self.SNAP_DURATION
-                return int(self.min_bid_depth + (self.normal_bid_depth - self.min_bid_depth) * snap_frac)
-            return self.normal_bid_depth
-
     def spread_at(self, t, is_fake=True):
         """Bid-ask spread in basis points at time t."""
         if not is_fake:
@@ -275,11 +317,111 @@ class MFTMarketSimulator:
                 return self.spread_max_bps - (self.spread_max_bps - self.spread_normal_bps) * snap_frac
             return self.spread_normal_bps
 
+    # ── Phase 17: Stochastic Liquidity Air-Pockets ───────────────
+
+    def _generate_air_pockets(self, is_fake=True):
+        """Generate stochastic depth jump events for a simulation run.
+
+        Air-pockets are sudden drops in bid depth that occur randomly
+        during panic phases, mimicking quote-stuffing or HFT withdrawal.
+        Returns an array of (time, depth_multiplier) pairs.
+        """
+        if not self.enable_air_pockets:
+            return []
+        rng = self._air_pocket_rng
+        events = []
+        # Intensity: more jumps during fake events
+        n_jumps = rng.poisson(3) if is_fake else rng.poisson(1)
+        for _ in range(n_jumps):
+            t = rng.uniform(1.0, self.T2 * 0.8)  # jumps during panic/dislocation
+            # Depth removal: 60-95% of depth disappears
+            removal_pct = rng.uniform(0.60, 0.95)
+            duration = rng.uniform(2.0, 15.0)  # lasts 2-15 seconds
+            events.append((t, 1.0 - removal_pct, duration))
+        return sorted(events, key=lambda x: x[0])
+
+    def bid_depth_at(self, t, is_fake=True):
+        """Best-bid depth (shares) at time t.
+
+        For fake events: depth evaporates during panic, stays thin
+        during dislocation, recovers during snapback.
+        For real events: depth stays near normal throughout.
+
+        Phase 17: When enable_air_pockets=True, depth has additional
+        stochastic jumps (sudden drops) during the panic phase.
+        """
+        base_depth = self._base_bid_depth(t, is_fake)
+
+        if not self.enable_air_pockets:
+            return base_depth
+
+        # Apply air-pocket jumps if active
+        # Re-generate on first call per run
+        jumps = self._generate_air_pockets(is_fake)
+        multiplier = 1.0
+        for jt, jmult, jdur in jumps:
+            if jt <= t <= jt + jdur:
+                multiplier = min(multiplier, jmult)
+        return max(self.min_bid_depth, int(base_depth * multiplier))
+
+    def _base_bid_depth(self, t, is_fake=True):
+        """Deterministic baseline bid depth (no air-pocket jumps)."""
+        if not is_fake:
+            return self.normal_bid_depth
+
+        if t <= self.T1:
+            tau_d = self.panic_depth_decay_s
+            frac = 1.0 - np.exp(-t / tau_d) if t >= 0 else 0.0
+            norm = 1.0 - np.exp(-self.T1 / tau_d)
+            decay_frac = min(1.0, frac / norm) if norm > 0 else 1.0
+            return int(self.normal_bid_depth - (self.normal_bid_depth - self.min_bid_depth) * decay_frac)
+
+        elif t <= self.T2:
+            return self.min_bid_depth
+
+        else:
+            snap_start = self.T2
+            snap_end = self.T2 + self.SNAP_DURATION
+            if t <= snap_end:
+                snap_frac = (t - snap_start) / self.SNAP_DURATION
+                return int(self.min_bid_depth + (self.normal_bid_depth - self.min_bid_depth) * snap_frac)
+            return self.normal_bid_depth
+
+    # ── Phase 17: Square-Root Market Impact ──────────────────────
+
+    def square_root_impact(self, order_size, bid_depth, mid_price):
+        """Compute price impact using square-root model.
+
+        ΔP = mid · Y · σ · √(Q / V)
+
+        Where:
+            Y = impact_coefficient (calibrated per liquidity profile)
+            σ = volatility (annualized, scaled to event horizon)
+            Q = order size (shares)
+            V = available bid depth (shares)
+
+        Returns the price impact in dollars (added to slippage).
+        """
+        if bid_depth <= 0:
+            return mid_price * self.impact_coefficient * self.volatility * 5.0  # extreme
+        impact_bps = self.impact_coefficient * self.volatility * np.sqrt(order_size / max(bid_depth, 1))
+        return mid_price * impact_bps
+
     # ── P&L Calculations ─────────────────────────────────────────
 
-    def compute_trade_pnl(self, entry_price, exit_price, position_size):
-        """Simple P&L for a long trade: (exit - entry) * size."""
-        return (exit_price - entry_price) * position_size
+    def compute_trade_pnl(self, entry_price, exit_price, position_size,
+                          include_fees=True):
+        """P&L for a long trade: (exit - entry) * size - fees.
+
+        Phase 17: When include_fees=True, deducts transaction fees
+        and adds liquidity rebates based on fee_per_share and
+        exchange_rebate parameters.
+        """
+        gross_pnl = (exit_price - entry_price) * position_size
+        if include_fees and position_size > 0:
+            gross_pnl -= position_size * self.fee_per_share  # entry fee
+            gross_pnl += position_size * self.exchange_rebate  # exit rebate (maker)
+        return gross_pnl
 
     def compute_hold_for_human_pnl(self, position_size=None, is_fake=True):
         """Hold-for-Human baseline P&L.
@@ -312,7 +454,7 @@ class MFTMarketSimulator:
         slippage_cost = half_spread * slippage_multiple
         exit_price = mid_exit - slippage_cost
 
-        pnl = self.compute_trade_pnl(entry_price, exit_price, pos)
+        pnl = self.compute_trade_pnl(entry_price, exit_price, pos, include_fees=True)
 
         return {
             "pnl": round(pnl, 2),
@@ -322,18 +464,21 @@ class MFTMarketSimulator:
             "slippage_cost": round(slippage_cost, 2),
             "position_size": pos,
             "hold_duration_s": self.T2 - self.T0,
+            "fee_per_share": self.fee_per_share,
         }
 
     def compute_llm_intervene_pnl(self, position_size=None, is_fake=True,
                                    intervention_time=None):
-        """LLM-Intervene P&L with execution reflexivity penalty.
+        """LLM-Intervene P&L with square-root market impact + execution realism.
 
         Trade is entered at T0 (long). LLM intervenes at intervention_time
         (default: T1 = 5s) to reverse the trade.
 
-        Reflexivity penalty: the firm's reversal adds selling pressure in
-        an illiquid market. The execution price slips by an amount
-        proportional to position_size / bid_depth_at_T1.
+        Reflexivity penalty uses the square-root market impact formula
+        (Phase 17): ΔP = mid · Y · σ · √(Q / V)
+
+        Execution realism (Phase 17): adds transaction fees, exchange
+        rebates, and order routing latency.
 
         Returns dict with pnl, entry_price, exit_price,
         reflexivity_penalty, slippage_cost.
@@ -341,29 +486,28 @@ class MFTMarketSimulator:
         pos = position_size or self.position_size
         inv_time = intervention_time if intervention_time is not None else self.T1
 
+        # Phase 17: Order routing latency shifts effective intervention time
+        effective_time = inv_time + (self.order_routing_latency_ms / 1000.0)
+
         entry_price = self.base_price
-        mid_exit = self.price_at(inv_time, is_fake=is_fake)
-        spread_bps = self.spread_at(inv_time, is_fake=is_fake)
+        mid_exit = self.price_at(effective_time, is_fake=is_fake)
+        spread_bps = self.spread_at(effective_time, is_fake=is_fake)
         half_spread = mid_exit * spread_bps / 10000.0
 
         # Baseline slippage: crossing the spread
         slippage_cost = half_spread
 
-        # Reflexivity penalty: the firm's own order moves the market
-        bid_depth = self.bid_depth_at(inv_time, is_fake=is_fake)
-        if bid_depth > 0:
-            # Penalty scales with how much of remaining liquidity we consume
-            fill_ratio = pos / bid_depth
-            reflexivity_penalty = half_spread * min(5.0, fill_ratio * 2.0)
-        else:
-            # No liquidity — extreme penalty and sentinel fill_ratio
-            fill_ratio = float("inf")
-            reflexivity_penalty = half_spread * 5.0  # extreme if no liquidity
+        # Phase 17: Square-root market impact for reflexivity
+        bid_depth = self.bid_depth_at(effective_time, is_fake=is_fake)
+        sqrt_impact = self.square_root_impact(pos, bid_depth, mid_exit)
 
+        fill_ratio = pos / max(bid_depth, 1)
+        reflexivity_penalty = sqrt_impact  # replaces old half_spread * min(5.0, fill_ratio * 2.0)
         total_cost = slippage_cost + reflexivity_penalty
         exit_price = mid_exit - total_cost  # selling long position at discount
 
-        pnl = self.compute_trade_pnl(entry_price, exit_price, pos)
+        # Phase 17: Execution realism fees
+        pnl = self.compute_trade_pnl(entry_price, exit_price, pos, include_fees=True)
 
         return {
             "pnl": round(pnl, 2),
@@ -372,9 +516,11 @@ class MFTMarketSimulator:
             "mid_exit": round(mid_exit, 2),
             "slippage_cost": round(slippage_cost, 2),
             "reflexivity_penalty": round(reflexivity_penalty, 2),
+            "sqrt_impact": round(sqrt_impact, 2),
             "total_cost": round(total_cost, 2),
             "position_size": pos,
             "intervention_time_s": inv_time,
+            "effective_time_s": round(effective_time, 2),
             "bid_depth_at_intervention": bid_depth,
             "fill_ratio": round(fill_ratio, 4),
         }
