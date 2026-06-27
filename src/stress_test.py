@@ -18,11 +18,34 @@ import json
 import time
 import numpy as np
 import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
 
 from src.social_stream_generator import generate_adversarial_stream
 from src.rag_retriever import DualRAGRetriever, SocialStreamRetriever
 from src.async_pipeline import MFTPipeline, run_mft_backtest
 from src.data_splitter import temporal_train_test_split
+
+
+def _train_heuristic_baseline(train_df):
+    """Train a TF-IDF + Logistic Regression baseline from training data.
+
+    Returns a callable predictor(content) -> int 0/1, or None if training fails.
+    """
+    vectorizer = TfidfVectorizer(max_features=5000, ngram_range=(1, 2))
+    clf = LogisticRegression(max_iter=1000, random_state=42)
+    texts = train_df.get("T0_headline", train_df.get("headline", train_df.get("content", "")))
+    labels = train_df.get("T2_human_verdict", train_df.get("label", -1))
+    if len(texts) < 10 or (labels == -1).all():
+        return None
+    X = vectorizer.fit_transform(texts.fillna(""))
+    clf.fit(X, labels)
+    print(f"[Heuristic Baseline] Trained on {len(train_df)} samples (acc={clf.score(X, labels):.2%})")
+
+    def predictor(content):
+        Xt = vectorizer.transform([content])
+        return int(clf.predict(Xt)[0])
+    return predictor
 
 
 def run_stress_test_at_intensity(
@@ -89,6 +112,10 @@ def run_stress_test_at_intensity(
         test_df = test_df.head(max_test_events)
     print(f"Test set: {len(test_df)} events")
 
+    # Train heuristic baseline from training set for mock-mode fallback
+    train_df = events_df[events_df["event_id"].isin(train_ids)]
+    heuristic_predictor = _train_heuristic_baseline(train_df)
+
     # Initialize models
     print("\nInitializing FinBERT...")
     local_path = os.path.join(os.getcwd(), "models", "finbert")
@@ -132,6 +159,7 @@ def run_stress_test_at_intensity(
         use_system0=use_system0,
         thinking=thinking,
         use_moa=use_moa,
+        heuristic_predictor=heuristic_predictor,
     )
 
     # Run test set

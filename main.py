@@ -298,8 +298,17 @@ def report_dataset_statistics(df):
         'avg_content_length': round(avg_len, 1),
     }
 
-def generate_confusion_matrix(results, output_file=None, dataset_stats=None):
+def generate_confusion_matrix(results, output_file=None, dataset_stats=None, mode_label="LLM"):
+    """Generate confusion matrix heatmap and compute classification metrics.
+
+    Args:
+        results: list of dicts with actual, verdict, latency_ms
+        output_file: path to append text summary (optional)
+        dataset_stats: dict from report_dataset_statistics (optional)
+        mode_label: label for the plot title (e.g., "LLM", "Heuristic (mock)")
+    """
     df = pd.DataFrame(results)
+    n_total = len(df)
     classes = [0, 1]
     matrix = pd.DataFrame(0, index=classes, columns=classes)
     for _, row in df.iterrows():
@@ -308,7 +317,7 @@ def generate_confusion_matrix(results, output_file=None, dataset_stats=None):
     # Heatmap
     plt.figure(figsize=(8, 6))
     sns.heatmap(matrix, annot=True, fmt='d', cmap='Blues', xticklabels=['Real', 'Fake'], yticklabels=['Real', 'Fake'])
-    plt.title("LLM Verdict Confusion Matrix", fontsize=14, fontweight='bold')
+    plt.title(f"{mode_label} Verdict Confusion Matrix (N={n_total})", fontsize=14, fontweight='bold')
     plt.ylabel("Actual")
     plt.xlabel("Predicted")
     plt.savefig("./plots/confusion_matrix.png", dpi=300, bbox_inches='tight')
@@ -485,7 +494,8 @@ def run_batch(target_size=1000, test_size=0.2):
         if (i + 1) % 5 == 0 or i == 0:
             print(f"Progress: [{i+1}/{len(test_df)}] | Avg Latency: {pd.DataFrame(results)['latency_ms'].mean():.2f}ms")
 
-    generate_confusion_matrix(results, output_file=log_file, dataset_stats=dataset_stats)
+    mode_label = "LLM" if (DEEPSEEK_API_KEY and DEEPSEEK_API_KEY != "your_actual_api_key_here") else "Heuristic (mock)"
+    generate_confusion_matrix(results, output_file=log_file, dataset_stats=dataset_stats, mode_label=mode_label)
     print(f"Results saved to {log_file}")
 
 def run_rag_vs_baseline(target_size=1000, test_size=0.2):

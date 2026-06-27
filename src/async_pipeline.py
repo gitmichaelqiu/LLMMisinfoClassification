@@ -56,6 +56,7 @@ class MFTPipeline:
         use_system0=False,
         thinking="enabled",
         use_moa=False,
+        heuristic_predictor=None,
     ):
         """
         Args:
@@ -69,6 +70,9 @@ class MFTPipeline:
             use_system0: Enable System 0 pre-filter
             thinking: DeepSeek thinking mode
             use_moa: Enable Mixture of Agents debate (Phase 9)
+            heuristic_predictor: Callable(content) -> int 0/1.
+                Used as mock/fallback when no deepseek API key is available.
+                Prevents degenerate HOLD-only behavior (which causes 0% recall).
         """
         self.finbert = finbert_model
         self.dual_rag = dual_rag or DualRAGRetriever()
@@ -79,6 +83,7 @@ class MFTPipeline:
         self.base_price = base_price
         self.thinking = thinking
         self.use_moa = use_moa
+        self.heuristic_predictor = heuristic_predictor
         self.system0 = System0Filter(enabled=use_system0)
         self.simulator = MFTMarketSimulator(base_price=base_price)
 
@@ -272,12 +277,22 @@ class MFTPipeline:
                         sample["moa_latencies"] = moa_result.get("latencies", {})
                     self.parsed_samples.append(sample)
                 else:
-                    # Mock mode — no API key
-                    parsed = {"verdict": self.HOLD, "confidence": 0.5}
-                    verdict = self.HOLD
-                    confidence = 0.5
-                    cot_flags = parsed
-                    llm_latency = 50.0
+                    # Mock mode — no API key.
+                    # Use heuristic predictor if available (avoids degenerate
+                    # HOLD-only behavior that causes 0% recall in adversarial tests).
+                    if self.heuristic_predictor is not None:
+                        h_verdict = self.heuristic_predictor(headline)
+                        verdict = h_verdict
+                        confidence = 0.6
+                        llm_latency = 10.0
+                        cot_flags = {"verdict": verdict, "confidence": confidence, "mock": True}
+                        parsed = cot_flags
+                    else:
+                        parsed = {"verdict": self.HOLD, "confidence": 0.5}
+                        verdict = self.HOLD
+                        confidence = 0.5
+                        cot_flags = parsed
+                        llm_latency = 50.0
 
                 retrieval_latency = context.get("retrieval_latency_ms", 0)
                 system2 = {
@@ -374,6 +389,7 @@ class MFTPipeline:
             "fill_ratio": intervene_pnl.get("fill_ratio", 0),
             "is_fake_event": is_fake_headline,
             "use_moa": self.use_moa,
+            "mock_verdict": system2.get("cot_flags", {}).get("mock", False),
         }
 
         # Add MoA-specific outputs if available
@@ -550,6 +566,7 @@ class MFTPipeline:
                 "retrieval_mean": float(df["retrieval_latency_ms"].mean()),
             },
             "use_moa": self.use_moa,
+            "mock_mode": bool(df.get("mock_verdict", pd.Series([False])).any()),
         }
 
         # Add MoA latency breakdown if applicable
@@ -676,6 +693,7 @@ def run_mft_backtest(
     use_system0=False,
     max_events=None,
     use_moa=False,
+    heuristic_predictor=None,
 ):
     """Run the full MFT backtest end-to-end.
 
@@ -727,6 +745,26 @@ def run_mft_backtest(
         test_df = test_df.head(max_events)
     print(f"Test set: {len(test_df)} events")
 
+    # Train heuristic baseline from training set for mock fallback
+    if heuristic_predictor is None:
+        train_df = events_df[events_df["event_id"].isin(train_ids)]
+        try:
+            from sklearn.feature_extraction.text import TfidfVectorizer
+            from sklearn.linear_model import LogisticRegression
+            vectorizer = TfidfVectorizer(max_features=5000, ngram_range=(1, 2))
+            clf = LogisticRegression(max_iter=1000, random_state=42)
+            texts = train_df.get("T0_headline", train_df.get("headline", ""))
+            labels = train_df.get("T2_human_verdict", train_df.get("label", -1))
+            if len(texts) >= 10 and not (labels == -1).all():
+                X = vectorizer.fit_transform(texts.fillna(""))
+                clf.fit(X, labels)
+                def _pred(content):
+                    return int(clf.predict(vectorizer.transform([content]))[0])
+                heuristic_predictor = _pred
+                print(f"  Heuristic baseline trained: {len(train_df)} samples")
+        except Exception as e:
+            print(f"  Heuristic baseline training skipped: {e}")
+
     # Initialize FinBERT (System 1)
     print("\nInitializing FinBERT...")
     local_path = os.path.join(os.getcwd(), "models", "finbert")
@@ -768,6 +806,7 @@ def run_mft_backtest(
         use_system0=use_system0,
         thinking=thinking,
         use_moa=use_moa,
+        heuristic_predictor=heuristic_predictor,
     )
 
     # Run test set
