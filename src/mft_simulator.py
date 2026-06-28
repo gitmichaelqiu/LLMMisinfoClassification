@@ -407,6 +407,168 @@ class MFTMarketSimulator:
         impact_bps = self.impact_coefficient * self.volatility * np.sqrt(order_size / max(bid_depth, 1))
         return mid_price * impact_bps
 
+    # ── Phase 18: Confidence-Conditioned Continuous Unwind ──────
+
+    def compute_confidence_sized_reversal(self, confidence, position_size, bid_depth):
+        """Compute reversal order size as a continuous function of LLM confidence.
+
+        g(P_fake):
+            P_fake <= 0.35:  g = 0       (Hold zone — no reversal)
+            0.35 < P < 0.65: g = linear/sigmoidal scaling
+            P_fake >= 0.65:  g = 1       (Full reversal)
+
+        The scaled reversal size is then: Q_rev = Q_target * g(P_fake)
+        Capped at 0.5 * V_available (dynamic sizing floor).
+
+        Args:
+            confidence: LLM confidence in FAKE verdict (0.0 to 1.0)
+            position_size: Total position size (shares)
+            bid_depth: Available bid depth at intervention time
+
+        Returns:
+            dict: {q_rev, g_factor, urgency, zone}
+        """
+        ZONE_HOLD = 0.35
+        ZONE_INTERVENE = 0.65
+
+        # Determine zone
+        if confidence <= ZONE_HOLD:
+            g_factor = 0.0
+            zone = "HOLD"
+            urgency = 0.0
+        elif confidence >= ZONE_INTERVENE:
+            g_factor = 1.0
+            zone = "INTERVENE"
+            urgency = 1.0  # market order
+        else:
+            # Sigmoidal scaling in the abstention band
+            # Normalize [0.35, 0.65] -> [0, 1]
+            norm = (confidence - ZONE_HOLD) / (ZONE_INTERVENE - ZONE_HOLD)
+            # Smooth sigmoid: 0 at norm=0, 0.5 at norm=0.5, 1 at norm=1
+            g_factor = norm ** 2 / (norm ** 2 + (1 - norm) ** 2 + 1e-10)
+            zone = "HEDGE"
+            urgency = 0.3 + 0.7 * g_factor  # scaled urgency
+
+        # Scale position size
+        q_rev = int(position_size * g_factor)
+
+        # Apply dynamic sizing floor: cap at 0.5 * V_available
+        if bid_depth > 0:
+            q_rev = min(q_rev, max(1, int(0.5 * bid_depth)))
+
+        return {
+            "q_rev": q_rev,
+            "g_factor": round(g_factor, 4),
+            "q_hold": position_size - q_rev,
+            "urgency": round(urgency, 4),
+            "zone": zone,
+            "confidence": confidence,
+        }
+
+    # ── Phase 18: Derivative Hedging Layer ──────────────────────
+
+    def compute_hedge_pnl(self, position_size, is_fake,
+                          premium_pct=0.005, strike_pct=0.95):
+        """Compute P&L from an OTM put option hedge.
+
+        The desk buys short-dated OTM puts at T0:
+          - Premium cost = premium_pct * S0 * Q      (0.5% of notional)
+          - Strike K = strike_pct * S0                (5% OTM)
+          - If verified FAKE at T2: payout = max(0, K - S2) * Q
+          - If verified REAL: option expires worthless, capturing equity profit
+
+        Args:
+            position_size: Position size (shares)
+            is_fake: Whether the event was verified FAKE at T2
+            premium_pct: Premium as fraction of entry price (default 0.5%)
+            strike_pct: Strike as fraction of entry price (default 95%)
+
+        Returns:
+            dict with hedge_pnl, premium_cost, payout, net_hedge_pnl
+        """
+        entry_price = self.base_price
+        strike = entry_price * strike_pct
+        premium_cost = entry_price * premium_pct * position_size
+
+        if is_fake:
+            # FAKE event: option pays out the difference between strike and T2 price
+            s2 = self.price_at(self.T2 + 2.0, is_fake=True)
+            payout = max(0.0, strike - s2) * position_size
+        else:
+            # REAL event: option expires worthless, equity position captured
+            payout = 0.0
+
+        net_hedge_pnl = payout - premium_cost
+        return {
+            "hedge_pnl": round(net_hedge_pnl, 2),
+            "premium_cost": round(premium_cost, 2),
+            "payout": round(payout, 2),
+            "strike": round(strike, 2),
+            "premium_pct": premium_pct,
+            "position_size": position_size,
+        }
+
+    # ── Phase 18: Staggered Iceberg/VWAP Unwind ─────────────────
+
+    def generate_vwap_schedule(self, total_shares, start_time, end_time,
+                                n_slices=5, bid_depth_fn=None):
+        """Generate a staggered execution schedule for VWAP-style unwind.
+
+        Slices the reversal order into n_slices child orders executed
+        at equal time intervals between start_time and end_time.
+        Each slice checks current bid depth; if depth is critically low,
+        the slice is delayed to let liquidity recover.
+
+        Args:
+            total_shares: Total shares to unwind
+            start_time: Start of execution window (seconds)
+            end_time: End of execution window (seconds)
+            n_slices: Number of child orders (default 5)
+            bid_depth_fn: Callable(t) -> bid_depth at time t.
+                          If None, uses self.bid_depth_at(t, is_fake=True).
+
+        Returns:
+            list of dicts: [{"time": t, "shares": q, "cumulative": q_total,
+                             "delayed": bool, "reason": str}, ...]
+        """
+        if bid_depth_fn is None:
+            bid_depth_fn = lambda t: self.bid_depth_at(t, is_fake=True)
+
+        interval = (end_time - start_time) / max(n_slices, 1)
+        base_slice = total_shares // max(n_slices, 1)
+        remainder = total_shares - base_slice * n_slices
+
+        schedule = []
+        cumulative = 0
+        depth_floor = max(self.min_bid_depth, 50)
+
+        for i in range(n_slices):
+            t = start_time + i * interval
+            delayed = False
+            reason = ""
+
+            # Check bid depth before submitting
+            depth = bid_depth_fn(t)
+            if depth < depth_floor:
+                # Delay: wait for liquidity recovery (move to next interval)
+                t = start_time + (i + 1) * interval
+                delayed = True
+                reason = f"air_pocket(depth={depth}<{depth_floor})"
+
+            # Slice size: base + remainder (distributed to first slices)
+            q = base_slice + (1 if i < remainder else 0)
+            cumulative += q
+
+            schedule.append({
+                "time": round(t, 2),
+                "shares": q,
+                "cumulative": cumulative,
+                "delayed": delayed,
+                "reason": reason,
+            })
+
+        return schedule
+
     # ── P&L Calculations ─────────────────────────────────────────
 
     def compute_trade_pnl(self, entry_price, exit_price, position_size,

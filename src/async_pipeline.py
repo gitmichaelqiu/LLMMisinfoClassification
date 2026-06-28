@@ -57,6 +57,10 @@ class MFTPipeline:
         thinking="enabled",
         use_moa=False,
         heuristic_predictor=None,
+        # Phase 18: Advanced execution controls
+        use_three_tier=True,
+        use_vwap_unwind=False,
+        use_hedge_layer=False,
     ):
         """
         Args:
@@ -71,8 +75,11 @@ class MFTPipeline:
             thinking: DeepSeek thinking mode
             use_moa: Enable Mixture of Agents debate (Phase 9)
             heuristic_predictor: Callable(content) -> int 0/1.
-                Used as mock/fallback when no deepseek API key is available.
-                Prevents degenerate HOLD-only behavior (which causes 0% recall).
+                Mock fallback when no deepseek API key available.
+            use_three_tier: Enable three-tier confidence gates (Phase 18).
+                HOLD (<=0.35), HEDGE (0.35-0.65), INTERVENE (>=0.65).
+            use_vwap_unwind: Enable staggered VWAP execution (Phase 18).
+            use_hedge_layer: Enable OTM put option hedging (Phase 18).
         """
         self.finbert = finbert_model
         self.dual_rag = dual_rag or DualRAGRetriever()
@@ -84,6 +91,9 @@ class MFTPipeline:
         self.thinking = thinking
         self.use_moa = use_moa
         self.heuristic_predictor = heuristic_predictor
+        self.use_three_tier = use_three_tier
+        self.use_vwap_unwind = use_vwap_unwind
+        self.use_hedge_layer = use_hedge_layer
         self.system0 = System0Filter(enabled=use_system0)
         self.simulator = MFTMarketSimulator(base_price=base_price)
 
@@ -305,9 +315,10 @@ class MFTPipeline:
                     "rag_found": True,
                 }
 
-        # ── T1 → T2: P&L Computation ──
+        # ── T1 → T2: P&L Computation (Phase 18: Three-Tier Confidence) ──
         is_fake_headline = (ground_truth == 1) if ground_truth is not None else None
         llm_verdict = system2["verdict"]
+        llm_confidence = system2["confidence"]
         llm_intervened = (llm_verdict == self.INTERVENE)
         llm_escalated = (llm_verdict == self.ESCALATE)
 
@@ -319,48 +330,121 @@ class MFTPipeline:
             position_size=pos, is_fake=is_fake_headline if is_fake_headline is not None else True
         )
 
-        # Scenario 2: LLM-Intervene at T1 (if LLM says FAKE)
-        intervene_pnl = self.simulator.compute_llm_intervene_pnl(
+        # Scenario 2: LLM confidence-conditioned action
+        intervene_pnl_default = self.simulator.compute_llm_intervene_pnl(
             position_size=pos, is_fake=is_fake_headline if is_fake_headline is not None else True,
             intervention_time=self.simulator.T1,
         )
 
-        # Actual P&L based on what the LLM decided
-        if llm_intervened and is_fake_headline is True:
-            # True Positive: LLM correctly reversed a fake → use intervene P&L
-            # pnl_saved = intervene - hold = smaller_loss - bigger_loss = positive
-            actual_pnl = intervene_pnl["pnl"]
-            pnl_saved = intervene_pnl["pnl"] - hold_pnl["pnl"]
-            missed_profit = 0.0
-            outcome = "true_positive"
-        elif llm_intervened and is_fake_headline is False:
-            # False Positive: LLM reversed a REAL event → missed momentum profit
-            # pnl_saved = intervene - hold = smaller_profit - larger_profit = negative
-            real_price_t1 = self.simulator.price_at(self.simulator.T1, is_fake=False)
-            real_price_t2 = self.simulator.price_at(self.simulator.T2, is_fake=False)
-            missed_profit = (real_price_t2 - real_price_t1) * pos
+        ZONE_HOLD = 0.35
+        ZONE_INTERVENE = 0.65
 
-            actual_pnl = intervene_pnl["pnl"]
-            pnl_saved = intervene_pnl["pnl"] - hold_pnl["pnl"]  # negative (intervention hurt)
-            outcome = "false_positive"
-        elif not llm_intervened and is_fake_headline is True:
-            # False Negative: LLM missed a FAKE → held to max drawdown
-            actual_pnl = hold_pnl["pnl"]
-            pnl_saved = 0.0
-            missed_profit = 0.0
-            outcome = "false_negative"
-        elif not llm_intervened and is_fake_headline is False:
-            # True Negative: LLM correctly held a REAL → full profit
-            actual_pnl = hold_pnl["pnl"]
-            pnl_saved = 0.0
-            missed_profit = 0.0
-            outcome = "true_negative"
+        if self.use_three_tier:
+            # Phase 18: Three-tier confidence-gated logic
+            bid_depth = self.simulator.bid_depth_at(self.simulator.T1, is_fake=True)
+            sizing = self.simulator.compute_confidence_sized_reversal(
+                confidence=llm_confidence,
+                position_size=pos,
+                bid_depth=bid_depth,
+            )
+            q_rev = sizing["q_rev"]
+            q_hold = sizing["q_hold"]
+            zone = sizing["zone"]
+
+            if zone == "HOLD" or q_rev == 0:
+                # Hold zone (confidence <= 0.35 or g_factor = 0)
+                actual_pnl = hold_pnl["pnl"]
+                pnl_saved = 0.0
+                missed_profit = 0.0
+                risk_action = "hold"
+                outcome = "true_negative" if is_fake_headline is False else "false_negative"
+            elif zone == "HEDGE" and self.use_hedge_layer:
+                # Hedging zone: use OTM puts instead of equity reversal
+                hedge = self.simulator.compute_hedge_pnl(
+                    position_size=pos,
+                    is_fake=is_fake_headline if is_fake_headline is not None else True,
+                )
+                # Total P&L = equity position held to T2 + hedge P&L
+                actual_pnl = hold_pnl["pnl"] + hedge["hedge_pnl"]
+                pnl_saved = hedge["hedge_pnl"]  # hedge saved this much vs unhedged hold
+                missed_profit = 0.0
+                risk_action = "hedge"
+                outcome = ("true_positive" if is_fake_headline is True
+                           else "false_positive" if is_fake_headline is False
+                           else "hedged")
+            elif zone == "HEDGE":
+                # Hedging zone without derivative layer: fractional reversal
+                fractional_pnl = self.simulator.compute_llm_intervene_pnl(
+                    position_size=q_rev, is_fake=is_fake_headline if is_fake_headline is not None else True,
+                    intervention_time=self.simulator.T1,
+                )
+                # Blend: reversed portion + held portion
+                hold_portion = self.simulator.compute_hold_for_human_pnl(
+                    position_size=q_hold, is_fake=is_fake_headline if is_fake_headline is not None else True,
+                )
+                actual_pnl = fractional_pnl["pnl"] + hold_portion["pnl"]
+                pnl_saved = actual_pnl - hold_pnl["pnl"]
+                missed_profit = 0.0
+                risk_action = "partial_reverse"
+                # Map to binary outcome for reporting
+                if is_fake_headline is True:
+                    outcome = "true_positive" if fractional_pnl["pnl"] > 0 else "partial_tp"
+                elif is_fake_headline is False:
+                    outcome = "false_positive" if fractional_pnl["pnl"] < 0 else "partial_fp"
+                else:
+                    outcome = "partial_unknown"
+            else:
+                # INTERVENE zone (confidence >= 0.65): full reversal with confidence sizing
+                full_pnl = self.simulator.compute_llm_intervene_pnl(
+                    position_size=q_rev, is_fake=is_fake_headline if is_fake_headline is not None else True,
+                    intervention_time=self.simulator.T1,
+                )
+                hold_rest = self.simulator.compute_hold_for_human_pnl(
+                    position_size=q_hold, is_fake=is_fake_headline if is_fake_headline is not None else True,
+                )
+                actual_pnl = full_pnl["pnl"] + hold_rest["pnl"]
+                pnl_saved = actual_pnl - hold_pnl["pnl"]
+                missed_profit = 0.0
+                risk_action = "reverse"
+                outcome = ("true_positive" if is_fake_headline is True
+                           else "false_positive" if is_fake_headline is False
+                           else "reversed_unknown")
         else:
-            # Unknown ground truth
-            actual_pnl = intervene_pnl["pnl"] if llm_intervened else hold_pnl["pnl"]
-            pnl_saved = 0.0 if not llm_intervened else (intervene_pnl["pnl"] - hold_pnl["pnl"])
-            missed_profit = 0.0
-            outcome = "unknown"
+            # Legacy binary logic (Phase 16 behavior)
+            if llm_intervened and is_fake_headline is True:
+                actual_pnl = intervene_pnl_default["pnl"]
+                pnl_saved = intervene_pnl_default["pnl"] - hold_pnl["pnl"]
+                missed_profit = 0.0
+                outcome = "true_positive"
+                risk_action = "reverse"
+            elif llm_intervened and is_fake_headline is False:
+                real_price_t1 = self.simulator.price_at(self.simulator.T1, is_fake=False)
+                real_price_t2 = self.simulator.price_at(self.simulator.T2, is_fake=False)
+                missed_profit = (real_price_t2 - real_price_t1) * pos
+                actual_pnl = intervene_pnl_default["pnl"]
+                pnl_saved = intervene_pnl_default["pnl"] - hold_pnl["pnl"]
+                outcome = "false_positive"
+                risk_action = "reverse"
+            elif not llm_intervened and is_fake_headline is True:
+                actual_pnl = hold_pnl["pnl"]
+                pnl_saved = 0.0
+                missed_profit = 0.0
+                outcome = "false_negative"
+                risk_action = "hold"
+            elif not llm_intervened and is_fake_headline is False:
+                actual_pnl = hold_pnl["pnl"]
+                pnl_saved = 0.0
+                missed_profit = 0.0
+                outcome = "true_negative"
+                risk_action = "hold"
+            else:
+                actual_pnl = intervene_pnl_default["pnl"] if llm_intervened else hold_pnl["pnl"]
+                pnl_saved = 0.0
+                missed_profit = 0.0
+                outcome = "unknown"
+                risk_action = "unknown"
+            sizing = {"q_rev": pos if llm_intervened else 0, "g_factor": 1.0 if llm_intervened else 0.0,
+                      "zone": "INTERVENE" if llm_intervened else "HOLD", "confidence": llm_confidence}
 
         result = {
             "event_id": event_id or "unknown",
@@ -377,19 +461,24 @@ class MFTPipeline:
             "rag_found": system2["rag_found"],
             "system0_passed": system0_passed,
             "hold_pnl": round(hold_pnl["pnl"], 2),
-            "intervene_pnl": round(intervene_pnl["pnl"], 2),
             "actual_pnl": round(actual_pnl, 2),
             "pnl_saved": round(pnl_saved, 2),
             "missed_profit": round(missed_profit, 2),
             "outcome": outcome,
             "entry_price": hold_pnl["entry_price"],
             "hold_exit_price": hold_pnl["exit_price"],
-            "intervene_exit_price": intervene_pnl["exit_price"],
-            "reflexivity_penalty": intervene_pnl.get("reflexivity_penalty", 0),
-            "fill_ratio": intervene_pnl.get("fill_ratio", 0),
             "is_fake_event": is_fake_headline,
             "use_moa": self.use_moa,
             "mock_verdict": system2.get("cot_flags", {}).get("mock", False),
+            # Phase 18: Advanced execution metadata
+            "risk_action": risk_action,
+            "confidence_zone": sizing.get("zone", "unknown"),
+            "g_factor": round(sizing.get("g_factor", 0), 4),
+            "q_reversed": sizing.get("q_rev", pos if llm_intervened else 0),
+            "q_held": sizing.get("q_hold", 0),
+            "use_three_tier": self.use_three_tier,
+            "use_hedge_layer": self.use_hedge_layer,
+            "use_vwap_unwind": self.use_vwap_unwind,
         }
 
         # Add MoA-specific outputs if available
