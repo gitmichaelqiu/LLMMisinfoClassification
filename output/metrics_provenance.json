@@ -1,0 +1,178 @@
+{
+  "phase": "21_metrics_provenance",
+  "generated_at": "2026-06-28T00:43:48.958972",
+  "git_head": "af660635e02beb43bcf6b45973168ec08541eb34",
+  "entries": [
+    {
+      "key": "phase1_accuracy_pct",
+      "value": 84.51,
+      "source_script": "main.py/run_batch",
+      "source_output": "output/phase_16_metrics.json",
+      "description": "TF-IDF+LR accuracy (N=71, mock mode)",
+      "commit": "2026-06-28 00:43:01 -0400",
+      "timestamp": "2026-06-28T00:43:48.997904",
+      "verified_from_output": false
+    },
+    {
+      "key": "phase1_precision",
+      "value": 0.8226,
+      "source_script": "main.py/run_batch",
+      "source_output": "output/phase_16_metrics.json",
+      "description": "TF-IDF+LR precision",
+      "commit": "2026-06-28 00:43:01 -0400",
+      "timestamp": "2026-06-28T00:43:49.016453",
+      "verified_value": 0.8226,
+      "verified_from_output": true
+    },
+    {
+      "key": "phase1_recall",
+      "value": 1.0,
+      "source_script": "main.py/run_batch",
+      "source_output": "output/phase_16_metrics.json",
+      "description": "TF-IDF+LR recall",
+      "commit": "2026-06-28 00:43:01 -0400",
+      "timestamp": "2026-06-28T00:43:49.045716",
+      "verified_value": 1.0,
+      "verified_from_output": true
+    },
+    {
+      "key": "phase1_f1_score",
+      "value": 0.9027,
+      "source_script": "main.py/run_batch",
+      "source_output": "output/phase_16_metrics.json",
+      "description": "TF-IDF+LR F1",
+      "commit": "2026-06-28 00:43:01 -0400",
+      "timestamp": "2026-06-28T00:43:49.063972",
+      "verified_from_output": false
+    },
+    {
+      "key": "phase3_ensemble_f1",
+      "value": 0.9027,
+      "source_script": "main.py/run_ensemble_comparison",
+      "source_output": "output/phase_16_metrics.json",
+      "description": "Ensemble meta-classifier F1 (mock mode)",
+      "commit": "2026-06-28 00:43:01 -0400",
+      "timestamp": "2026-06-28T00:43:49.082537",
+      "verified_from_output": false
+    },
+    {
+      "key": "phase3_ece",
+      "value": 0.0787,
+      "source_script": "main.py/run_ensemble_comparison",
+      "source_output": "output/phase_16_metrics.json",
+      "description": "Expected Calibration Error (10 bins)",
+      "commit": "2026-06-28 00:43:01 -0400",
+      "timestamp": "2026-06-28T00:43:49.099784",
+      "verified_value": 0.0787,
+      "verified_from_output": true
+    },
+    {
+      "key": "phase6_finance_f1",
+      "value": 0.9027,
+      "source_script": "main.py/run_cross_domain_comparison",
+      "source_output": "output/phase_16_metrics.json",
+      "description": "Finance domain F1",
+      "commit": "2026-06-28 00:43:01 -0400",
+      "timestamp": "2026-06-28T00:43:49.116593",
+      "verified_from_output": false
+    },
+    {
+      "key": "phase6_health_f1",
+      "value": 0.8989,
+      "source_script": "main.py/run_cross_domain_comparison",
+      "source_output": "output/phase_16_metrics.json",
+      "description": "Health domain F1",
+      "commit": "2026-06-28 00:43:01 -0400",
+      "timestamp": "2026-06-28T00:43:49.137984",
+      "verified_from_output": false
+    },
+    {
+      "key": "phase6_cross_domain_gap",
+      "value": 0.0038,
+      "source_script": "main.py/run_cross_domain_comparison",
+      "source_output": "output/phase_16_metrics.json",
+      "description": "Finance minus Health F1 gap",
+      "commit": "2026-06-28 00:43:01 -0400",
+      "timestamp": "2026-06-28T00:43:49.156031",
+      "verified_from_output": false
+    },
+    {
+      "key": "crossover_base_rate_fpr_0.0952",
+      "value": 0.21714,
+      "source_script": "phase16_metrics.py",
+      "source_output": "output/phase_16_metrics.json",
+      "description": "Crossover P(Fake) at FPR=0.0952, FP_cost=1.0",
+      "commit": "2026-06-27 17:26:14 -0400",
+      "timestamp": "2026-06-28T00:43:49.176889",
+      "verified_from_output": false
+    },
+    {
+      "key": "crossover_base_rate_fpr_0.021",
+      "value": 0.057656,
+      "source_script": "phase16_metrics.py",
+      "source_output": "output/phase_16_metrics.json",
+      "description": "Crossover P(Fake) at FPR=0.021, FP_cost=1.0",
+      "commit": "2026-06-27 17:26:14 -0400",
+      "timestamp": "2026-06-28T00:43:49.193249",
+      "verified_from_output": false
+    },
+    {
+      "key": "gbdt_test_f1",
+      "value": 0.9961,
+      "source_script": "src/gbdt_baseline.py",
+      "source_output": "gbdt output log",
+      "description": "GBDT test F1 (TF-IDF+12 engineered features)",
+      "commit": "2026-06-27 17:40:16 -0400",
+      "timestamp": "2026-06-28T00:43:49.212150"
+    },
+    {
+      "key": "lr_test_f1",
+      "value": 0.9894,
+      "source_script": "src/gbdt_baseline.py",
+      "source_output": "gbdt output log",
+      "description": "TF-IDF+LR test F1 for comparison",
+      "commit": "2026-06-27 17:40:16 -0400",
+      "timestamp": "2026-06-28T00:43:49.230210"
+    },
+    {
+      "key": "ablation_original_gbdt_f1",
+      "value": 0.9912,
+      "source_script": "phase21_leakage_ablation.py",
+      "source_output": "output/phase_21_ablation_metrics.json",
+      "description": "GBDT F1 on original (unablated) data",
+      "commit": "2026-06-28 00:43:01 -0400",
+      "timestamp": "2026-06-28T00:43:49.247527",
+      "verified_from_output": false
+    },
+    {
+      "key": "ablation_ablated_gbdt_f1",
+      "value": 0.9912,
+      "source_script": "phase21_leakage_ablation.py",
+      "source_output": "output/phase_21_ablation_metrics.json",
+      "description": "GBDT F1 on ablated data (panic/entity keywords removed)",
+      "commit": "2026-06-28 00:43:01 -0400",
+      "timestamp": "2026-06-28T00:43:49.265188",
+      "verified_from_output": false
+    },
+    {
+      "key": "ablation_f1_delta",
+      "value": 0.0,
+      "source_script": "phase21_leakage_ablation.py",
+      "source_output": "output/phase_21_ablation_metrics.json",
+      "description": "F1 change after ablation (0 = no leakage)",
+      "commit": "2026-06-28 00:43:01 -0400",
+      "timestamp": "2026-06-28T00:43:49.283309",
+      "verified_from_output": false
+    },
+    {
+      "key": "cross_lingual_mean_f1",
+      "value": 1.0,
+      "source_script": "src/cross_lingual.py",
+      "source_output": "output/phase_20_cross_lingual.json",
+      "description": "Mean F1 across Nikkei/DAX/Hang Seng",
+      "commit": "2026-06-27 23:55:01 -0400",
+      "timestamp": "2026-06-28T00:43:49.300883",
+      "verified_from_output": false
+    }
+  ]
+}
