@@ -1,9 +1,11 @@
 """CoT output parser for MFT verification arbitrage.
 
-Parses structured LLM outputs supporting three verdicts:
+Parses structured LLM outputs supporting four verdicts (Phase 20):
 - FAKE (verdict=1): Hoax detected, reverse the trade
 - REAL (verdict=0): Authentic news, no intervention
 - ESCALATE (verdict=2): Grey Swan, flag for human reviewer
+- EXAGGERATED (verdict=3): Real news with panic-amplified reaction;
+  triggers 50% partial risk reduction or option hedging.
 """
 
 import re
@@ -16,17 +18,28 @@ FLAG_NAMES = [
     "temporal_inconsistency",
     "metric_implausibility",
     "social_velocity_anomaly",
+    "panic_amplified",  # Phase 20: for EXAGGERATED verdicts
 ]
 
 # Verdict constants
 VERDICT_REAL = 0
 VERDICT_FAKE = 1
 VERDICT_ESCALATE = 2
+VERDICT_EXAGGERATED = 3  # Phase 20: real news with panic amplification
 
 VERDICT_MAP = {
     "FAKE": VERDICT_FAKE,
     "REAL": VERDICT_REAL,
     "ESCALATE": VERDICT_ESCALATE,
+    "EXAGGERATED": VERDICT_EXAGGERATED,
+    "EXAGGERATE": VERDICT_EXAGGERATED,
+}
+
+VERDICT_LABELS = {
+    VERDICT_REAL: "REAL/HOLD",
+    VERDICT_FAKE: "FAKE/INTERVENE",
+    VERDICT_ESCALATE: "ESCALATE",
+    VERDICT_EXAGGERATED: "EXAGGERATED/PARTIAL_REVERSE",
 }
 
 

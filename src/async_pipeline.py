@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor
 
-from src.cot_parser import parse_cot_output, save_parsed_samples, VERDICT_FAKE, VERDICT_REAL, VERDICT_ESCALATE
+from src.cot_parser import parse_cot_output, save_parsed_samples, VERDICT_FAKE, VERDICT_REAL, VERDICT_ESCALATE, VERDICT_EXAGGERATED
 from src.prompts import COT_RAG_SYSTEM_PROMPT, COT_RAG_USER_PROMPT
 from src.rag_retriever import DualRAGRetriever, extract_entity
 from src.mft_simulator import MFTMarketSimulator
@@ -40,9 +40,10 @@ class MFTPipeline:
     """
 
     # Verdict constants
-    INTERVENE = 1      # FAKE → reverse the trade
-    HOLD = 0           # REAL → no intervention
-    ESCALATE = 2       # Grey Swan → flag for human review
+    INTERVENE = 1           # FAKE → reverse the trade
+    HOLD = 0                # REAL → no intervention
+    ESCALATE = 2            # Grey Swan → flag for human review
+    EXAGGERATED = 3         # Phase 20: real news with panic amplification → partial reverse
 
     def __init__(
         self,
@@ -321,6 +322,7 @@ class MFTPipeline:
         llm_confidence = system2["confidence"]
         llm_intervened = (llm_verdict == self.INTERVENE)
         llm_escalated = (llm_verdict == self.ESCALATE)
+        llm_exaggerated = (llm_verdict == self.EXAGGERATED)  # Phase 20
 
         # Compute P&L for the three scenarios
         pos = self.position_size
@@ -339,7 +341,30 @@ class MFTPipeline:
         ZONE_HOLD = 0.35
         ZONE_INTERVENE = 0.65
 
-        if self.use_three_tier:
+        # Phase 20: handle EXAGGERATED verdict — always trigger partial reverse
+        if llm_exaggerated:
+            # Real news with panic amplification: 50% partial reduction
+            q_rev = max(1, int(pos * 0.5))
+            bid_depth_ex = self.simulator.bid_depth_at(self.simulator.T1, is_fake=True)
+            if bid_depth_ex > 0:
+                q_rev = min(q_rev, max(1, int(0.5 * bid_depth_ex)))
+            q_hold = pos - q_rev
+            fractional_pnl_ex = self.simulator.compute_llm_intervene_pnl(
+                position_size=q_rev, is_fake=False,
+                intervention_time=self.simulator.T1,
+            )
+            hold_portion_ex = self.simulator.compute_hold_for_human_pnl(
+                position_size=q_hold, is_fake=False,
+            )
+            actual_pnl = fractional_pnl_ex["pnl"] + hold_portion_ex["pnl"]
+            pnl_saved = actual_pnl - hold_pnl["pnl"]
+            missed_profit = 0.0
+            risk_action = "partial_reduce_exaggerated"
+            outcome = "exaggerated_partial"
+            sizing = {"q_rev": q_rev, "g_factor": 0.5, "zone": "EXAGGERATED",
+                      "confidence": llm_confidence}
+
+        if self.use_three_tier and not llm_exaggerated:
             # Phase 18: Three-tier confidence-gated logic
             bid_depth = self.simulator.bid_depth_at(self.simulator.T1, is_fake=True)
             sizing = self.simulator.compute_confidence_sized_reversal(
@@ -494,7 +519,7 @@ class MFTPipeline:
 
     @staticmethod
     def _verdict_label(v):
-        return {0: "REAL/HOLD", 1: "FAKE/INTERVENE", 2: "ESCALATE"}.get(v, "UNKNOWN")
+        return {0: "REAL/HOLD", 1: "FAKE/INTERVENE", 2: "ESCALATE", 3: "EXAGGERATED/PARTIAL"}.get(v, "UNKNOWN")
 
     # ── Batch Processing ─────────────────────────────────────────
 
