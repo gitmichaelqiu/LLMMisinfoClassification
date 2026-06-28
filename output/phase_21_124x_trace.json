@@ -1,0 +1,11 @@
+{
+  "claimed_124x": {
+    "description": "Originally claimed improvement from dynamic sizing",
+    "components": {
+      "per_share_cost": "42.4x (execution cost, full reversal $50 vs capped $1.18)",
+      "sqrt_impact": "4.47x (sqrt(1000/100) / sqrt(50/100) = sqrt(10/0.5))"
+    },
+    "resolution": "124x is not a single reproducible metric. It conflates execution cost improvement (42.4x), square-root scaling (4.47x), and an interaction factor (~2.9) that varies with parameter choice. Phase 16 standardized on three documented scopes: 42.4x (single-trade cost), 4.47x (sqrt formula), 1.2-2.3x (aggregate portfolio).",
+    "code_path": "Original: compute_llm_intervene_pnl() in mft_simulator.py lines 296-349. The reflexivity penalty was half_spread * min(5.0, fill_ratio * 2.0) with fill_ratio = position_size / bid_depth. Phase 17 replaced this with the square_root_impact() method using \u0394P = mid\u00b7Y\u00b7\u03c3\u00b7\u221a(Q/V)."
+  }
+}
