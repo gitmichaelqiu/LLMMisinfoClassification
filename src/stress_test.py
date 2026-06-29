@@ -109,8 +109,13 @@ def run_stress_test_at_intensity(
     )
     test_df = events_df[events_df["event_id"].isin(test_ids)]
     if max_test_events and len(test_df) > max_test_events:
-        test_df = test_df.head(max_test_events)
-    print(f"Test set: {len(test_df)} events")
+        # Stratified sample to ensure FAKE events included
+        fake_df = test_df[test_df["T2_human_verdict"] == 1]
+        real_df = test_df[test_df["T2_human_verdict"] == 0]
+        n_fake = min(len(fake_df), max(max_test_events // 2, 1))
+        n_real = min(len(real_df), max_test_events - n_fake)
+        test_df = pd.concat([fake_df.head(n_fake), real_df.head(n_real)], ignore_index=True)
+        print(f"Test set: {len(test_df)} events")
 
     # Train heuristic baseline from training set for mock-mode fallback
     train_df = events_df[events_df["event_id"].isin(train_ids)]
