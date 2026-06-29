@@ -1,0 +1,48 @@
+{
+  "phase": "22_ood_validation",
+  "n_synthetic": 5000,
+  "n_ood": 400,
+  "n_bootstrap": 100,
+  "results": [
+    {
+      "model": "TF-IDF+LR",
+      "dataset": "ID (Synthetic)",
+      "f1_mean": 0.9701,
+      "f1_ci": 0.009,
+      "f1_lower": 0.9611,
+      "f1_upper": 0.9791,
+      "precision": 0.9625,
+      "recall": 0.9779
+    },
+    {
+      "model": "TF-IDF+LR",
+      "dataset": "OOD (Human)",
+      "f1_mean": 0.7193,
+      "f1_ci": 0.0431,
+      "f1_lower": 0.6762,
+      "f1_upper": 0.7624,
+      "precision": 0.5621,
+      "recall": 1.0
+    },
+    {
+      "model": "GBDT",
+      "dataset": "ID (Synthetic)",
+      "f1_mean": 0.9912,
+      "f1_ci": 0.0055,
+      "f1_lower": 0.9856,
+      "f1_upper": 0.9967,
+      "precision": 0.9945,
+      "recall": 0.9878
+    },
+    {
+      "model": "GBDT",
+      "dataset": "OOD (Human)",
+      "f1_mean": 0.6653,
+      "f1_ci": 0.0439,
+      "f1_lower": 0.6214,
+      "f1_upper": 0.7092,
+      "precision": 0.4989,
+      "recall": 1.0
+    }
+  ]
+}
