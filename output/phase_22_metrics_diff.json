@@ -1,0 +1,161 @@
+{
+  "phase": "22_metrics_audit_diff",
+  "n_entries": 11,
+  "n_changes_detected": 4,
+  "metric_history": [
+    {
+      "key": "gbdt_id_f1",
+      "phase": "16",
+      "value": "0.9961",
+      "commit": "af66063",
+      "script": "phase21_leakage_ablation.py",
+      "note": "GBDT test on full dataset (5000 samples)"
+    },
+    {
+      "key": "gbdt_id_f1",
+      "phase": "21_ablation",
+      "value": "0.9912",
+      "commit": "af66063",
+      "script": "phase21_leakage_ablation.py",
+      "dataset_size": 5000,
+      "note": "GBDT on original (abl config) with target_size=5000"
+    },
+    {
+      "key": "gbdt_id_f1",
+      "phase": "22_progressive",
+      "value": "0.9825",
+      "commit": "fb1f774",
+      "script": "phase22_progressive_ablation.py",
+      "dataset_size": 2800,
+      "note": "GBDT baseline on balanced subset (2800 samples)"
+    },
+    {
+      "key": "gbdt_ood_f1",
+      "phase": "22_ood",
+      "value": "0.6653",
+      "commit": "5e69357",
+      "script": "phase22_ood_validation.py",
+      "dataset_size": 400,
+      "note": "GBDT on human-authored OOD (dramatic collapse)"
+    },
+    {
+      "key": "lr_id_f1",
+      "phase": "16",
+      "value": "0.9894",
+      "commit": "af66063",
+      "script": "phase21_leakage_ablation.py",
+      "note": "TF-IDF+LR test on full dataset"
+    },
+    {
+      "key": "lr_id_f1",
+      "phase": "21_ablation",
+      "value": "0.9711",
+      "commit": "af66063",
+      "script": "phase21_leakage_ablation.py",
+      "dataset_size": 5000,
+      "note": "LR on target_size=5000"
+    },
+    {
+      "key": "lr_id_f1",
+      "phase": "22_progressive",
+      "value": "0.9274",
+      "commit": "fb1f774",
+      "script": "phase22_progressive_ablation.py",
+      "dataset_size": 2800,
+      "note": "LR baseline on balanced subset"
+    },
+    {
+      "key": "lr_ood_f1",
+      "phase": "22_ood",
+      "value": "0.7193",
+      "commit": "5e69357",
+      "script": "phase22_ood_validation.py",
+      "dataset_size": 400,
+      "note": "LR on human-authored OOD (significant collapse)"
+    },
+    {
+      "key": "phase1_f1",
+      "phase": "16",
+      "value": "0.9027",
+      "commit": "4f8e150",
+      "script": "phase16_metrics.py",
+      "note": "Phase 1 TF-IDF+LR baseline (mock mode)"
+    },
+    {
+      "key": "phase6_finance_f1",
+      "phase": "16",
+      "value": "0.9027",
+      "commit": "4f8e150",
+      "script": "phase16_metrics.py",
+      "note": "Finance domain F1"
+    },
+    {
+      "key": "phase6_health_f1",
+      "phase": "16",
+      "value": "0.8989",
+      "commit": "4f8e150",
+      "script": "phase16_metrics.py",
+      "note": "Health domain F1"
+    }
+  ],
+  "changes": [
+    {
+      "metric": "gbdt_id_f1",
+      "from_value": "0.9961",
+      "to_value": "0.9912",
+      "delta": -0.0049,
+      "from_phase": "16",
+      "to_phase": "21_ablation",
+      "from_commit": "af66063",
+      "to_commit": "af66063",
+      "from_script": "phase21_leakage_ablation.py",
+      "to_script": "phase21_leakage_ablation.py",
+      "likely_cause": "dataset_size_change"
+    },
+    {
+      "metric": "gbdt_id_f1",
+      "from_value": "0.9912",
+      "to_value": "0.9825",
+      "delta": -0.0087,
+      "from_phase": "21_ablation",
+      "to_phase": "22_progressive",
+      "from_commit": "af66063",
+      "to_commit": "fb1f774",
+      "from_script": "phase21_leakage_ablation.py",
+      "to_script": "phase22_progressive_ablation.py",
+      "likely_cause": "dataset_size_change"
+    },
+    {
+      "metric": "lr_id_f1",
+      "from_value": "0.9894",
+      "to_value": "0.9711",
+      "delta": -0.0183,
+      "from_phase": "16",
+      "to_phase": "21_ablation",
+      "from_commit": "af66063",
+      "to_commit": "af66063",
+      "from_script": "phase21_leakage_ablation.py",
+      "to_script": "phase21_leakage_ablation.py",
+      "likely_cause": "dataset_size_change"
+    },
+    {
+      "metric": "lr_id_f1",
+      "from_value": "0.9711",
+      "to_value": "0.9274",
+      "delta": -0.0437,
+      "from_phase": "21_ablation",
+      "to_phase": "22_progressive",
+      "from_commit": "af66063",
+      "to_commit": "fb1f774",
+      "from_script": "phase21_leakage_ablation.py",
+      "to_script": "phase22_progressive_ablation.py",
+      "likely_cause": "dataset_size_change"
+    }
+  ],
+  "summary": {
+    "gbdt_id_drift": "0.9961 -> 0.9825 (-0.0136)",
+    "gbdt_ood_drop": "0.9961 -> 0.6653 (-0.3308)",
+    "lr_id_drift": "0.9894 -> 0.9274 (-0.0620)",
+    "lr_ood_drop": "0.9894 -> 0.7193 (-0.2701)"
+  }
+}
