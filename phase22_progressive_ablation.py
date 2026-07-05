@@ -111,6 +111,9 @@ for clf_name, clf, vparams, cparams in [
         X_tr = np.array([ab_fn(t) for t in train_df["text"].fillna("")])
         X_te = np.array([ab_fn(t) for t in test_df["text"].fillna("")])
 
+        # TfidfVectorizer re-fitted FROM SCRATCH at each ablation stage
+        # to ensure vocabulary is learned from the ablated corpus
+
         vec = TfidfVectorizer(**vparams)
         X_tr_vec = vec.fit_transform(X_tr)
         model = clf(**cparams)
