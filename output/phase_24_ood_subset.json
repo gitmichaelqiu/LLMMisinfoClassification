@@ -1,0 +1,15 @@
+{
+  "phase": "24_ood_subset",
+  "results": {
+    "pre": 0.6667,
+    "post": 0.6667
+  },
+  "subcategories": {
+    "earnings_call": 0.0,
+    "merger_arb": 0.0,
+    "market_intel": 0.0,
+    "social_media": 0.9091,
+    "blog_rumor": 1.0,
+    "blind_post": 0.6667
+  }
+}
