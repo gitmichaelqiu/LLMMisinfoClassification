@@ -1,0 +1,52 @@
+{
+  "phase": "23_regime_diagram",
+  "pnl_values": {
+    "PnL_TP_saved": {
+      "value": "+$7,852",
+      "regime": "1.8% empirical (mid-cap default)"
+    },
+    "PnL_FN_loss": {
+      "value": "-$29,788",
+      "regime": "1.8% empirical (mid-cap default)"
+    },
+    "PnL_TN_hold": {
+      "value": "+$7,995",
+      "regime": "1.8% empirical (mid-cap default)"
+    },
+    "PnL_FP_cost": {
+      "value": "-$6,802",
+      "regime": "1.8% empirical (mid-cap default)"
+    },
+    "Trade_First_fake_loss": {
+      "value": "-$30,012",
+      "regime": "1.8% empirical"
+    },
+    "Verify_First_fake_loss": {
+      "value": "$0",
+      "regime": "1.8% empirical"
+    },
+    "Trade_First_real_profit": {
+      "value": "+$7,995",
+      "regime": "1.8% empirical"
+    },
+    "Verify_First_real_cost": {
+      "value": "-$6,800",
+      "regime": "1.8% empirical"
+    },
+    "CRASH_SCENARIO_fake_loss": {
+      "value": "-$180,000",
+      "regime": "18% stress"
+    }
+  },
+  "crossover_rates": {
+    "crossover_1_8pct": {
+      "value": "~4-6%",
+      "regime": "1.8% empirical"
+    },
+    "crossover_18pct": {
+      "value": "~0.3-0.5%",
+      "regime": "18% stress"
+    }
+  },
+  "interpretation": "All default P&L use 1.8% empirical regime. 18% stress represents >3 sigma tail scenario: Trade-First loss = -$180K, crossover ~0.3-0.5%. All paper plots/tables should note governing regime."
+}
