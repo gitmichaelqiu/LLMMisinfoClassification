@@ -4,6 +4,15 @@
   "git_head": "af660635e02beb43bcf6b45973168ec08541eb34",
   "entries": [
     {
+      "key": "phase1_lr_f1_pre_ledger",
+      "phase": "0_pre_ledger",
+      "value": "0.8421",
+      "commit": "pre-git (original paper manuscript)",
+      "script": "N/A (original external review report)",
+      "dataset": "150-event synthetic set (paper \u00a76.1)",
+      "note": "Pre-ledger baseline from original manuscript Phase 1 LR F1. This represents the original evaluation before the Phase 16-22 hardening pipeline. Current Phase 1 LR F1 (phase16) = 0.9027 on N=71 mock-mode samples. The diff (+0.0606) is attributable to different test set composition (150 synthetic-only vs 71 mixed synthetic+kaggle) and mock-mode heuristic."
+    },
+    {
       "key": "phase1_accuracy_pct",
       "value": 84.51,
       "source_script": "main.py/run_batch",
