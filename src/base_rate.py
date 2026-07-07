@@ -4,13 +4,17 @@ Provides utilities for:
 - Bayesian PPV / NPV computation across base rates
 - Cost-sensitive decision thresholds (asymmetric loss)
 - Expected cost calculations for verification strategies
+- Stream-based base rate estimation from observed verdicts
 """
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from collections import deque
+from typing import Deque, List, Optional, Tuple
 
 import numpy as np
+
+from src.schemas import Verdict
 
 
 def bayesian_ppv(sensitivity: float, specificity: float, prevalence: float) -> float:
@@ -108,3 +112,60 @@ def expected_cost(
     fn_cost = n_fake * fnr * cost_fn
 
     return (fp_cost + fn_cost) / n
+
+
+# ── Stream Base Rate Estimator ────────────────────────────────────
+
+
+class BaseRateEstimator:
+    """Rolling-window estimator for the misinformation base rate.
+
+    Tracks observed verdicts over a sliding window and computes the
+    empirical fraction of FAKE verdicts. Falls back to a configurable
+    prior when insufficient data is available.
+
+    Attributes:
+        window_size: Maximum number of recent verdicts to track.
+        default_prior: Prior base rate used when window is empty.
+    """
+
+    def __init__(self, default_prior: float = 0.05, window_size: int = 100):
+        self.default_prior = default_prior
+        self.window_size = window_size
+        self._history: Deque[Verdict] = deque(maxlen=window_size)
+
+    def update(self, verdict: Verdict) -> None:
+        """Record an observed verdict in the rolling window.
+
+        Args:
+            verdict: The observed verdict (REAL, FAKE, ESCALATE, etc.).
+        """
+        self._history.append(verdict)
+
+    def estimate(self) -> float:
+        """Compute the current base rate estimate.
+
+        Returns the empirical fraction of FAKE verdicts in the window.
+        If the window is empty, returns the default_prior.
+
+        Returns:
+            Estimated misinformation base rate in [0, 1].
+        """
+        if not self._history:
+            return self.default_prior
+
+        fake_count = sum(1 for v in self._history if v == Verdict.FAKE)
+        return fake_count / len(self._history)
+
+    def reset(self, default_prior: Optional[float] = None) -> None:
+        """Clear the history and optionally reset the prior.
+
+        Args:
+            default_prior: New prior (uses current prior if None).
+        """
+        self._history.clear()
+        if default_prior is not None:
+            self.default_prior = default_prior
+
+    def __len__(self) -> int:
+        return len(self._history)
