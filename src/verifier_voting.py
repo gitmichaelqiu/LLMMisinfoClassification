@@ -104,6 +104,7 @@ class VotingVerifier:
         """
         verdicts = [r.verdict for r in results]
         confidences = [r.confidence for r in results]
+        counter = Counter(verdicts)
 
         if self.aggregation == "unanimous":
             if len(set(verdicts)) == 1:
@@ -117,7 +118,6 @@ class VotingVerifier:
             )
             final_verdict = Verdict.FAKE if score / len(verdicts) > 0.5 else Verdict.REAL
         else:  # majority
-            counter = Counter(verdicts)
             most_common = counter.most_common(1)
             final_verdict = most_common[0][0] if most_common else Verdict.REAL
 
