@@ -8,11 +8,8 @@ Wraps core metrics with finance-specific interpretations:
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
-
-from src.base_rate import cost_sensitive_threshold, expected_cost
-from src.metrics import classification_metrics
-from src.schemas import ClassificationMetrics, ConfusionMatrix, Verdict, VerificationResult
+from src.base_rate import cost_sensitive_threshold
+from src.schemas import ClassificationMetrics
 
 
 class FinanceMetrics:

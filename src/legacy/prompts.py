@@ -148,14 +148,14 @@ def get_domain_prompts(domain="finance"):
             f"Reasoning: <one-sentence rationale>"
         ),
         "cot_rag_user": (
-            f"Recent verified articles about {{entity}}:\n"
-            f"{{context}}\n\n"
-            f"Social Media Posts (before T1 verification window):\n"
-            f"{{social_context}}\n\n"
-            f"Headline to verify:\n"
-            f"{{headline}}\n\n"
-            f"Follow the five-step reasoning process. End with your verdict "
-            f"in the exact format specified. Choose FAKE, REAL, or ESCALATE."
+            "Recent verified articles about {entity}:\n"
+            "{context}\n\n"
+            "Social Media Posts (before T1 verification window):\n"
+            "{social_context}\n\n"
+            "Headline to verify:\n"
+            "{headline}\n\n"
+            "Follow the five-step reasoning process. End with your verdict "
+            "in the exact format specified. Choose FAKE, REAL, or ESCALATE."
         ),
     }
     return prompts

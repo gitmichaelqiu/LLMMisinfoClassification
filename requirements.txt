@@ -12,5 +12,8 @@ seaborn==0.13.2
 pytest==8.3.4
 pytest-cov==6.1.1
 
+# Linting (optional — formatting not enforced)
+ruff>=0.4.0
+
 # Optional — dense retriever in RAG verifier (uncomment if needed)
 # sentence-transformers>=3.0.0

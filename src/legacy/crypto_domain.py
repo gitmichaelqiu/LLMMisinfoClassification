@@ -10,11 +10,11 @@ Crypto profile characteristics:
   - Higher spreads and lower depth than even low-cap equities
 """
 
-import os
 import json
+
 import numpy as np
 import pandas as pd
-from src.mft_simulator import MFTMarketSimulator, LIQUIDITY_PROFILES
+from src.mft_simulator import LIQUIDITY_PROFILES, MFTMarketSimulator
 
 # Crypto-specific liquidity profile
 LIQUIDITY_PROFILES["crypto"] = {
@@ -124,10 +124,10 @@ def run_crypto_stress_test(n_events=50, seed=42, position_size=500):
     print(f"[Crypto] Created {len(events_df)} crypto-domain events")
 
     # Run backtest using the MFT pipeline with crypto profile
-    from src.async_pipeline import MFTPipeline
-    from src.rag_retriever import DualRAGRetriever
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.linear_model import LogisticRegression
+    from src.async_pipeline import MFTPipeline
+    from src.rag_retriever import DualRAGRetriever
 
     # Train heuristic fallback from headline patterns
     texts = events_df["T0_headline"].fillna("")
@@ -190,7 +190,7 @@ if __name__ == "__main__":
 
     results = run_crypto_stress_test(n_events=20, position_size=500)
 
-    print(f"\nResults:")
+    print("\nResults:")
     print(f"  Events: {results['n_events']}")
     print(f"  Accuracy: {results['accuracy_metrics']['accuracy']:.3f}")
     print(f"  Precision: {results['accuracy_metrics']['precision']:.3f}")

@@ -9,10 +9,7 @@ Usage:
     result = verifier.verify_earnings("revenue", 10.5e9)  # $10.5B
 """
 
-import os
-import json
 import re
-import numpy as np
 
 # Official XBRL filings database (mock)
 OFFICIAL_XBRL_FILINGS = {

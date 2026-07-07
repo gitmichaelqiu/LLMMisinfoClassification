@@ -11,11 +11,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import json
 import os
-import sys
-from datetime import datetime, timezone
-from typing import Optional
 
 from src.base_rate import ppv_curve
 from src.datasets import load_dataset
@@ -58,23 +54,23 @@ def run_case_study(
     print(f"Creating verifier: {verifier_type} (mock={mock})")
 
     if verifier_type == "single-shot":
-        from src.verifier_single_shot import SingleShotVerifier
         from src.llm_clients import create_client
+        from src.verifier_single_shot import SingleShotVerifier
         client = create_client(mock=mock)
         verifier = SingleShotVerifier(config=config, client=client)
     elif verifier_type == "voting":
-        from src.verifier_voting import VotingVerifier
         from src.llm_clients import create_client
+        from src.verifier_voting import VotingVerifier
         client = create_client(mock=mock)
         verifier = VotingVerifier(config=config, client=client, n_voters=n_voters)
     elif verifier_type == "moa":
-        from src.verifier_moa import MoAVerifier
         from src.llm_clients import create_client
+        from src.verifier_moa import MoAVerifier
         client = create_client(mock=mock)
         verifier = MoAVerifier(config=config, client=client)
     elif verifier_type == "rag":
-        from src.verifier_rag import RAGVerifier
         from src.llm_clients import create_client
+        from src.verifier_rag import RAGVerifier
         client = create_client(mock=mock)
         verifier = RAGVerifier(config=config, client=client)
     else:
@@ -87,7 +83,7 @@ def run_case_study(
     # 4. Compute metrics
     ground_truths = [item.ground_truth or Verdict.REAL for item in subset]
     metrics = classification_metrics(results, ground_truths)
-    print(f"\n=== Results ===")
+    print("\n=== Results ===")
     print(f"Precision: {metrics.precision:.4f}")
     print(f"Recall:    {metrics.recall:.4f}")
     print(f"F1:        {metrics.f1:.4f}")
@@ -105,7 +101,7 @@ def run_case_study(
     # 6. PPV curve
     specificity = 1.0 - metrics.fpr
     ppv_points = ppv_curve(metrics.recall, specificity)
-    print(f"\nPPV at key base rates:")
+    print("\nPPV at key base rates:")
     for prev, ppv, npv in ppv_points:
         if prev in (0.001, 0.01, 0.05, 0.10, 0.25, 0.50):
             print(f"  P(fake)={prev:.1%}: PPV={ppv:.4f}, NPV={npv:.4f}")

@@ -8,9 +8,9 @@ Parses structured LLM outputs supporting four verdicts (Phase 20):
   triggers 50% partial risk reduction or option hedging.
 """
 
-import re
 import json
 import os
+import re
 
 FLAG_NAMES = [
     "contradiction",

@@ -6,7 +6,6 @@ and the load_dataset() factory function.
 
 from __future__ import annotations
 
-import os
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Tuple
 

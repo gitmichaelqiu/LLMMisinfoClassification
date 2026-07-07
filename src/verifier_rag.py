@@ -13,7 +13,7 @@ import numpy as np
 
 from src.llm_clients import LLMClient, create_client
 from src.prompts import RAG_SYSTEM, RAG_USER, format_user_prompt
-from src.schemas import Verdict, VerificationItem, VerificationResult, VerifierConfig
+from src.schemas import VerificationItem, VerificationResult, VerifierConfig
 from src.verifier_single_shot import SingleShotVerifier
 
 

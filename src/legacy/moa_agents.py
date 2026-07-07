@@ -17,8 +17,6 @@ Reference: Phase 9 of CLAUDE.md
 import time
 from concurrent.futures import ThreadPoolExecutor
 
-from src.prompts import COT_RAG_SYSTEM_PROMPT, COT_RAG_USER_PROMPT
-
 BELIEVER_SYSTEM_PROMPT = """You are Agent 1 (The Believer) in a financial news verification debate.
 
 Your role is to aggressively find evidence SUPPORTING the authenticity of the headline. You argue that the news is REAL and should NOT be intervened on.

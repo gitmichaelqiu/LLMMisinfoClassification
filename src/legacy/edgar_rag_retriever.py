@@ -10,9 +10,6 @@ Usage:
     filings = retriever.query_acquisition("Company A", "Company B")
 """
 
-import os
-import json
-import numpy as np
 
 # Company name → ticker mapping for EDGAR queries
 COMPANY_TICKER_MAP = {

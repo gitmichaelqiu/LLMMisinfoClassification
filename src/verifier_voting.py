@@ -13,7 +13,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Optional
 
 from src.llm_clients import LLMClient, create_client
-from src.prompts import SINGLE_SHOT_SYSTEM, SINGLE_SHOT_USER, VOTING_VARIATIONS, format_user_prompt
+from src.prompts import SINGLE_SHOT_USER, VOTING_VARIATIONS, format_user_prompt
 from src.schemas import Verdict, VerificationItem, VerificationResult, VerifierConfig
 from src.verifier_single_shot import SingleShotVerifier
 

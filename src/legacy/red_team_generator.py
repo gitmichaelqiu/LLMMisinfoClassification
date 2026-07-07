@@ -11,12 +11,11 @@ The process iterates over multiple rounds:
   Round N: Iterate until recall stabilizes (co-evolution convergence)
 """
 
-import os
-import json
 import random
+from typing import Dict
+
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Optional
 
 
 class RedTeamGenerator:

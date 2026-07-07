@@ -8,10 +8,12 @@ trigger many false alarms on legitimate news. This script quantifies the Bayesia
 and False Positive Rates.
 """
 
-import os
 import json
-import numpy as np
+import os
+
 import matplotlib.pyplot as plt
+import numpy as np
+
 
 def run_base_rate_analysis(output_dir="./output", plots_dir="./plots"):
     os.makedirs(output_dir, exist_ok=True)
@@ -21,7 +23,7 @@ def run_base_rate_analysis(output_dir="./output", plots_dir="./plots"):
     base_price = 190.0
     trough_price = 150.0
     position_size = 1000  # shares
-    
+
     # Realized values from hft_backtest normal regime ct=0.5
     # TP realized savings: average savings from intervening before trough
     # FP realized cost: average opportunity cost of wrong intervention
@@ -33,7 +35,7 @@ def run_base_rate_analysis(output_dir="./output", plots_dir="./plots"):
 
     # Range of base rates (from 1 in 1,000,000 to 1 in 10)
     base_rates = np.logspace(-6, -1, 100)
-    
+
     # False Positive Rates to sweep
     # 0.10: Phase 7a normal regime (FPR = 9.5%)
     # 0.05: Moderate verifier
@@ -41,14 +43,14 @@ def run_base_rate_analysis(output_dir="./output", plots_dir="./plots"):
     # 0.01: Highly optimized verifier
     # 0.001: Near-perfect verifier
     fpr_values = [0.10, 0.05, 0.021, 0.01, 0.001]
-    
+
     results = {}
-    
+
     for fpr in fpr_values:
         ppv_list = []
         net_pnl_list = []
         crossover_p = None
-        
+
         for p in base_rates:
             # 1. Bayesian Precision (PPV)
             # PPV = P(Fake | Alert) = P(Alert | Fake) * P(Fake) / P(Alert)
@@ -57,7 +59,7 @@ def run_base_rate_analysis(output_dir="./output", plots_dir="./plots"):
             denom = (tpr * p) + (fpr * (1 - p))
             ppv = (tpr * p) / denom if denom > 0 else 0.0
             ppv_list.append(ppv)
-            
+
             # 2. Expected P&L added by verifier per headline
             # E[P&L_verifier] = p * TPR * S_TP - (1-p) * FPR * C_FP - p * (1-TPR) * C_FN
             # E[P&L_baseline] = - p * C_FN
@@ -67,11 +69,11 @@ def run_base_rate_analysis(output_dir="./output", plots_dir="./plots"):
             # Scale to per 10,000 headlines for readability
             net_pnl_10k = net_pnl * 10000
             net_pnl_list.append(net_pnl_10k)
-            
+
             # Crossover point: first base rate where Net P&L becomes positive
             if crossover_p is None and net_pnl_10k > 0:
                 crossover_p = p
-                
+
         results[str(fpr)] = {
             "base_rates": base_rates.tolist(),
             "ppv": ppv_list,
@@ -99,10 +101,10 @@ def run_base_rate_analysis(output_dir="./output", plots_dir="./plots"):
             label += " (FinFakeBERT)"
         elif fpr == 0.10:
             label += " (Our Phase 7a)"
-            
+
         ax1.plot(base_rates, fpr_data["ppv"], label=label, color=colors[idx], linewidth=2)
         ax2.plot(base_rates, fpr_data["net_pnl_10k"], label=label, color=colors[idx], linewidth=2)
-        
+
         # Plot crossover markers
         cross_p = fpr_data["crossover_base_rate"]
         if cross_p:
@@ -136,7 +138,7 @@ def run_base_rate_analysis(output_dir="./output", plots_dir="./plots"):
     ax2.grid(True, which="both", linestyle="--", alpha=0.5)
     ax2.legend(loc="upper left")
 
-    plt.suptitle("The Base Rate Fallacy in HFT Fake News Detection (1,000 Share Position)", 
+    plt.suptitle("The Base Rate Fallacy in HFT Fake News Detection (1,000 Share Position)",
                  fontsize=14, fontweight='bold', y=0.98)
     plt.tight_layout()
     plot_path = os.path.join(plots_dir, "base_rate_analysis.png")

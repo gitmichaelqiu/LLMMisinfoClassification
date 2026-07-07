@@ -11,11 +11,11 @@ Believer and Skeptic run CONCURRENTLY; Risk Officer runs after both complete.
 from __future__ import annotations
 
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
 
 from src.llm_clients import LLMClient, create_client
-from src.schemas import Verdict, VerificationItem, VerificationResult, VerifierConfig
+from src.schemas import VerificationItem, VerificationResult, VerifierConfig
 from src.verifier_single_shot import SingleShotVerifier
 
 # ── Role Prompts ──────────────────────────────────────────────

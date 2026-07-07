@@ -9,16 +9,17 @@ Legacy single-index RAGRetriever is preserved for backward compatibility.
 """
 
 import os
+
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
 os.environ["HF_HUB_OFFLINE"] = "1"
-import re
 import json
-import time
 import pickle
+import re
+import time
+
 import numpy as np
 import pandas as pd
-
-from src.domain_adapter import DomainAdapter, get_adapter, set_domain
+from src.domain_adapter import DomainAdapter, get_adapter
 
 # Legacy entity list preserved for the RAG corpus builder (always finance)
 ENTITY_LIST = DomainAdapter("finance").entities
