@@ -76,8 +76,16 @@ src/
 
 ## Future Considerations
 
-- **Cross-domain adapter API**: Standardize what each domain must implement
-  (Phase 9).
+- **Cross-domain adapter API**: Standardized in Phase 9. Every domain
+  adapter must implement ``DatasetAdapter.load()`` returning
+  ``List[VerificationItem]``. Labels use the canonical ``Verdict``
+  enum (0=REAL, 1=FAKE). The ``load_dataset(domain)`` factory in
+  ``src/datasets.py`` dispatches to domain-specific modules under
+  ``src/{domain}/{domain}_dataset_adapter.py``.
+  **Registered domains**: finance, healthcare, political.
+  **Adding a domain**: (1) create ``src/{domain}/{domain}_dataset_adapter.py``,
+  (2) implement ``DatasetAdapter`` ABC, (3) register in
+  ``load_dataset()`` factory.
 - **Streaming verifier**: For real-time claim streams with sliding windows.
 - **Human-in-the-loop**: Formalize ESCALATE action handling.
 - **Calibration**: Platt-scaling or temperature scaling for confidence.

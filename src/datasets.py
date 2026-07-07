@@ -92,5 +92,14 @@ def load_dataset(
     if domain == "finance":
         from src.finance.finance_dataset_adapter import FinanceDatasetAdapter
         return FinanceDatasetAdapter(path=path, **kwargs)
+    elif domain in ("healthcare", "health"):
+        from src.healthcare.health_dataset_adapter import HealthDatasetAdapter
+        return HealthDatasetAdapter(path=path, **kwargs)
+    elif domain in ("political", "politics"):
+        from src.political.political_dataset_adapter import PoliticalDatasetAdapter
+        return PoliticalDatasetAdapter(path=path, **kwargs)
     else:
-        raise ValueError(f"Unknown domain: {domain}. Available: finance")
+        raise ValueError(
+            f"Unknown domain: {domain}. "
+            f"Available: finance, healthcare, political"
+        )
