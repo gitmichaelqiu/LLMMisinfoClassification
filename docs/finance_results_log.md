@@ -47,6 +47,52 @@ plot_paths:
 
 ## Run Log
 
-*No experiments recorded yet. Phase 3 (Single-Shot Verifier) will produce
-the first entries.*
+## Phase 3 — Single-Shot Verifier Baseline
+
+*Recorded in previous session (see git history for details).*
+
+---
+
+## Phase 4 — Voting Verifier
+
+*Recorded in previous session (see git history for details).*
+
+---
+
+## Phase 5 — MoA/Debate Verifier
+
+```yaml
+date: 2026-07-07 21:10
+git_commit: pending
+dataset_version: synthetic-v1
+verifier_architecture: moa
+prompt_version: v1.0-default
+model: gpt-4o-mini (mock)
+sample_size: 10
+latency: N/A (mock — sub-second)
+metrics:
+  precision: 0.5000
+  recall: 1.0000
+  f1: 0.6667
+  false_positive_rate: 1.0000
+  false_negative_rate: 0.0000
+  accuracy: 0.5000
+  confusion_matrix:
+    tp: 5
+    fp: 5
+    tn: 0
+    fn: 0
+ppv_at_base_rates: N/A (mock — PPV computation deferred until real API results)
+failure_notes: >
+  IMPLEMENTATION TEST ONLY — not a scientific finding.
+  MockClient returns "Verdict: FAKE" for all prompts regardless of content
+  or role (Believer, Skeptic, Risk Officer). This means:
+  - Believer (pro-REAL) and Skeptic (pro-FAKE) produce IDENTICAL output
+  - No actual debate occurs — the architecture is not exercised
+  - All 3 degeneracy checks fire: always-FAKE, always-REAL, precision≈P(FAKE)
+  - Info gain (precision - P(FAKE)) = 0.0 — zero information added
+  Results will differ qualitatively when run with real LLM API calls.
+result_json_path: results/phase05/20260707_211012.json
+plot_paths: []
+```
 
