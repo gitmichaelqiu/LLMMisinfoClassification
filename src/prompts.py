@@ -1,161 +1,116 @@
-"""RAG prompt templates for MFT verification arbitrage.
+"""Domain-agnostic prompt templates for information verification.
 
-Supports dual-source evaluation: historical contradictions from
-Official_Corpus (static news) and social media consensus from
-Social_Velocity_Stream (real-time posts).
-
-Verdicts: FAKE (intervene), REAL (no action), ESCALATE (grey swan).
+Templates use {placeholder} syntax for dynamic substitution.
+All verifiers should reference prompts from this module rather than
+embedding strings in verifier implementations.
 """
 
-from src.domain_adapter import DomainAdapter
+# ── Single-Shot (Direct) Verification ─────────────────────────
 
-RAG_SYSTEM_PROMPT = """You are a Financial News Authenticity Verifier. Your task is to determine whether a given financial news headline is authentic or contains logical contradictions by comparing it against verified news articles about the same entity.
+SINGLE_SHOT_SYSTEM = """You are an Information Authenticity Verifier. Your task is to determine whether a given claim is authentic (REAL) or contains misinformation (FAKE).
 
-Given recent verified news articles about {entity}, assess whether the headline:
-1. Contradicts known facts from the verified articles
-2. Makes implausible or impossible claims about financial metrics
-3. Contains temporal inconsistencies (events happening out of order)
-4. Describes scenarios that conflict with the entity's known operations
-
-Output only: FAKE if the headline is suspicious or contradictory, REAL if it appears authentic. Follow with one-sentence reasoning."""
-
-RAG_USER_PROMPT = """Recent verified articles about {entity}:
-{context}
-
-Headline to verify:
-{headline}
-
-Is this headline FAKE or REAL?"""
-
-NON_RAG_SYSTEM_PROMPT = """You are a Financial News Logic Validator. Detect macroeconomic impossibilities or fraudulent narratives. Output 'FAKE' for anomalies/misinformation and 'REAL' for authentic news."""
-
-# ── Dual-Source CoT Prompt (Phase 3.2) ─────────────────────────
-
-COT_RAG_SYSTEM_PROMPT = """You are a Financial News Authenticity Verifier with access to two context sources:
-
-1. A static news corpus with verified facts about companies.
-2. A real-time social media stream showing early public reaction.
-
-Analyze the headline and determine whether the news is FAKE (a hoax/misinformation), REAL (authentic news), or if you are UNCERTAIN and need to ESCALATE to a human reviewer.
-
-Step 1 — Known facts: What do the verified news articles tell us about {entity}? Summarize the key facts.
-
-Step 2 — Claim analysis: What does the headline claim about {entity}? Identify specific metrics, numbers, and events.
-
-Step 3 — Contradiction detection: Identify contradictions between the headline and verified articles.
-- Metric plausibility: Are the numbers (revenue, valuation, headcount) consistent with known facts?
-- Temporal consistency: Do timelines and schedules make sense?
-- Operational feasibility: Could the entity realistically achieve what's claimed?
-- Entity-specific facts: Does the claim conflict with entity-specific knowledge?
-
-Step 4 — Social consensus evaluation: Analyze the social media posts and their velocity.
-- Are early posts showing panic (typical of fake news impact)?
-- Is there rising skepticism or debunking sentiment?
-- Or is the social stream amplifying and confirming the news?
-- What is the dominant consensus direction?
-
-Step 5 — Verdict: Choose EXACTLY one of three verdicts:
-
-- FAKE: The headline clearly contradicts verified facts AND/OR social consensus shows strong debunking velocity. The trade should be reversed.
-- REAL: The headline is consistent with verified facts AND social consensus supports it. No intervention needed.
-- ESCALATE: The headline is highly anomalous or the event is a potential Grey Swan — the facts don't add up but social consensus has NOT yet confirmed debunking. Escalate to human reviewer.
+Analyze the claim for:
+1. Internal consistency: Are the claims logically self-consistent?
+2. Plausibility: Is the magnitude or nature of the claim within reason?
+3. Specificity: Does the claim include specific, verifiable details?
+4. Temporal consistency: Do timelines and sequences make sense?
 
 Output your verdict in EXACTLY this format:
-
-Verdict: FAKE or REAL or ESCALATE
+Verdict: REAL or FAKE or ESCALATE
 Confidence: <0-100>
-Flags: [contradiction|entity_mismatch|temporal_inconsistency|metric_implausibility|social_velocity_anomaly|none]
+Flags: [contradiction|implausibility|inconsistency|none]
 Reasoning: <one-sentence rationale>"""
 
-COT_RAG_USER_PROMPT = """Recent verified articles about {entity}:
+SINGLE_SHOT_USER = """Claim to verify:
+{claim_text}
+
+{context_prefix}{context}
+Is this claim REAL or FAKE?"""
+
+
+# ── Chain-of-Thought Verification ────────────────────────────
+
+COT_SYSTEM = """You are an Information Authenticity Verifier. Determine whether a given claim is authentic (REAL), misinformation (FAKE), or if you are UNCERTAIN (ESCALATE).
+
+Follow this reasoning process step by step:
+
+Step 1 — Claim analysis: What exactly does this claim state? Identify specific claims, numbers, entities, and events.
+
+Step 2 — Internal consistency: Are the claims logically consistent? Do the numbers add up? Do timelines make sense?
+
+Step 3 — Plausibility assessment: Is the magnitude of the claim within the realm of possibility? Would this represent an extreme or unprecedented event?
+
+Step 4 — Context evaluation: Does any provided context support or contradict the claim?
+
+Step 5 — Verdict: Choose EXACTLY one:
+- REAL: The claim is consistent, plausible, and supported by evidence.
+- FAKE: The claim contains contradictions, implausible claims, or clear misinformation.
+- ESCALATE: The claim is unusual or ambiguous enough to require human review.
+
+Output in EXACTLY this format:
+Verdict: REAL or FAKE or ESCALATE
+Confidence: <0-100>
+Flags: [contradiction|implausibility|inconsistency|none]
+Reasoning: <one-sentence rationale>"""
+
+COT_USER = """Claim to verify:
+{claim_text}
+
+{context_prefix}{context}
+Follow the five-step reasoning process. End with your verdict."""
+
+
+# ── Voting Verifier Prompts ──────────────────────────────────
+
+VOTING_VARIATIONS = [
+    "You are a strict fact-checker. Be conservative — only mark REAL if there is strong evidence of authenticity.",
+    "You are a skeptical analyst. Assume claims are guilty until proven otherwise.",
+    "You are a balanced evaluator. Weigh evidence for and against the claim equally.",
+    "You are a domain expert reviewing this claim in your area of expertise.",
+    "You are a journalistic fact-checker. Apply standard verification methodology.",
+]
+
+
+# ── RAG Verification Prompts ─────────────────────────────────
+
+RAG_SYSTEM = """You are a Retrieval-Augmented Information Verifier. You have access to a knowledge corpus with verified facts. Determine whether the given claim is REAL (supported by corpus evidence), FAKE (contradicted by corpus evidence), or ESCALATE (insufficient evidence to decide).
+
+Analyze:
+1. Factual alignment: Does the claim match verified facts in the corpus?
+2. Contradiction: Does the corpus contain facts that directly contradict the claim?
+3. Gap analysis: Is the claim about a topic the corpus covers but doesn't address?
+
+Output:
+Verdict: REAL or FAKE or ESCALATE
+Confidence: <0-100>
+Evidence: <list of supporting or contradicting evidence from corpus>
+Reasoning: <one-sentence rationale>"""
+
+RAG_USER = """Claim to verify:
+{claim_text}
+
+Retrieved context from knowledge corpus:
 {context}
 
-Social Media Posts (before T1 verification window):
-{social_context}
-
-Headline to verify:
-{headline}
-
-Follow the five-step reasoning process above. End with your verdict in the exact format specified. Choose FAKE, REAL, or ESCALATE."""
+Based on the retrieved evidence, is this claim REAL or FAKE?"""
 
 
-# ── Domain Adapter ──────────────────────────────────────────────
+# ── Template Helpers ─────────────────────────────────────────
 
-def get_domain_prompts(domain="finance"):
-    """Return domain-specific prompt templates for cross-domain use.
+def format_user_prompt(template: str, claim_text: str, context: str = "") -> str:
+    """Fill in a user prompt template.
 
     Args:
-        domain: "finance" or "health"
+        template: Prompt template with {claim_text} and {context} placeholders.
+        claim_text: The claim to verify.
+        context: Optional context string.
 
     Returns:
-        dict with keys: rag_system, rag_user, non_rag_system,
-                        cot_rag_system, cot_rag_user
+        Formatted prompt string.
     """
-    adapter = DomainAdapter(domain)
-    role = adapter.verifier_role
-    ctx = adapter.domain_context
-    question = adapter.verdict_question
-
-    prompts = {
-        "rag_system": (
-            f"You are a {role}. Your task is to determine whether a given "
-            f"headline is authentic or contains logical contradictions by "
-            f"comparing it against verified articles about the same entity.\n\n"
-            f"Given recent verified articles about {{entity}}, assess whether the headline:\n"
-            f"1. Contradicts known facts from the verified articles\n"
-            f"2. Makes implausible or impossible claims\n"
-            f"3. Contains temporal inconsistencies\n"
-            f"4. Describes scenarios that conflict with known operations\n\n"
-            f"Output only: FAKE if the headline is suspicious or contradictory, "
-            f"REAL if it appears authentic. Follow with one-sentence reasoning."
-        ),
-        "rag_user": (
-            f"Recent verified articles about {{entity}}:\n"
-            f"{{context}}\n\n"
-            f"Headline to verify:\n"
-            f"{{headline}}\n\n"
-            f"{question}"
-        ),
-        "non_rag_system": (
-            f"You are a {role}. Analyze {ctx}. "
-            f"Output 'FAKE' for anomalies/misinformation and 'REAL' for authentic news."
-        ),
-        "cot_rag_system": (
-            f"You are a {role} with access to two context sources:\n\n"
-            f"1. A verified corpus of facts about companies/organizations.\n"
-            f"2. A real-time social media stream showing early public reaction.\n\n"
-            f"Analyze the headline and determine whether the news is FAKE "
-            f"(a hoax/misinformation), REAL (authentic news), or if you need "
-            f"to ESCALATE to a human reviewer (Grey Swan).\n\n"
-            f"Step 1 — Known facts: What do verified articles tell us about "
-            f"{{entity}}? Summarize key facts.\n\n"
-            f"Step 2 — Claim analysis: What does the headline claim about "
-            f"{{entity}}? Identify specific details, numbers, and events.\n\n"
-            f"Step 3 — Contradiction detection: Identify contradictions between "
-            f"the headline and verified articles.\n\n"
-            f"Step 4 — Social consensus evaluation: Analyze social media posts. "
-            f"Are early posts showing panic, skepticism/debunking, or "
-            f"amplification/confirmation? What is the dominant direction?\n\n"
-            f"Step 5 — Verdict: Choose EXACTLY one of:\n"
-            f"- FAKE: Clear evidence of hoax — reverse the trade.\n"
-            f"- REAL: Consistent with facts and consensus — no intervention.\n"
-            f"- ESCALATE: Grey Swan — anomalous but unconfirmed; escalate.\n\n"
-            f"Output in EXACTLY this format:\n"
-            f"Verdict: FAKE or REAL or ESCALATE\n"
-            f"Confidence: <0-100>\n"
-            f"Flags: [contradiction|entity_mismatch|temporal_inconsistency|"
-            f"metric_implausibility|social_velocity_anomaly|none]\n"
-            f"Reasoning: <one-sentence rationale>"
-        ),
-        "cot_rag_user": (
-            f"Recent verified articles about {{entity}}:\n"
-            f"{{context}}\n\n"
-            f"Social Media Posts (before T1 verification window):\n"
-            f"{{social_context}}\n\n"
-            f"Headline to verify:\n"
-            f"{{headline}}\n\n"
-            f"Follow the five-step reasoning process. End with your verdict "
-            f"in the exact format specified. Choose FAKE, REAL, or ESCALATE."
-        ),
-    }
-    return prompts
+    context_prefix = "Context:\n" if context else ""
+    return template.format(
+        claim_text=claim_text,
+        context=context,
+        context_prefix=context_prefix,
+    )
