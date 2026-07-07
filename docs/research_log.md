@@ -25,6 +25,30 @@ Archived all old finance-specific code to `archive/verification-arbitrage-pre-ge
 
 ---
 
+## 2026-07-07 — Phase 0: Repository Sanity Check & Reproducibility Setup
+
+**Activity:** Established project infrastructure for the new framework.
+
+**Deliverables:**
+- Pinned `requirements.txt` with exact versions (numpy, openai, scikit-learn, etc.)
+- `Makefile` with install/test/clean targets
+- `pyproject.toml` with project metadata and pytest config
+- `.env.example` with API key template
+- `tests/conftest.py` with shared fixtures
+- `tests/test_schemas.py` — 13 unit tests for schemas module
+
+**Verification:**
+- `pip install -r requirements.txt` and `pip install -e .` both pass
+- `python -c "import src"` succeeds
+- `python -m pytest tests/ -v` — 13/13 passed
+
+**Key decisions:**
+- `IntEnum` used for Verdict (JSON-serializable, comparable to ints)
+- Removed heavy unused deps (transformers, hftbacktest, vectorbt)
+- sentence-transformers kept optional (needed only for dense RAG retriever)
+
+---
+
 ## Template for Future Entries
 
 ```

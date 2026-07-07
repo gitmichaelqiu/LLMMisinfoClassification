@@ -1,11 +1,16 @@
-pandas
-numpy
-openai
-python-dotenv
-scikit-learn
-matplotlib
-seaborn
-transformers
-sentence-transformers
-hftbacktest
-vectorbt
+# Core framework — pinned exact versions
+numpy==2.1.3
+openai==2.37.0
+python-dotenv==1.1.0
+scikit-learn==1.6.1
+
+# Visualization (Phase 8+)
+matplotlib==3.10.0
+seaborn==0.13.2
+
+# Testing
+pytest==8.3.4
+pytest-cov==6.1.1
+
+# Optional — dense retriever in RAG verifier (uncomment if needed)
+# sentence-transformers>=3.0.0
