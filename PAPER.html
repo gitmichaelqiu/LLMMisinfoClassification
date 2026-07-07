@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PAPER.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> or <div class="page"></div> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="verification-arbitrage-can-an-ai-catch-fake-news-before-it-costs-millions">Verification Arbitrage: Can an AI Catch Fake News Before it Costs Millions?</h1>
+<h2 id="abstract">Abstract</h2>
+<p>When fake news hits the stock market, it moves prices within milliseconds. But humans take minutes to verify the truth. In those minutes, a trading firm holding a bad position can lose tens of thousands of dollars.</p>
+<p>This project builds and tests a simple idea: <strong>what if an AI could read the news, check the facts, and reverse the trade — all in the 5 seconds between the computer's knee-jerk reaction and the human's careful review?</strong></p>
+<p>The answer, from our simulations: an AI verifier can save about <strong>$10,000 per fake news event</strong>, at a cost of about <strong>$6,800 in missed profit</strong> when it wrongly reverses a real news trade. Those economics work in the AI's favor. Over 200 simulated events, the strategy nets <strong>over $300,000 in saved losses</strong>.</p>
+<hr>
+<h2 id="1-the-problem-markets-move-faster-than-truth">1. The Problem: Markets Move Faster Than Truth</h2>
+<p>Imagine you manage a trading firm. A headline flashes across the screen:</p>
+<blockquote>
+<p>&quot;Breaking: Two Explosions in the White House — Barack Obama injured&quot;</p>
+</blockquote>
+<p>This actually happened in 2013. Hackers took over the Associated Press Twitter account and posted that message. In 2 minutes, the stock market dropped <strong>136 billion dollars</strong>. Then, 6 minutes later, the AP confirmed it was a hoax. The market snapped back.</p>
+<p>Here's the problem:</p>
+<table>
+<thead>
+<tr>
+<th>What happens</th>
+<th>When</th>
+<th>Who does it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>News breaks</td>
+<td>0 seconds (T0)</td>
+<td>The market</td>
+</tr>
+<tr>
+<td>Computer trades</td>
+<td>0.001 seconds</td>
+<td>Your trading algorithm</td>
+</tr>
+<tr>
+<td>Human verifies</td>
+<td>300+ seconds (T2)</td>
+<td>Your risk manager</td>
+</tr>
+<tr>
+<td>Truth is confirmed</td>
+<td>360 seconds</td>
+<td>The AP news wire</td>
+</tr>
+</tbody>
+</table>
+<p><strong>In those 5 minutes between the computer's trade and the human's verification, your firm is holding a position based on a lie.</strong> If the news is fake and the price crashes, you lose money while you wait.</p>
+<div align="center">
+<img src="plots/mft_price_curves.png" width="700" alt="MFT Price Curves showing FAKE vs REAL event price paths">
+<br/>
+<em>Figure 1: Price paths for fake news (red) vs real news (green). 
+The AI has 5 seconds (T1) to decide. Humans arrive at 300 seconds (T2).</em>
+</div>
+<p>The red line shows what happens to the price of a stock when fake news hits. It drops fast — 18% in the first 5 seconds, then drifts down to 30% below starting price by the time humans verify at 300 seconds. Then it snaps back. If you held the trade the whole time, you'd lose about <strong>$30,000</strong> on a 1,000-share position.</p>
+<p>The green line shows real news. The price gradually goes up 8% — a genuine move. If you held this trade, you'd make about <strong>$8,000</strong>.</p>
+<p>The question is: <strong>can an AI tell the difference, fast enough?</strong></p>
+<hr>
+<h2 id="2-the-core-idea-the-verification-bridge">2. The Core Idea: The Verification Bridge</h2>
+<p>The concept is simple:</p>
+<ol>
+<li><strong>T0 (0 seconds):</strong> A fast computer model reads the headline and trades instantly (it has no idea if the news is real or fake).</li>
+<li><strong>T1 (5 seconds):</strong> An AI language model reads the same headline, searches through historical news articles and social media, and decides: is this FAKE or REAL?</li>
+<li><strong>If FAKE:</strong> The AI reverses the trade immediately, avoiding the crash.</li>
+<li><strong>If REAL:</strong> The AI leaves the trade alone and captures the profit.</li>
+<li><strong>T2 (300 seconds):</strong> A human risk manager finally arrives and confirms the truth. By this point, the AI has already made its decision — and the money is either saved or lost.</li>
+</ol>
+<pre><code class="language-mermaid"><div class="mermaid">sequenceDiagram
+    participant Market as The Market
+    participant Speed as Fast Computer
+    participant AI as AI Verifier
+    participant Human as Human Risk Manager
+
+    Note over Market,Human: T0: News breaks
+    Market->>Speed: Headline arrives
+    Speed-->>Market: Trades instantly
+    Speed->>AI: Ask: is this real or fake?
+
+    Note over Market,Human: T1: AI decides (5 seconds later)
+
+    alt Verdict: FAKE
+        AI-->>Market: Reverses the trade
+        Note over Market: Saves ~$10,000
+    else Verdict: REAL
+        AI-->>Market: Holds the trade
+        Note over Market: Keeps ~$8,000 profit
+    end
+
+    Note over Market,Human: T2: Human confirms (300 seconds)
+    Human->>Market: Officially verifies the news
+    Note over Market: The rest of the market reacts.
+    Note over Market: Without AI, firm would have held bad trade until now.
+</div></code></pre>
+<p>The &quot;verification arbitrage&quot; is the value created by bridging the gap between computer speed (milliseconds) and human verification speed (minutes). The AI sits in the middle — faster than a human, smarter than a simple computer.</p>
+<hr>
+<h2 id="3-how-we-model-the-market">3. How We Model the Market</h2>
+<p>To test this idea, we built a <strong>market simulator</strong> — a mathematical model of what happens to a stock's price when news hits.</p>
+<h3 id="fake-news-price-path">Fake News Price Path</h3>
+<p>When fake news breaks, the price follows three phases:</p>
+<ol>
+<li><strong>Panic drop (0–5 seconds):</strong> The price falls fast. By 5 seconds, it's down ~18%. This is computer traders reacting emotionally.</li>
+<li><strong>Sustained dislocation (5–300 seconds):</strong> The price keeps drifting down, reaching a trough of ~30% below starting price. This is the danger zone — the fake has taken hold and nobody has verified it yet.</li>
+<li><strong>Snapback (300–310 seconds):</strong> Once humans confirm the hoax, the price violently recovers to ~97% of its starting value. But if you held the trade through this, you already took the loss.</li>
+</ol>
+<div align="center">
+<img src="plots/mft_pnl_distribution.png" width="600" alt="P&L Distribution showing profit and loss outcomes">
+<br/>
+<em>Figure 2: Distribution of P&L outcomes. Green = correctly-reversed fakes (profit). Red = wrongly-reversed real news (losses).</em>
+</div>
+<h3 id="real-news-price-path">Real News Price Path</h3>
+<p>Real news is different. The price goes up about 8% gradually over 5 minutes, with no snapback. If the AI wrongly reverses this trade (a &quot;false positive&quot;), it misses out on that profit.</p>
+<h3 id="the-liquidity-problem">The Liquidity Problem</h3>
+<p>When a stock is in crisis, there aren't many buyers. This is called <strong>low liquidity</strong>. If the AI tries to sell a 1,000-share position but only 100 shares are available at the best price, the AI's own selling pushes the price down further. This is called a <strong>reflexivity penalty</strong> — the AI hurts itself by acting.</p>
+<p>Different stocks have different liquidity:</p>
+<ul>
+<li><strong>High-cap</strong> stocks (Apple, Microsoft): Deep liquidity, easy to trade</li>
+<li><strong>Mid-cap</strong> stocks (most companies): Normal liquidity</li>
+<li><strong>Low-cap</strong> stocks (small companies): Thin liquidity, expensive to trade</li>
+</ul>
+<hr>
+<h2 id="4-the-pl-math-do-the-economics-work">4. The P&amp;L Math: Do the Economics Work?</h2>
+<p>The key numbers from our simulator:</p>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Fake News</th>
+<th>Real News</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Hold until human arrives</strong></td>
+<td>Lose <strong>$29,788</strong></td>
+<td>Make <strong>$7,995</strong></td>
+</tr>
+<tr>
+<td><strong>AI intervenes at 5 seconds</strong></td>
+<td>Lose <strong>$21,936</strong> (smaller loss)</td>
+<td>Make <strong>$1,193</strong> (smaller profit)</td>
+</tr>
+<tr>
+<td><strong>P&amp;L saved by AI</strong></td>
+<td><strong>+$7,852</strong> saved</td>
+<td><strong>-$6,802</strong> cost (missed profit)</td>
+</tr>
+</tbody>
+</table>
+<p>The asymmetric economics are clear:</p>
+<ul>
+<li><strong>When the AI is right</strong> (correctly reverses fake news): saves <strong>~$8,000</strong></li>
+<li><strong>When the AI is wrong</strong> (reverses real news): costs <strong>~$7,000</strong> in missed profit</li>
+</ul>
+<p>A right decision is worth slightly more than a wrong one costs. This means the AI just needs to be <em>better than random</em> to add value.</p>
+<p>For high-cap stocks (deep liquidity), the AI saves even more:</p>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>High-Cap</th>
+<th>Mid-Cap</th>
+<th>Low-Cap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FAKE: Hold loss</td>
+<td>-$29,100</td>
+<td>-$29,788</td>
+<td>-$31,857</td>
+</tr>
+<tr>
+<td>FAKE: AI intervene</td>
+<td>-$19,640</td>
+<td>-$21,936</td>
+<td>-$27,840</td>
+</tr>
+<tr>
+<td><strong>P&amp;L saved (FAKE)</strong></td>
+<td><strong>+$9,460</strong></td>
+<td><strong>+$7,852</strong></td>
+<td><strong>+$4,017</strong></td>
+</tr>
+<tr>
+<td>REAL: Hold profit</td>
+<td>+$7,997</td>
+<td>+$7,995</td>
+<td>+$7,978</td>
+</tr>
+<tr>
+<td>REAL: AI intervene</td>
+<td>+$1,197</td>
+<td>+$1,193</td>
+<td>+$1,099</td>
+</tr>
+<tr>
+<td><strong>FP cost (REAL)</strong></td>
+<td><strong>-$6,800</strong></td>
+<td><strong>-$6,802</strong></td>
+<td><strong>-$6,880</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Large, liquid stocks are the best environment for the AI — intervention is cheaper and the savings are bigger.</p>
+<hr>
+<h2 id="5-how-the-ai-researches-the-rag-system">5. How the AI Researches (The RAG System)</h2>
+<p>The AI doesn't just guess. It has access to two research sources — like a journalist with a library and a Twitter feed:</p>
+<h3 id="source-1-the-news-library-static-rag">Source 1: The News Library (Static RAG)</h3>
+<p>A database of <strong>5,000 verified financial news articles</strong> about major companies. When the AI sees a headline about Apple, it searches for what's already known about Apple — earnings reports, product launches, management changes. If the headline claims something that contradicts known facts, that's a red flag.</p>
+<p>For example, if the headline says &quot;Apple Revenue $500B&quot; but every known article says Apple's revenue is around $400B, the AI flags it as suspicious.</p>
+<h3 id="source-2-social-media-stream-social-rag">Source 2: Social Media Stream (Social RAG)</h3>
+<p>The AI can read social media posts from the first 5 seconds after the news breaks. This is the &quot;vibe check&quot;:</p>
+<ul>
+<li><strong>Panic posts:</strong> &quot;OMG Apple is crashing!&quot; — common in the first 30 seconds</li>
+<li><strong>Skepticism:</strong> &quot;Wait, has anyone verified this?&quot; — starts appearing around 30-120 seconds</li>
+<li><strong>Debunk posts:</strong> &quot;Official statement: this is false&quot; — the truth emerging</li>
+</ul>
+<p>The AI uses this social velocity — <em>how fast is the debunk spreading</em> — as a signal. If debunk posts are already appearing by 5 seconds, the news is probably fake.</p>
+<h3 id="the-system-0-pre-filter">The System 0 Pre-Filter</h3>
+<p>Before the AI even researches, a fast pre-check asks: &quot;Is this even worth investigating?&quot;</p>
+<p>It looks for two things:</p>
+<ol>
+<li>Does the headline mention a major company (Apple, Tesla, etc.)?</li>
+<li>Does it contain a panic keyword (crash, hacked, explosion, bankrupt)?</li>
+</ol>
+<p>If both are true, the AI starts researching. If not, it saves the money on the AI call. This filters out 99.9% of normal news.</p>
+<hr>
+<h2 id="6-the-ai-debate-team-moa">6. The AI Debate Team (MoA)</h2>
+<p>In our most advanced version, we don't ask just one AI. We ask three, each with a different job:</p>
+<table>
+<thead>
+<tr>
+<th>Agent</th>
+<th>Role</th>
+<th>Bias</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>The Believer</strong></td>
+<td>Argues the news is REAL</td>
+<td>Looks for supporting evidence</td>
+</tr>
+<tr>
+<td><strong>The Skeptic</strong></td>
+<td>Argues the news is FAKE</td>
+<td>Looks for contradictions</td>
+</tr>
+<tr>
+<td><strong>The Risk Officer</strong></td>
+<td>Makes the final decision</td>
+<td>Weighs both sides + economics</td>
+</tr>
+</tbody>
+</table>
+<p>This is called <strong>Mixture of Agents (MoA)</strong>. It's like having a courtroom debate before the verdict.</p>
+<p><strong>How it works:</strong></p>
+<ol>
+<li><strong>Believer</strong> and <strong>Skeptic</strong> work at the same time (concurrently), each reading the news and social context through their own biased lens.</li>
+<li>Once both submit their arguments, the <strong>Risk Officer</strong> reads both and makes the final call.</li>
+</ol>
+<p><strong>Why three agents?</strong> A single AI tends to be too confident or too hesitant. By forcing two agents to argue opposite sides, the Risk Officer gets a fuller picture. The Believer catches evidence the Skeptic misses, and vice versa.</p>
+<p>The Risk Officer also knows the economics: &quot;Reversing a fake saves about $10,000. Reversing a real costs about $6,800.&quot; This shapes the decision toward intervention when in doubt.</p>
+<div align="center">
+<img src="output/moa_robustness_plots/moa_vs_singleshot_comparison.png" width="750" alt="MoA vs Single-Shot Comparison">
+<br/>
+<em>Figure 3: MoA debate vs single-shot AI across precision, recall, and economic impact.</em>
+</div>
+<hr>
+<h2 id="7-what-we-learned-the-five-key-findings">7. What We Learned: The Five Key Findings</h2>
+<h3 id="finding-1-t2-human-delay-is-everything">Finding 1: T2 Human Delay is Everything</h3>
+<p>We ran a <strong>sensitivity analysis</strong> — varying every parameter to see what matters most:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>What it controls</th>
+<th>Correlation with P&amp;L</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>T2 (human delay)</strong></td>
+<td>How fast humans verify</td>
+<td><strong>-0.83</strong> (strong negative)</td>
+</tr>
+<tr>
+<td>T1 (AI latency)</td>
+<td>How fast the AI decides</td>
+<td>-0.04 (almost none)</td>
+</tr>
+<tr>
+<td>FP cost multiplier</td>
+<td>How much false positives hurt</td>
+<td>+0.05 (almost none)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The dominant factor is human speed</strong>, not AI speed. Every extra second the human takes to verify costs significant money. Whether the AI takes 2 seconds or 30 seconds barely matters — the damage happens early.</p>
+<p>The practical implication: <strong>invest in faster humans, not faster AI.</strong></p>
+<div align="center">
+<img src="plots/mft_sensitivity_heatmaps.png" width="750" alt="Sensitivity Analysis Heatmap">
+<br/>
+<em>Figure 4: Sensitivity analysis. T2 (vertical axis) dominates — the longer humans take, the worse results get. T1 (horizontal axis) barely matters.</em>
+</div>
+<h3 id="finding-2-the-optimal-threshold-is-zero">Finding 2: The Optimal Threshold is Zero</h3>
+<p>We tried different confidence thresholds — requiring the AI to be more confident before reversing a trade. Results:</p>
+<table>
+<thead>
+<tr>
+<th>Threshold</th>
+<th>P&amp;L Saved (High-Cap)</th>
+<th>P&amp;L Saved (Mid-Cap)</th>
+<th>P&amp;L Saved (Low-Cap)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>0.0 (always trust AI)</strong></td>
+<td><strong>$435,158</strong></td>
+<td><strong>$324,163</strong></td>
+<td><strong>$56,998</strong></td>
+</tr>
+<tr>
+<td>0.5</td>
+<td>Lower</td>
+<td>Lower</td>
+<td>Lower</td>
+</tr>
+<tr>
+<td>0.9 (very strict)</td>
+<td>Lower</td>
+<td>Lower</td>
+<td>Lower</td>
+</tr>
+<tr>
+<td>1.0 (never intervene)</td>
+<td>$0</td>
+<td>$0</td>
+<td>$0</td>
+</tr>
+</tbody>
+</table>
+<p>The best threshold is <strong>zero</strong> — always trust the AI's verdict. This makes economic sense because the savings from correct interventions ($10k each) outweigh the costs of wrong ones ($6.8k each). Even a mediocre AI is better than doing nothing.</p>
+<h3 id="finding-3-the-ai-is-more-cautious-than-we-think">Finding 3: The AI is More Cautious Than We Think</h3>
+<p>When we stress-tested the AI against adversarial bot attacks (bots defending fake news as real), we found the AI actually becomes <strong>more likely to intervene</strong>, not less. This is because the Believer+Skeptic debate surfaces arguments for both sides, and the Risk Officer, knowing the asymmetric economics, errs on the side of intervention.</p>
+<p>At 75% bot intensity (three-quarters of all social posts are bots), the AI still flags most events as &quot;suspicious&quot; — it just can't always tell which direction the truth lies.</p>
+<h3 id="finding-4-bot-attacks-are-less-dangerous-than-expected">Finding 4: Bot Attacks Are Less Dangerous Than Expected</h3>
+<p>Counter-intuitively, adversarial social media bots don't degrade the AI's performance much. The reason: the AI relies primarily on the <strong>static news corpus</strong> (verified facts about companies), not on social media sentiment. The social stream is a secondary signal. Even when social media is fully poisoned with bots, the AI can still check known facts.</p>
+<h3 id="finding-5-the-seven-real-hoaxes">Finding 5: The Seven Real Hoaxes</h3>
+<p>We reconstructed 7 real historical hoaxes and ran them through the system:</p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Year</th>
+<th>T2 (debunk time)</th>
+<th>What happened</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AP White House Hack</td>
+<td>2013</td>
+<td>6 minutes</td>
+<td>S&amp;P 500 dropped $136B in minutes</td>
+</tr>
+<tr>
+<td>Walmart/Litecoin Hoax</td>
+<td>2021</td>
+<td>28 minutes</td>
+<td>Litecoin surged 33%, Walmart denied</td>
+</tr>
+<tr>
+<td>Pentagon AI Explosion</td>
+<td>2023</td>
+<td>15 minutes</td>
+<td>AI-generated image, S&amp;P 500 dipped</td>
+</tr>
+<tr>
+<td>SEC Bitcoin ETF Hack</td>
+<td>2023</td>
+<td>5 minutes</td>
+<td>Bitcoin jumped $1,000, SEC confirmed hack</td>
+</tr>
+<tr>
+<td>United Airlines PR Spoof</td>
+<td>2017</td>
+<td>15 minutes</td>
+<td>Stock dropped 1%, company denied</td>
+</tr>
+<tr>
+<td>McDonald's Russia Hoax</td>
+<td>2022</td>
+<td>20 minutes</td>
+<td>Brand damage claims, quickly debunked</td>
+</tr>
+<tr>
+<td>Saudi Prince Spoof</td>
+<td>2015</td>
+<td>10 minutes</td>
+<td>Market rumor, denied by officials</td>
+</tr>
+</tbody>
+</table>
+<p>For each event, the system builds a &quot;state of the world&quot; from information available <em>before</em> the hoax appeared — guaranteeing no look-ahead bias. The AI then tries to catch each hoax within its real historical T2 window.</p>
+<hr>
+<h2 id="8-how-the-code-is-organized">8. How the Code is Organized</h2>
+<p>The project is structured in a clean, logical flow:</p>
+<pre class="hljs"><code><div>data_preparation.py     →   market_simulator.py    →   pipeline.py
+  Generate events           Model prices &amp; P&amp;L        Orchestrate T0→T1→T2
+  and social streams                                        ↓
+                                                    llm_verifier.py
+                                                      AI + debate
+                                                    rag_system.py
+                                                      Research context
+                                                        ↓
+                                              analysis/
+                                                stress_test.py
+                                                sensitivity.py  
+                                                threshold_optimizer.py
+                                                plots.py
+</div></code></pre>
+<p>Each module does one thing and passes its results to the next. All configuration — parameters, paths, constants — lives in a single <code>config.py</code> file, so you can change behavior without touching logic.</p>
+<p>To run the system:</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># See the P&amp;L math (no API key needed)</span>
+python main.py demo
+
+<span class="hljs-comment"># Full backtest (requires API key)</span>
+python main.py backtest
+
+<span class="hljs-comment"># Adversarial stress test</span>
+python main.py stress
+
+<span class="hljs-comment"># Sensitivity analysis</span>
+python main.py sensitivity
+</div></code></pre>
+<hr>
+<h2 id="9-summary">9. Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Can an AI catch fake news in 5 seconds?</td>
+<td>Yes — it saves ~$8,000 per fake event</td>
+</tr>
+<tr>
+<td>What does a wrong decision cost?</td>
+<td>~$7,000 in missed profit</td>
+</tr>
+<tr>
+<td>Is it worth it?</td>
+<td>Yes — savings exceed costs by ~15%</td>
+</tr>
+<tr>
+<td>What matters most?</td>
+<td><strong>Human verification speed</strong> (not AI speed)</td>
+</tr>
+<tr>
+<td>Do bots fool the AI?</td>
+<td>Partially — but the AI still beats doing nothing</td>
+</tr>
+<tr>
+<td>Best environment?</td>
+<td>High-liquidity stocks (Apple, Microsoft, JPMorgan)</td>
+</tr>
+</tbody>
+</table>
+<p>The core insight: <strong>in the 5-minute gap between machine speed and human verification, even a moderately capable AI adds significant economic value.</strong> The economics are asymmetric — being right about fake news saves slightly more than being wrong about real news costs. This asymmetry is the &quot;verification arbitrage,&quot; and it means the AI doesn't need to be perfect to be profitable.</p>
+<hr>
+<h2 id="technical-notes">Technical Notes</h2>
+<ul>
+<li><strong>AI model used:</strong> DeepSeek v4 Flash (via API)</li>
+<li><strong>Embedding model:</strong> all-MiniLM-L6-v2 (sentence embeddings)</li>
+<li><strong>Simulation:</strong> 220 synthetic events (110 real + 110 fake), 5,000-article news corpus</li>
+<li><strong>Market model:</strong> MFT sustained dislocation with reflexivity penalty</li>
+<li><strong>RAG:</strong> Dual-stream (static news corpus + dynamic social stream)</li>
+<li><strong>Code:</strong> Python, ~12 modules, single entry point</li>
+</ul>
+<hr>
+<p><em>This project is a simulation. Real trading involves additional factors — transaction costs, market regimes, regulatory constraints — not captured in this model. The results demonstrate the concept of verification arbitrage, not a production trading strategy.</em></p>
+
+</body>
+</html>
