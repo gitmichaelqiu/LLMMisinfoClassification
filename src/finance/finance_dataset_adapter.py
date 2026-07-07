@@ -22,9 +22,19 @@ class FinanceDatasetAdapter(DatasetAdapter):
     Labels: 0=REAL, 1=FAKE.
 
     Search paths (in order):
-      - data/raw/finance/     (domain-specific raw CSVs)
-      - data/synthetic/       (generated synthetic CSVs)
+      - path/raw/finance/     (domain-specific raw CSVs)
+      - path/synthetic/       (generated synthetic CSVs)
+
+    Args:
+        path: Base data directory. Defaults to ``data/`` relative to this file.
     """
+
+    def __init__(self, path: Optional[str] = None):
+        base = path or os.path.join(os.path.dirname(__file__), "..", "..", "data")
+        self._search_dirs = [
+            os.path.join(base, "raw", "finance"),
+            os.path.join(base, "synthetic"),
+        ]
 
     def load(self) -> List[VerificationItem]:
         """Load all items from the finance dataset.
@@ -40,13 +50,7 @@ class FinanceDatasetAdapter(DatasetAdapter):
             List of VerificationItem objects.
         """
         items = []
-        base = os.path.join(os.path.dirname(__file__), "..", "..", "data")
-        search_dirs = [
-            os.path.join(base, "raw", "finance"),
-            os.path.join(base, "synthetic"),
-        ]
-
-        for data_dir in search_dirs:
+        for data_dir in self._search_dirs:
             if not os.path.isdir(data_dir):
                 continue
             for fname in sorted(os.listdir(data_dir)):
