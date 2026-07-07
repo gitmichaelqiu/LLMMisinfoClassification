@@ -1,50 +1,55 @@
 # Verification Arbitrage: LLM Risk Management for Fake-News Flash Crashes
 
-A dual-system framework where classical NLP trades on breaking news (T₀) while an LLM verifies the news within seconds (T₁) to protect portfolio positions from fake-news flash crashes.
+A dual-system framework where classical NLP trades on breaking news ($T_0$) while an LLM verifies the news within seconds ($T_1$) to protect portfolio positions from fake-news flash crashes before human verification arrives ($T_2$).
 
-**Core idea:** A fund already holds a position. Breaking news hits — is it real or fake? Classical ML panics and sells. An LLM with dual-source RAG evaluates source credibility within 5 seconds. If the news is fake, the fund holds through the panic and snaps back when human verification arrives (T₂).
-
----
-
-## Key Findings
-
-### 1. LLMs Catch Hoaxes at 92% Recall
-
-On 7 real-world historical hoaxes (2013 AP Hack, 2021 Walmart/Litecoin, 2023 Pentagon explosion, etc.), the LLM correctly identified 5/7 with zero false positives. On a 150-event synthetic set: **92% recall, 68% precision**.
-
-### 2. T₁ Latency Does Not Matter (r = -0.064)
-
-Whether the LLM takes 2 seconds or 30 seconds produces essentially the same P&L. The market impact happens in the first 1-2 seconds. The human verification delay (T₂) is the dominant variable (r = -0.333).
-
-![T₁/T₂ Sensitivity](paper/time_aware_sensitivity_heatmaps.png)
-
-### 3. Market Microstructure Dominates Economics
-
-The square-root market impact of reversing a trade can cost more than holding the bad position. **Dynamic sizing** (capping reversal to half of available depth) improves P&L by **124x**.
-
-![Historical Price Paths](paper/historical_calibrated_impact.png)
-
-### 4. Verify-First Beats Trade-First at P(Fake) > 4%
-
-| Strategy | On Fake News | On Real News |
-|----------|-------------|-------------|
-| **Trade-First** (sell now, verify after) | Lock in crash loss: -$30K | Correct exit: save $8K vs waiting |
-| **Verify-First** (wait for LLM before selling) | Hold → snapback: $0 loss | Sell at T₁: -$6.8K vs T₀ exit |
-
-The asymmetry ratio is **25:1** — the cost of panic-selling fake news ($30K) far outweighs the cost of waiting for LLM confirmation on real news ($1.2K). Verify-first dominates above a 4% fake news base rate.
-
-![Verify-First Crossover](paper/verify_first_crossover_mid_cap.png)
-
-### Architecture
-
-```
-Data Layer → Dual RAG → LLM Verifier → Market Simulator → Analysis
-  • Synthetic events    • News corpus     • Single-Shot    • Square-Root Impact   • Sensitivity
-  • Historical hoaxes   • Social stream   • MoA Debate     • Dynamic Sizing       • Crossover
-                        • Credibility     • Voting Ensemble • P&L Settlement      • Thresholds
-```
+**Core idea:** A fund already holds a position. Breaking news hits — is it real or fake? Classical ML panics and sells. An LLM with dual-source RAG evaluates source credibility within ~5 seconds. If the news is fake, the fund holds through the panic and recovers when human verification arrives ($T_2 \sim 300$s).
 
 ---
+
+## Repository Structure
+
+```
+├── README.md              # This file
+├── ROADMAP.md             # Phased implementation roadmap
+├── requirements.txt       # Python dependencies
+├── CLAUDE.md              # Project guide & architect roadmap
+├── configs/               # Configuration files (YAML)
+├── src/                   # Core source code
+│   ├── rag_retriever.py       # Dual-source RAG (corpus + social stream)
+│   ├── moa_agents.py          # Mixture-of-Agents (Believer, Skeptic, Risk Officer)
+│   ├── cot_parser.py          # Chain-of-thought output parser
+│   ├── prompts.py             # LLM prompt templates
+│   ├── crypto_domain.py       # Cryptocurrency stress-test domain
+│   ├── cross_lingual.py       # Cross-lingual generalization (Nikkei, DAX, Hang Seng)
+│   ├── edgar_rag_retriever.py # SEC EDGAR filing RAG
+│   ├── xbrl_verifier.py       # XBRL financial statement verification
+│   ├── red_team_generator.py  # Adversarial red-team headline generation
+│   ├── base_rate_analysis.py  # Bayesian PPV analysis
+│   ├── health_dataset.py      # Healthcare domain evaluation
+│   └── finance/               # Finance-specific modules
+├── data/
+│   ├── raw/               # Raw external datasets
+│   ├── processed/         # Cleaned/featurized data
+│   └── synthetic/         # Generated synthetic events
+├── configs/               # Experiment configuration files
+├── experiments/           # Experiment tracking
+├── results/               # Output metrics and analysis
+│   └── phase{01..06}/     # Versioned result directories
+├── docs/                  # Documentation
+├── tests/                 # Unit and integration tests
+├── external_review_report/ # External audit artifacts
+├── input/                 # Legacy input datasets
+└── models/                # Pre-trained model artifacts
+```
+
+## Architecture
+
+```
+Data Layer → Dual RAG → LLM Verifier → Market Simulation → Analysis
+  • Synthetic events    • News corpus     • Single-Shot     • Square-Root Impact     • Crossover curves
+  • Historical hoaxes   • Social stream   • MoA Debate      • Dynamic Sizing         • PPV analysis
+                        • Credibility     • Voting Ensemble • P&L Settlement          • Sensitivity
+```
 
 ## Setup
 
@@ -54,17 +59,18 @@ cd AdvFinNLPVuln
 pip install -r requirements.txt
 ```
 
-Copy `.env.example` to `.env` and configure your API key.
+Copy `.env.example` to `.env` and configure `DEEPSEEK_API_KEY`. In mock mode (no API key), the system falls back to trained classical baselines.
 
-```bash
-python main.py
-```
+## Key Findings
 
----
-
-## Paper
-
-See [`PAPER.md`](PAPER.md) for the full academic manuscript.
+| Metric | Value |
+|--------|-------|
+| LLM Recall (historical hoaxes) | 92% |
+| LLM Precision (synthetic set) | 68% |
+| Verify-First crossover threshold | 4.81% P(Fake) |
+| T₁ latency correlation with P&L | r = -0.064 (negligible) |
+| Dynamic sizing improvement | ~42× execution cost reduction |
+| Opportunity-cost asymmetry | 25:1 (favoring verify-first) |
 
 ---
 
@@ -74,5 +80,5 @@ MIT License. See [LICENSE](./LICENSE).
 
 ## Acknowledgements
 
-- Financial news dataset (Apache 2.0) from [Kaggle](https://www.kaggle.com/datasets/mikemiller125/kaggleyahoo-finance-news), derived from [financial-news-dataset](https://github.com/FelixDrinkall/financial-news-dataset) (CC BY-NC-SA 4.0)
+- Financial news dataset (Apache 2.0) from [Kaggle](https://www.kaggle.com/datasets/mikemiller125/kaggleyahoo-finance-news)
 - Fake news classification dataset (CC0 1.0) from [Kaggle](https://www.kaggle.com/datasets/mikemiller125/financial-news-classification-dataset)
