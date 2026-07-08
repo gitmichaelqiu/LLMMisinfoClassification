@@ -159,7 +159,7 @@ quadrantChart
 - **Key observation**: Single-Shot is recall-perfect on finance and healthcare but has high false-positive rates (40-60%). Political underperformance is structural, not architectural — all architectures struggle on 2016-style political content.
 - **API non-determinism**: Political F1 ranged from 0.333 to 0.571 across 2 identical-parameter runs (temperature=0.0). This is a real methodological concern.
 
-![F1 Comparison](plots/phase11_f1_comparison.png)
+![F1 Comparison](../plots/phase11_f1_comparison.png)
 *Figure 1: F1 score by architecture and domain. Voting N=3 dominates all domains. Political is hardest for all architectures.*
 
 ### Repaired Voting N=3
@@ -199,7 +199,7 @@ quadrantChart
 
 MoA provides the best calibration (lowest ECE) despite not having the best classification accuracy. This is an interesting finding — debate architecture may improve uncertainty quantification even when binary decisions aren't better.
 
-![ECE Comparison](plots/phase11_ece_comparison.png)
+![ECE Comparison](../plots/phase11_ece_comparison.png)
 *Figure 6: Expected Calibration Error by architecture (lower is better). MoA has the best cross-domain calibration (ECE=0.133) despite never being the optimal architecture. If the paper emphasizes risk-management framing, MoA's calibration may still be valuable.*
 
 ### Latency Tradeoff
@@ -210,7 +210,7 @@ MoA provides the best calibration (lowest ECE) despite not having the best class
 | MoA | 16.0-21.3s | ❌ Exceeds 5s | Too slow for HFT; viable for fundamental verification |
 | RAG | 3.4-6.0s | ✅ Fits 5s | Fast but inaccurate |
 
-![Latency vs F1](plots/phase11_latency_f1.png)
+![Latency vs F1](../plots/phase11_latency_f1.png)
 *Figure 3: Latency-F1 scatter with latency budget zones. Single-Shot is the only architecture inside the <5s HFT window. Voting N=3 dominates the 5-15s swing-trading zone. MoA and RAG are never optimal within their feasibility windows.*
 
 ### Policy Sensitivity (Phase 8 — Mock Mode)
@@ -219,7 +219,7 @@ MoA provides the best calibration (lowest ECE) despite not having the best class
 - **Latency budget**: 0% variance contribution in mock sweep — but real API latencies vary 3-21s, which would change this dramatically.
 - **Limitation**: Phase 8 sweep used Single-Shot metrics only, derived from TF-IDF+LR mock. Real V3/MoA metrics would shift optimal policies.
 
-![Expected Cost](plots/phase11_expected_cost.png)
+![Expected Cost](../plots/phase11_expected_cost.png)
 *Figure 4: Expected per-item cost across base rates for 4 FP:FN cost ratios. Voting N=3 has the lowest cost at all base rates when symmetric costs (1:1); at high FN cost (1:25), Single-Shot and Voting converge at low base rates.
 
 ### Phase 11: Base-Rate-Stratified Routing Analysis (Real API Outputs)
@@ -243,12 +243,12 @@ MoA provides the best calibration (lowest ECE) despite not having the best class
 5. **No base-rate-sensitive architecture switching.** The optimal architecture is stable across base rates (0.1%–50%) and cost ratios (FP:FN 1:1–1:25) within each latency tier.
 6. **Latency budget is the binding constraint** and the sole driver of architecture selection.
 
-![PPV Curves](plots/phase11_ppv_curves.png)
+![PPV Curves](../plots/phase11_ppv_curves.png)
 *Figure 2: PPV vs base rate for each architecture (cross-domain mean). Voting N=3 maintains highest PPV at all base rates. At P(Fake) < 1%, all architectures have PPV < 0.40 — operational value collapses without abstention.*
 
 **Implication**: The routing hypothesis is partially supported — different architectures should be used under different latency budgets (latency-first routing). But true base-rate-sensitive architecture switching (different architecture at different P(Fake) levels) was not observed. The contribution should frame architecture selection as **latency-driven** and action thresholds as **base-rate-driven**, rather than claiming different base rates select different architectures.
 
-![Regime Wins](plots/phase11_regime_wins.png)
+![Regime Wins](../plots/phase11_regime_wins.png)
 *Figure 5: Regime win distribution. Voting N=3 wins 42% of regimes, Single-Shot wins 14%. RAG's 44% is an ESCALATE abstention artifact. MoA wins 0 regimes.*
 
 ---
