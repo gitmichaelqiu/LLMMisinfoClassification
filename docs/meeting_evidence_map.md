@@ -5,6 +5,37 @@
 **Domains tested:** Finance, Healthcare, Political (N=10 each)  
 **Architectures:** Single-Shot, Voting N=3 (repaired), MoA (repaired), RAG (evidence-category)
 
+```mermaid
+flowchart LR
+    subgraph T0["T₀: Detection (not implemented)"]
+        A[("News Feed")]
+        B["Fast NLP Trigger<br>(FinBERT / GBDT)"]
+        A --> B
+    end
+    subgraph T1["T₁: Verifier (this work)"]
+        C["Verifier Router<br>Latency check"]
+        D["Single-Shot<br>(<5s budget)"]
+        E["Voting N=3<br>(≥5s budget)"]
+        F["MoA / RAG<br>(special cases)"]
+        C -- "<5s" --> D
+        C -- "≥5s" --> E
+        C -- "research" --> F
+    end
+    subgraph T2["T₂: Human Review (not implemented)"]
+        G["Manual verification<br>(~300s)"]
+    end
+    B --> C
+    D --> H{Action}
+    E --> H
+    F --> H
+    H -->|"FAKE"| I["Reverse / Hedge"]
+    H -->|"REAL"| J["Hold"]
+    H -->|"ESCALATE"| K["Partial hedge → T₂"]
+    K --> G
+```
+
+*System architecture: T₀ fast trigger → T₁ LLM verifier (this work, latency-routed) → T₂ human review. Dashed lines show unimplemented components.*
+
 ---
 
 ## Literature Context
@@ -26,6 +57,24 @@ This pilot sits at the intersection of several established research lines in LLM
 The literature studies **individual architectures** (single-shot, voting, debate, RAG) but does not study **when to use which one** under real-world constraints on base rate, cost asymmetry, and latency. The contribution we are exploring is not simply "architecture X beats baseline Y" but a **cost-aware, base-rate-aware, latency-aware verifier routing policy** that selects the optimal architecture per event based on context.
 
 This reframes the question from "which verifier is best?" to "under what conditions should each verifier be deployed?"
+
+```mermaid
+quadrantChart
+    title Research Positioning: Verifier Complexity vs Operating Regime
+    x-axis "Low base rate / Tight latency" --> "High base rate / Loose latency"
+    y-axis "Simple (single LLM call)" --> "Complex (multi-agent / debate)"
+    quadrant-1 "Over-engineered\n(not worth cost)"
+    quadrant-2 "Multi-Architecture Target\n(our routing gap)"
+    quadrant-3 "Baseline Sufficient\n(no routing needed)"
+    quadrant-4 "Under-powered\n(can't meet accuracy)"
+    Single-Shot: [0.2, 0.15]
+    Voting-N-3: [0.6, 0.45]
+    MoA: [0.7, 0.80]
+    RAG: [0.4, 0.35]
+    "Routing Policy (gap)": [0.5, 0.55]
+```
+
+*The quadrant chart shows where each architecture lives. The routing gap is the ability to move between quadrants as operating conditions change.*
 
 ---
 
@@ -184,6 +233,15 @@ MoA provides the best calibration (lowest ECE) despite not having the best class
 
 **Implication**: The routing hypothesis is partially supported — different architectures should be used under different latency budgets (latency-first routing). But true base-rate-sensitive architecture switching (different architecture at different P(Fake) levels) was not observed. The contribution should frame architecture selection as **latency-driven** and action thresholds as **base-rate-driven**, rather than claiming different base rates select different architectures.
 
+```mermaid
+pie title Regime Win Distribution (72 configurations)
+    "Voting N=3 — 30 (42%)" : 30
+    "Single-Shot — 10 (14%)" : 10
+    "RAG* — 32 (44%)" : 32
+```
+
+*\*RAG's 44% is an ESCALATE abstention artifact — see finding #4. MoA wins 0 regimes.*
+
 ---
 
 ## 3. Hybrid / Latency-Aware Routing Strategy
@@ -210,10 +268,15 @@ Phase 11 (base-rate-stratified analysis on 240 existing real API outputs) found:
 
 #### Level 1: Architecture Selection (Latency-Driven)
 
-```
-Time until deadline?
-    ├── <5s → Single-Shot (fastest feasible verifier)
-    └── ≥5s → Voting N=3 (best accuracy when time permits)
+```mermaid
+flowchart TD
+    Q["Time until trading deadline?"]
+    Q -->|"<5s"| SS["Single-Shot<br>F1=0.645, Lat=3.9s<br>Feasible: ✅"]
+    Q -->|"≥5s"| V3["Voting N=3<br>F1=0.827, Lat=13.3s<br>Feasible: ✅"]
+    SS --> ACT["Action Policy<br>(Level 2)"]
+    V3 --> ACT
+    MOA["MoA: Pareto-dominated by Voting<br>Lat=19.2s, F1=0.747, Wins=0"] -.->|"Not recommended"| ACT
+    RAG["RAG: ESCALATE artifact<br>Lat=4.3s, F1=0.413"] -.->|"Not recommended"| ACT
 ```
 
 - **Single-Shot (<5s)**: Cross-domain F1=0.645, P=0.780, R=0.733, Lat=3.9s. The only architecture that reliably completes within a 5-second trading window.
@@ -232,9 +295,33 @@ Once the verifier architecture is selected, the action threshold and position si
 | **Medium (1%–10%)** | Standard asymmetric threshold: reverse when P(fake) > cost_fp/(cost_fp+cost_fn) | PPV becomes operational (10%–46+%); cost-sensitive threshold selects the optimal trade-off |
 | **High (>10%)** | Low threshold: reverse on weak signals | FN cost dominates; maximizing recall is more important than precision |
 
-### Action Implementation
+### Action Policy Decision Tree
 
-A single architecture (Voting N=3 or Single-Shot) with a **confidence-gated action policy** achieves the same effect as the previously hypothesized multi-architecture segments. The `BaseRateEstimator` class in `src/base_rate.py` provides a rolling-window estimator to track the current base rate and adjust thresholds online.
+```mermaid
+flowchart TD
+    V["Verdict from Verifier"]
+    V -->|"FAKE"| FC{Confidence ≥ threshold?}
+    V -->|"REAL"| RH["Hold position<br>No action needed"]
+    V -->|"ESCALATE"| ESC{Hedge or Abstain?}
+
+    FC -->|"Yes"| REV["Reverse position<br>Full reversal"]
+    FC -->|"No"| HEDGE["Hedge: partial reduction<br>Sized by confidence"]
+
+    ESC -->|"Low P(Fake)"| ABSTAIN["Abstain: do nothing<br>Avoid FP cost at low base rate"]
+    ESC -->|"Medium P(Fake)"| PARTIAL["Partial hedge:<br>Reduce 25-50% of position"]
+    ESC -->|"High P(Fake)"| REVIEW["Route to T₂ manual review<br>while holding reduced position"]
+
+    subgraph THRESH["Threshold Selection"]
+        T1["Base Rate < 0.1%: threshold=0.95"]
+        T2["Base Rate 0.1-1%: threshold=0.85"]
+        T3["Base Rate 1-10%: cost-sensitive threshold<br>= cost_fp / (cost_fp + cost_fn)"]
+        T4["Base Rate > 10%: low threshold<br>Maximize recall"]
+    end
+    
+    THRESH -.->|"Determines<br>confidence gate"| FC
+```
+
+A single architecture (Voting N=3 or Single-Shot) with this **confidence-gated action policy** achieves the same effect as the previously hypothesized multi-architecture segments. The `BaseRateEstimator` class in `src/base_rate.py` provides a rolling-window estimator to track the current base rate and adjust thresholds online.
 
 ---
 
@@ -325,6 +412,26 @@ If the professor prefers **statistical confidence** over base-rate stratificatio
 ## How Our Work Can Be Novel
 
 Given the literature context above, here are the concrete ways this work can contribute beyond replicating known architecture comparisons.
+
+```mermaid
+flowchart LR
+    subgraph STANDARD["Standard NLP Verification Paper"]
+        S1["Evaluate at 50/50 class balance"]
+        S2["Report F1, precision, recall"]
+        S3["Single domain or corpus"]
+        S4["One architecture (usually)"]
+    end
+    subgraph OURS["Our Contribution"]
+        O1["PPV across base rates<br>0.1% to 50%"]
+        O2["Latency-aware routing<br><5s → SS, ≥5s → Voting"]
+        O3["3 domains: finance,<br>healthcare, political"]
+        O4["4 architectures compared<br>on identical claims"]
+    end
+    S1 -.->|"Fails at<br>deployment"| O1
+    S2 -.->|"Missing<br>operational view"| O1
+    S3 -.->|"Limited<br>generalization"| O3
+    S4 -.->|"No routing<br>insight"| O2
+```
 
 ### 1. Same-Claim Comparison Across Four Architecture Families
 
