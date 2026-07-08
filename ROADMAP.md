@@ -470,3 +470,257 @@ Phase 9 complete. Framework validated across 3 domains: finance (F1=XX),
 healthcare (F1=XX), political (F1=XX). Cross-domain F1 variance = XX%.
 Domain adapter API standardized. Framework is domain-general.
 ```
+
+---
+
+# Post-Phase-9 Research Roadmap
+
+**Context:** After completing the general verification framework (Phases 0–9), we conducted a real-API pilot evaluation (240 DeepSeek calls, ~$0.036) comparing Single-Shot, Voting N=3, MoA, and RAG on finance, healthcare, and political domains (N=10 each). The results revealed a critical framing gap: all four architectures are individually well-studied in prior work (FEVER, Self-Consistency, Mixture-of-Agents, Self-RAG). A paper that simply compares architectures would not be novel.
+
+**Pivot:** The likely core contribution should be **cost-aware, base-rate-aware, latency-aware verifier routing** — selecting which architecture to deploy based on the operating context (base rate of misinformation, cost asymmetry of errors, available latency budget). The phases below reflect this pivot.
+
+```mermaid
+graph LR
+    P9[Phase 9: Cross-Domain] --> P10[Phase 10: Lit. Map & Bib.]
+    P10 --> P11[Phase 11: Base-Rate-Stratified Analysis]
+    P11 --> P12[Phase 12: Routing Policy Implementation]
+    P12 --> P13[Phase 13: Small Statistical Scaling]
+    P12 -.-> P14[Phase 14: RAG Redesign (Optional)]
+    P13 --> P15[Phase 15: Final Consolidation]
+    P14 --> P15
+```
+
+---
+
+## Phase 10: Literature-Grounded Evidence Map & Bibliography
+
+**Objective:** Build a structured, annotated bibliography organized by the six research dimensions this work touches. This provides the literature backing for the routing-pivot thesis and prevents the paper from claiming novelty in well-studied areas.
+
+**Status:** Draft completed in `docs/meeting_evidence_map.md` (see Literature Context section and Bibliography). This phase formalizes it.
+
+### Organization dimensions
+1. **Benchmarks & datasets** — FEVER, SciFact, AVeriTeC, custom financial/political sets
+2. **Architecture baselines** — single-shot (zero/few-shot CoT), self-consistency/voting (Wang et al., 2022), debate/MoA (Irving et al., 2018; Wang et al., 2024; Du et al., 2023), RAG (Lewis et al., 2020; Self-RAG: Asai et al., 2023)
+3. **Calibration & abstention** — confidence calibration (Hendrycks & Gimpel, 2016), selective classification (Varshney et al., 2022)
+4. **Cost-aware LLM routing** — FrugalGPT (Chen et al., 2023), model cascade routing
+5. **Class imbalance & PPV** — Provost & Fawcett (1997), Chawla et al. (2002), Bayesian PPV in low-prevalence settings
+6. **Finance-specific verification** — flash-crash hoax literature, market microstructure impact of misinformation
+
+### Files to create/edit
+- `docs/literature_map.md` — structured bibliography with annotations
+- `docs/meeting_evidence_map.md` — already has the Literature Context section; expand with per-reference annotations
+
+### Implementation tasks
+1. Classify each citation into the six dimensions above
+2. Annotate: what each reference establishes + what gap remains for this work
+3. Map existing empirical findings to gaps in the literature
+
+### Expected output artifacts
+- `docs/literature_map.md` (structured, annotated bibliography)
+- `docs/meeting_evidence_map.md` (updated with full annotations)
+
+### Copy back to Professor
+```
+Phase 10 complete. Literature organized into 6 dimensions.
+Gap confirmed: prior work studies architectures in isolation,
+not cost/base-rate/latency-aware routing between them.
+```
+
+---
+
+## Phase 11: Base-Rate-Stratified Analysis Using Existing Real API Outputs
+
+**Objective:** Determine the optimal verifier architecture at each base-rate regime using already-collected real API outputs. No new API calls. This is the **most important next experiment** — it answers whether the routing hypothesis has empirical support.
+
+**Rationale for doing this first:** Prior to scaling to larger N, we need to know whether the crossover effect (different architectures optimal at different base rates) exists in our data. If it does not — if one architecture dominates universally — then the routing contribution collapses and we should report the simpler finding.
+
+### Data sources (all exist, no new API calls)
+- `output/repair_rerun/report.json` — 240 real DeepSeek calls, 4 architectures × 3 domains × 10 items
+- `output/real_eval/report.json` — original real API run (same items, different seeds)
+- Raw outputs in `output/repair_rerun/raw_outputs/` and `output/real_eval/raw_outputs/`
+
+### Base-rate regimes to test
+| Segment | P(Fake) | Rationale |
+|---------|---------|-----------|
+| Very low | 0.1% | Real-world baseline; PPV collapse zone |
+| Low | 1% | Crossover boundary for most classifiers |
+| Medium | 5% | Near Phase-22 crossover estimate (5.8%) |
+| Medium-high | 10% | Upper bound of "typical" crisis base rate |
+| High | 25% | Active misinformation campaign |
+| Balanced | 50% | Standard ML evaluation regime |
+
+### Latency budgets to test
+| Budget | Rationale |
+|--------|-----------|
+| <5s | HFT-compatible (Single-Shot, RAG) |
+| <15s | Swing-trading compatible (Voting N=3) |
+| <30s | Fundamental verification (MoA) |
+
+### What to compute per (base rate, latency budget, architecture)
+- **PPV / NPV** — Bayesian, using measured TPR and FPR from real API data
+- **Expected per-item cost** — using asymmetric loss (sweep cost_fp:cost_fn = 1:1, 1:10, 1:100)
+- **Optimal action** — hold, hedge, reverse, or abstain given the expected cost
+- **Architecture ranking** — which verifier minimizes expected cost at this base rate
+
+### Implementation approach
+- Downsample existing predictions to simulate each base rate (no new labels needed)
+- Apply Bayes' rule: PPV = (sens × prev) / (sens × prev + (1 − spec) × (1 − prev))
+- Sweep across all 6 base rates × 3 latency budgets × 3 cost ratios = 54 configurations
+
+### Expected output artifacts
+- `output/phase11_routing_analysis.json` — structured results
+- Crossover tables: optimal architecture × base rate for each cost ratio
+- Decision boundaries: where routing policy switches architectures
+
+### Copy back to Professor
+```
+Phase 11 complete. Crossover analysis on existing real API outputs.
+At base rates below X%, Single-Shot is optimal; above X%, Voting dominates.
+At crisis base rates (>25%), MoA's calibration advantage justifies its latency.
+Routing hypothesis has [empirical support / requires revision].
+```
+
+---
+
+## Phase 12: Routing Policy Implementation
+
+**Objective:** Implement a context-aware routing policy that selects verifier architecture and action based on operating conditions. This is the likely core contribution of the work.
+
+**Policy signature:**
+```
+input:  base_rate_estimate, cost_ratio, latency_budget,
+        evidence_availability, verifier_confidence
+output: selected_verifier (single_shot | voting | moa | rag),
+        action (hold | hedge | reverse | abstain | escalate),
+        confidence threshold
+```
+
+### Policy design
+1. **Base-rate gating**: If P(Fake) < threshold, use Single-Shot + abstention (avoid FP costs)
+2. **Latency gating**: If budget < 5s, exclude Voting and MoA
+3. **Cost-ratio gating**: If cost_fn >> cost_fp, prefer high-recall verifier (Voting/MoA)
+4. **Evidence gating**: If RAG evidence is available and relevant, use RAG
+5. **Confidence gating**: If confidence < threshold, escalate to next-tier verifier
+6. **Abstention**: If no verifier meets minimum expected-cost criteria, output ESCALATE
+
+### Implementation tasks
+1. Implement `RoutingPolicy` class with the above decision logic
+2. Implement policy evaluation: compare routing vs. each fixed architecture
+3. Sweep policy thresholds to find optimal configuration
+4. Document policy decision boundaries (see Phase 11 output)
+
+### Files to create/edit
+- `src/routing_policy.py` — `RoutingPolicy` class
+- `src/base_rate.py` — extend with streaming base-rate estimation (already done)
+- `tests/test_routing_policy.py` — policy tests
+
+### Experiments to run
+- `python -m src.routing_policy --mode evaluate` — compare routing vs. fixed architectures
+- `python -m src.routing_policy --mode threshold_sweep` — find optimal decision boundaries
+
+### Metrics to report
+- Expected cost: routing policy vs. best fixed architecture
+- Action distribution: how often does the policy select each verifier?
+- Latency compliance: % of decisions within budget
+- Cost savings: routing vs. "always use Voting" baseline
+
+### Expected output artifacts
+- `src/routing_policy.py`
+- `tests/test_routing_policy.py`
+- `output/phase12_routing_metrics.json`
+
+### Copy back to Professor
+```
+Phase 12 complete. Routing policy selects verifier based on base rate,
+cost ratio, and latency budget. At low base rates, Single-Shot + abstention
+is optimal. At medium base rates, Voting is preferred. Routing achieves
+XX% cost savings vs. best fixed architecture.
+```
+
+---
+
+## Phase 13: Small Statistical Scaling
+
+**Objective:** Scale the most relevant architectures to larger sample sizes to establish statistical confidence. This phase runs **only after** Phase 11/12 confirms which architectures matter for the routing policy.
+
+**Why not scale first:** Scaling all architectures to N=50 before knowing the routing thesis would waste API calls on architectures that may not be relevant (e.g., RAG if it does not improve routing outcomes). Phase 11 tells us which ones to scale.
+
+### Likely design (subject to Phase 11/12 results)
+- Scale **Single-Shot** (N=50/domain) × 3 domains = 150 API calls (~$0.023)
+- Scale **Voting N=3** (N=50/domain) × 3 domains = 150 API calls (~$0.023)
+- Possibly **MoA** only if Phase 11/12 shows a crossover regime where MoA is optimal
+- Possibly **exclude political** if Phase 11/12 confirms it is unreliable
+
+### Metrics to report
+- 95% confidence intervals on all metrics (F1, PPV, ECE, latency)
+- Statistical significance tests: does Voting beat Single-Shot at N=50?
+- Updated routing decision boundaries with confidence intervals
+
+### Expected output artifacts
+- Updated raw outputs in `output/phase13_scaling/`
+- Updated metrics with confidence intervals
+
+### Copy back to Professor
+```
+Phase 13 complete. [Architecture(s)] scaled to N=50/domain.
+F1: Single-Shot = XX ± XX [95% CI], Voting N=3 = XX ± XX [95% CI].
+Routing policy decision boundaries stable within [range].
+```
+
+---
+
+## Phase 14: RAG Redesign (Optional)
+
+**Objective:** Redesign the RAG verifier with curated, source-aware evidence retrieval. **Only if the professor determines RAG is important for the paper's contribution** — otherwise skip or defer.
+
+**Background:** Our Phase 6/repair RAG uses generic TF-IDF retrieval from an all-REAL news corpus. This produced F1=0.413 (worst architecture) with 80% ESCALATE on finance and political. Prior work (FEVER, SciFact, Self-RAG) uses curated evidence with source reliability labels — which we did not attempt.
+
+### Design alternatives to test
+1. **Curated contradiction corpus** — include known-fake examples with contradiction signals
+2. **Source reliability labels** — annotate each retrieved document with source trustworthiness
+3. **Temporal validity** — retrieve only documents within relevant time windows
+4. **Retrieve-on-demand (Self-RAG style)** — retrieve only when the verifier identifies an evidence gap
+
+### Minimum viable test
+- Build a balanced corpus (50% real articles, 50% known-fake headlines with contextual debunking)
+- Re-run RAG evaluator (same prompt, better retrieval corpus)
+- Compare: does ESCALATE rate drop from 80% to <30%?
+
+### Expected output artifacts
+- Updated RAG corpus (curated)
+- `output/phase14_rag_redesign.json` — before/after comparison
+
+### Copy back to Professor
+```
+Phase 14 [optional] complete. Curated evidence corpus reduces RAG ESCALATE
+rate from 80% to XX%. RAG F1 improves from 0.413 to XX. Design decision:
+[include RAG in paper / defer to future work].
+```
+
+---
+
+## Phase 15: Final Experiment Consolidation
+
+**Objective:** Consolidate all experiment outputs into final tables and figures. Generate the artifacts needed for the paper's empirical sections.
+
+**Scope:** Tables and figures only. No paper writing.
+
+### Deliverables
+1. **Cross-domain metrics table** — F1, PPV, ECE, latency per architecture per domain (with CIs from Phase 13)
+2. **Routing policy decision table** — optimal architecture × base rate × cost ratio × latency budget
+3. **PPV curve chart** — PPV vs. P(Fake) for each architecture with crossover thresholds annotated
+4. **Latency-Precision Pareto frontier** — mean latency vs. F1 for each architecture with latency-budget zones
+5. **Cost savings bar chart** — expected cost: routing policy vs. each fixed architecture
+6. **Action distribution table** — % hold / hedge / reverse / abstain / escalate per architecture per base rate
+
+### Files to create/edit
+- `src/final_visualizations.py` — plot generation script
+- `output/phase15_final_metrics.json` — all consolidated metrics
+
+### Copy back to Professor
+```
+Phase 15 complete. Final tables and figures generated.
+6 deliverables ready: cross-domain metrics, routing table, PPV curves,
+Pareto frontier, cost savings, action distributions.
+Artifacts at output/phase15_final_metrics.json and plots/.
+```
