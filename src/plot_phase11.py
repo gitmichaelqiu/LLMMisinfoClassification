@@ -182,7 +182,7 @@ def plot_expected_cost(cross):
 # ── Plot 4: Latency vs F1 scatter ──────────────────────────────────
 
 def plot_latency_f1(data, cross):
-    fig, ax = plt.subplots(figsize=(7, 5))
+    fig, ax = plt.subplots(figsize=(9, 5))
 
     # Per-domain points (small circles, lighter)
     for d in DOMAINS:
@@ -225,9 +225,12 @@ def plot_latency_f1(data, cross):
     ax.set_ylim(0, 1.1)
 
     lgnd1 = ax.legend(handles=cross_legend, loc="upper left",
+                      bbox_to_anchor=(1.0, 1.0),
                       framealpha=0.9, fontsize=9, title="Cross-domain mean")
     ax.add_artist(lgnd1)
-    ax.legend(handles=[pd_handle], loc="center right", framealpha=0.9, fontsize=8)
+    ax.legend(handles=[pd_handle], loc="lower left",
+              bbox_to_anchor=(1.0, 0.0),
+              framealpha=0.9, fontsize=8)
     ax.grid(True, alpha=0.3)
     fig.tight_layout()
     path = os.path.join(OUT_DIR, "phase11_latency_f1.png")
