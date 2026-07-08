@@ -3,7 +3,8 @@
 **Prepared:** 2026-07-07  
 **Model evaluated:** DeepSeek-v4-flash (240 real API calls, ~$0.036 total)  
 **Domains tested:** Finance, Healthcare, Political (N=10 each)  
-**Architectures:** Single-Shot, Voting N=3 (repaired), MoA (repaired), RAG (evidence-category)
+**Architectures:** Single-Shot (with/without RAG), Voting N=3 (with/without RAG), MoA (with/without RAG)
+**RAG note:** Not a standalone architecture. RAG is an evidence-augmentation factor that can be enabled or disabled for any verifier. Previous "RAG" results were a local-corpus evidence-augmented single-shot prototype (see Section 2 correction).
 
 ```mermaid
 flowchart LR
@@ -12,22 +13,29 @@ flowchart LR
         B["Fast NLP Trigger<br>(FinBERT / GBDT)"]
         A --> B
     end
+    subgraph EVID["Evidence Layer"]
+        EV["Retrieval Corpus<br>(local news archive)"]
+        EV --> E["Evidence Context<br>(retrieved articles)"]
+    end
     subgraph T1["T₁: Verifier (this work)"]
         C["Verifier Router<br>Latency check"]
         D["Single-Shot<br>(<5s budget)"]
-        E["Voting N=3<br>(≥5s budget)"]
-        F["MoA / RAG<br>(special cases)"]
+        V3["Voting N=3<br>(≥5s budget)"]
+        M["MoA<br>(calibration case)"]
         C -- "<5s" --> D
-        C -- "≥5s" --> E
-        C -- "research" --> F
+        C -- "≥5s" --> V3
+        C -- "research" --> M
+        E -.->|"+RAG evidence"| D
+        E -.->|"+RAG evidence"| V3
+        E -.->|"+RAG evidence"| M
     end
     subgraph T2["T₂: Human Review (not implemented)"]
         G["Manual verification<br>(~300s)"]
     end
     B --> C
     D --> H{Action}
-    E --> H
-    F --> H
+    V3 --> H
+    M --> H
     H -->|"FAKE"| I["Reverse / Hedge"]
     H -->|"REAL"| J["Hold"]
     H -->|"ESCALATE"| K["Partial hedge → T₂"]
@@ -44,19 +52,30 @@ This pilot sits at the intersection of several established research lines in LLM
 
 | Research Area | Prior Work | Relationship to This Work |
 |---------------|-----------|--------------------------|
-| **Factual-claim verification / FEVER-style** | FEVER (Thorne et al., 2018), SciFact (Wadden et al., 2020), AVeriTeC (Schlichtkrull et al., 2023) — standard benchmarks for retrieving evidence and classifying claim truth. | Our RAG verifier follows the same retrieve-then-classify paradigm but applies it to financial news where the "evidence" is not a knowledge-base snippet but a prior news article. |
+| **Factual-claim verification / FEVER-style** | FEVER (Thorne et al., 2018), SciFact (Wadden et al., 2020), AVeriTeC (Schlichtkrull et al., 2023) — standard benchmarks for retrieving evidence and classifying claim truth. | Our evidence-augmented verifiers follow the same retrieve-then-classify paradigm but apply it to financial news where the "evidence" is not a knowledge-base snippet but a prior news article. |
 | **Self-consistency / voting** | Wang et al. (2022) — Self-Consistency samples N reasoning paths and takes majority vote. Standard technique. | Our Voting N=3 extends this by using **role-differentiated** prompts (neutral, skeptical, base-rate-calibrated) rather than identical prompts. |
 | **Debate / Mixture-of-Agents** | Irving et al. (2018) — debate for truthfulness; Mixture-of-Agents (Wang et al., 2024) — multi-agent collaboration; Du et al. (2023) — "Chatting to Correct." | Our MoA uses Believer/Skeptic/Risk-Officer role differentiation. Prior work shows debate can improve factuality but at high latency. |
-| **Retrieval-Augmented Generation** | Lewis et al. (2020), Self-RAG (Asai et al., 2023) — RAG for grounding. | Our RAG uses evidence-category analysis. Self-RAG's "retrieve on demand" pattern is relevant for future work. |
+| **Retrieval-Augmented Generation** | Lewis et al. (2020), Self-RAG (Asai et al., 2023) — RAG for grounding. | RAG is an **evidence-augmentation factor**, not a standalone architecture. Any verifier (SS, Voting, MoA) can run with or without evidence. Our pilot tested a local-corpus evidence-augmented single-shot prototype. Self-RAG's "retrieve on demand" pattern is relevant for future work. |
 | **Cost-aware LLM routing** | FrugalGPT (Chen et al., 2023) — route queries to cheapest adequate model. | **Closest parallel.** FrugalGPT routes between model tiers (GPT-4 vs GPT-3.5). Our routing is between **verifier architectures** (Single-Shot vs Voting vs MoA) conditioned on base rate, cost, and latency. |
 | **Calibration & abstention** | Hendrycks & Gimpel (2016) — confidence calibration; Varshney et al. (2022) — selective classification/abstention. | Our ESCALATE verdict is a form of abstention. ECE tracking for confidence calibration follows this literature. |
 | **Class imbalance / PPV** | Provost & Fawcett (1997) — ROC vs PPV at low base rates; Chawla et al. (2002) — class imbalance. | The core motivation: at P(Fake) < 1%, even a strong classifier's PPV collapses. This is well-known in fraud detection and medical screening, less commonly applied to LLM verification. |
 
 ### Research Gap
 
-The literature studies **individual architectures** (single-shot, voting, debate, RAG) but does not study **when to use which one** under real-world constraints on base rate, cost asymmetry, and latency. The contribution we are exploring is not simply "architecture X beats baseline Y" but a **cost-aware, base-rate-aware, latency-aware verifier routing policy** that selects the optimal architecture per event based on context.
+The literature studies **individual architectures** (single-shot, voting, debate, RAG) but does not study **when to use which one** under real-world constraints on base rate, cost asymmetry, latency, and evidence availability. The contribution we are exploring is not simply "architecture X beats baseline Y" but: **how should evidence augmentation, verifier architecture, latency budget, and base-rate-aware action thresholds be combined?**
 
-This reframes the question from "which verifier is best?" to "under what conditions should each verifier be deployed?"
+This reframes the question from "which verifier is best?" to a multi-dimensional design space:
+
+```
+(evidence ON/OFF) × (Single-Shot / Voting / MoA) × (latency budget) × (base rate) × (cost ratio)
+```
+
+**Key reframing**: RAG is not a fourth architecture. It is an evidence-augmentation toggle that can be enabled or disabled for any verifier. Our previous "RAG" result was actually a **local-corpus evidence-augmented single-shot** prototype — it should be compared to unaugmented Single-Shot, not treated as a separate architecture family.
+
+The full experimental matrix is a **2 × 3 factorial design**:
+- Evidence: OFF or ON
+- Verifier: Single-Shot, Voting N=3, MoA
+- With latency budget, base rate, and cost ratio as continuous context variables
 
 ```mermaid
 quadrantChart
@@ -68,9 +87,9 @@ quadrantChart
     quadrant-3 "Baseline Sufficient\n(no routing needed)"
     quadrant-4 "Under-powered\n(can't meet accuracy)"
     Single-Shot: [0.2, 0.15]
+    SS+RAG: [0.25, 0.30]
     Voting-N-3: [0.6, 0.45]
     MoA: [0.7, 0.80]
-    RAG: [0.4, 0.35]
     "Routing Policy (gap)": [0.5, 0.55]
 ```
 
@@ -112,7 +131,7 @@ quadrantChart
 | Single-Shot is the efficient baseline | F1=0.833 finance, 0.769 healthcare, 3.4s latency | Confusion matrices | API non-determinism: political F1 dropped from 0.571→0.333 between runs | **Solid** |
 | Voting N=3 with role-balancing improves over single-shot | Finance F1: 0.833→1.000; Healthcare: 0.769→0.909; Cross-domain: 0.645→0.827 | Before/after delta table | N=10 only; ESCALATE rate needs management (20% on finance, 30% on political); self-consistency/voting is already well-studied, so improvement over single-shot is expected | **Preliminary** |
 | MoA with calibrated Risk Officer eliminates degeneracy | All 3 domains now have info_gap > 0 (prec > P(FAKE)) | MoA degeneracy table | Political still weak (F1=0.500); latency 16-21s may be prohibitive | **Preliminary** — degeneracy fixed, performance mixed |
-| Generic evidence retrieval is insufficient for claim verification | Cross-domain F1=0.413; 80% ESCALATE on finance and political | RAG evidence quality table | Curated, source-aware evidence (as in FEVER/SciFact) may be needed rather than generic TF-IDF retrieval; diagnosis not yet isolated | **At risk** |
+| Generic evidence retrieval is insufficient for claim verification | SS+RAG prototype: cross-domain F1=0.413; 80% ESCALATE on finance and political | RAG evidence quality table | RAG was tested as a single-shot prototype only — not yet evaluated on Voting or MoA. Curated, source-aware evidence (FEVER/SciFact) may be needed rather than generic TF-IDF retrieval | **At risk** |
 
 ### Dataset
 
@@ -129,7 +148,7 @@ quadrantChart
 | Single-Shot achieves F1=0.833 on finance, 0.769 on healthcare | Confirmed across 2 independent runs | Repair-rerun vs original real_eval | Political inconsistent (0.571→0.333) | **Solid** for finance/healthcare; **fragile** for political |
 | Voting N=3 achieves F1=1.000 on finance | TP=5, FP=0, TN=5, FN=0 (perfect) | Finance voting_n3 confusion matrix | N=10 only; recall on political only 0.400. Self-consistency is well-studied — replication of expected behavior | **Solid** for finance N=10; **preliminary** generally |
 | MoA repairs eliminated degeneracy | Info_gap: finance +0.214, healthcare +0.333, political +0.167 | Degeneracy diagnostics | Political precision=0.667, info_gap narrow; 20% FPR on political | **Solid** for degeneracy claim; **preliminary** for performance claim |
-| Generic RAG does not beat Single-Shot | Cross-domain F1: 0.413 vs 0.645 | Cross-domain comparison | Curated, source-aware evidence retrieval (FEVER-style) may be required; this does not rule out RAG as a paradigm | **Solid** negative result for generic retrieval |
+| Generic evidence-augmented SS (SS+RAG) does not beat unaugmented SS | Cross-domain F1: 0.413 (SS+RAG) vs 0.645 (SS alone) | Cross-domain comparison | RAG was only tested on Single-Shot. Voting+RAG and MoA+RAG not yet evaluated. Curated, source-aware evidence may change outcomes | **Solid** negative result for generic retrieval with SS; **untested** for other architectures |
 
 ### Sensitivity Analysis
 
@@ -145,7 +164,7 @@ quadrantChart
 |-------|-------------------|-------------|----------------|------|
 | Voting N=3 is currently the best-performing architecture we tested | Highest cross-domain F1 (0.827), beats SS (+0.182) | Architecture ranking | Self-consistency is already well-studied; the contribution must shift to routing, not architecture comparison | **Preliminary** |
 | Hybrid base-rate strategy plausible but untested | Theoretical framework only | See Section 3 of this doc | No real-API evidence for any segment | **Speculative** |
-| Generic evidence RAG needs curated, source-aware evidence | Evidence-category approach produces 80% ESCALATE | RAG quality metrics | Curated retrieval (FEVER/SciFact-style) not explored | **At risk** |
+| Evidence-augmented verification needs curated, source-aware retrieval | SS+RAG prototype produces 80% ESCALATE with generic TF-IDF | RAG quality metrics | RAG only tested on Single-Shot. Voting+RAG and MoA+RAG unexplored. Curated retrieval (FEVER/SciFact-style) not explored | **At risk** |
 
 ---
 
@@ -179,10 +198,11 @@ quadrantChart
 - **Key observation**: The calibrated Risk Officer prompt ("Default to REAL when Believer provides more specific evidence. Default to FAKE when Skeptic provides clear contradictions.") eliminated the always-FAKE degeneracy. All 3 domains now show precision > P(FAKE) — info_gap ranges from +0.167 (political) to +0.333 (healthcare). Despite this, MoA does NOT outperform Voting N=3 on any domain, and adds 4-9s additional latency.
 - **Calibration note**: MoA has the best ECE on finance (0.064) and political (0.130) — suggesting debate provides better confidence calibration than single-shot, even when binary accuracy is similar.
 
-### RAG Limitations
-- **Cross-domain mean**: F1=0.413 (σ=0.112)
-- **Key observation**: RAG is the only architecture that does NOT beat Single-Shot (-0.232 below). The evidence-category prompt structure (supporting/contradicting/source/insufficient) produces 80% ESCALATE on finance and political despite retrieval quality being adequate (2.7-3.0 hits per query). Healthcare RAG is the best (0% ESCALATE, F1=0.571) because the corpus contains relevant contradicting evidence.
-- **Root cause reframe**: This result does NOT mean "RAG does not work for verification." Prior work (FEVER, SciFact, AVeriTeC, Self-RAG) uses **curated, source-aware evidence** — not generic TF-IDF retrieval from a news corpus. Our RAG failure likely reflects **insufficiently targeted evidence retrieval**, not a fundamental limitation of the RAG paradigm. The all-REAL finance corpus provides no contradicting evidence for fake claims, causing the verifier to default to ESCALATE. Success with RAG may require: (a) a corpus that includes known-fake examples or contradiction signals, (b) source reliability metadata, or (c) a retrieve-on-demand paradigm (Self-RAG style).
+### RAG Evidence-Augmentation Factor (Correction)
+- **⚠️ Important correction**: The previous "RAG" results were a **local-corpus evidence-augmented single-shot prototype (SS+RAG)**, not a standalone architecture. RAG should be treated as an evidence-augmentation toggle that can be applied to any verifier. The 2 × 3 factorial design (evidence ON/OFF × SS/Voting/MoA) has not been fully tested.
+- **SS+RAG prototype**: Cross-domain F1=0.413 (σ=0.112). The evidence-category prompt (supporting/contradicting/source/insufficient) produces 80% ESCALATE on finance and political despite adequate retrieval hits (2.7-3.0 per query). Healthcare SS+RAG is the best (0% ESCALATE, F1=0.571) because the corpus contains relevant contradicting evidence.
+- **Key observation**: The SS+RAG prototype is the **only tested combination** that does NOT beat unaugmented Single-Shot (-0.232 below SS alone). But this tells us about **generic TF-IDF retrieval with SS**, not about RAG as a paradigm. Voting+RAG and MoA+RAG are untested.
+- **Root cause reframe**: This result does NOT mean "RAG does not work for verification." Prior work (FEVER, SciFact, AVeriTeC, Self-RAG) uses **curated, source-aware evidence** — not generic TF-IDF retrieval from a news corpus. Our SS+RAG failure likely reflects **insufficiently targeted evidence retrieval applied to a weak base verifier**, not a fundamental limitation of evidence augmentation. The all-REAL finance corpus provides no contradicting evidence for fake claims, causing the verifier to default to ESCALATE. Success with RAG may require: (a) a corpus that includes known-fake examples or contradiction signals, (b) source reliability metadata, (c) evaluation with Voting or MoA as the base verifier, or (d) a retrieve-on-demand paradigm (Self-RAG style).
 
 ### Cross-Domain Readiness
 - Finance and healthcare are **solid** for pilot (Voting N=3 achieves F1=1.000 and 0.909 respectively).
@@ -207,8 +227,8 @@ MoA provides the best calibration (lowest ECE) despite not having the best class
 |-------------|-------------|-----------|---------------|
 | Single-Shot | 3.4-4.7s | ✅ Fits 5s window | Viable for HFT |
 | Voting N=3 | 11.7-15.6s | ❌ Exceeds 5s | Viable for slower strategies (swing trading) |
-| MoA | 16.0-21.3s | ❌ Exceeds 5s | Too slow for HFT; viable for fundamental verification |
-| RAG | 3.4-6.0s | ✅ Fits 5s | Fast but inaccurate |
+| MoA | 16.0-21.3s | ❌ Exceeds 5s | Fundamental verification only |
+| SS+RAG (prototype) | 3.4-6.0s | ✅ Fits 5s | Fast but inaccurate; see correction |
 
 ![Latency vs F1](../plots/phase11_latency_f1.png)
 *Figure 3: Latency-F1 scatter with latency budget zones. Single-Shot is the only architecture inside the <5s HFT window. Voting N=3 dominates the 5-15s swing-trading zone. MoA and RAG are never optimal within their feasibility windows.*
@@ -231,17 +251,27 @@ MoA provides the best calibration (lowest ECE) despite not having the best class
 | **Single-Shot** | 0.645 | 0.780 | 0.733 | 0.333 | 3.9s | 3% | 10 (14%) |
 | **Voting N=3** | **0.827** | **0.944** | 0.800 | **0.067** | 13.3s | 23% | 30 (42%) |
 | MoA | 0.747 | 0.738 | 0.800 | 0.267 | 19.2s | 10% | 0 (0%) |
-| RAG | 0.413 | 1.000 | 0.267 | 0.000 | 4.3s | 53% | 32 (44%)* |
+| SS+RAG* | 0.413 | 1.000 | 0.267 | 0.000 | 4.3s | 53% | 32 (44%)* |
 
-*\*RAG's 44% win rate is an ESCALATE abstention artifact — see Key Finding #5.*
+*\*SS+RAG was a local-corpus evidence-augmented single-shot prototype, not a standalone architecture. Its 44% win rate is an ESCALATE abstention artifact — see finding #4. Voting+RAG and MoA+RAG not yet tested.*
 
 **Key findings:**
 1. **Voting N=3 is the best architecture overall** (F1=0.827, P=0.944, FPR=0.067) but requires >5s latency budget (13.3s mean).
 2. **Single-Shot is the practical choice for <5s latency budgets** (F1=0.645, latency=3.9s) — the only architecture with mean latency under 5s.
 3. **MoA never uniquely wins** — Pareto-dominated by Voting N=3 (lower F1, higher latency, similar recall).
-4. **RAG's apparent dominance at low base rates (44% of regimes) is an artifact.** FPR=0.000 is achieved by ESCALATE-ing on 53% of items (treating ESCALATE as cost-free correct rejection). Real recall = 0.267. If ESCALATE carries operational cost (manual review, delayed decision), RAG wins zero regimes.
+4. **SS+RAG's apparent dominance at low base rates (44% of regimes) is an artifact.** FPR=0.000 is achieved by ESCALATE-ing on 53% of items (treating ESCALATE as cost-free correct rejection). Real recall = 0.267. If ESCALATE carries operational cost (manual review, delayed decision), SS+RAG wins zero regimes. Voting+RAG and MoA+RAG not yet tested — the 2 × 3 factorial matrix remains incomplete.
 5. **No base-rate-sensitive architecture switching.** The optimal architecture is stable across base rates (0.1%–50%) and cost ratios (FP:FN 1:1–1:25) within each latency tier.
 6. **Latency budget is the binding constraint** and the sole driver of architecture selection.
+
+**Why Phase 11 found no base-rate crossover between SS and Voting:**
+
+The PPV and expected-cost curves for Single-Shot and Voting N=3 did not intersect because Voting strictly dominates SS on both dimensions that determine expected cost:
+- Voting has **higher recall** (0.800 vs 0.733) — lower false-negative rate
+- Voting has **lower FPR** (0.067 vs 0.333) — lower false-positive rate
+
+When one architecture has both higher recall AND lower FPR than another, it achieves lower (or equal) expected cost at **every base rate** under any positive cost ratio. The expected-cost formula `E[cost] = (1-p)·FPR·C_FP + p·FNR·C_FN` is monotonic in both FPR and FNR — so when A dominates B on both dimensions, A's curve never crosses B's.
+
+The only way Single-Shot wins is when Voting is **disqualified by latency** (<5s budget). This is a feasibility constraint, not an accuracy tradeoff. A true accuracy-driven crossover would require architectures with complementary error profiles (e.g., one has lower FPR but higher FNR, or vice versa), which may emerge at larger sample sizes or with evidence augmentation.
 
 ![PPV Curves](../plots/phase11_ppv_curves.png)
 *Figure 2: PPV vs base rate for each architecture (cross-domain mean). Voting N=3 maintains highest PPV at all base rates. At P(Fake) < 1%, all architectures have PPV < 0.40 — operational value collapses without abstention.*
@@ -265,9 +295,9 @@ Phase 11 (base-rate-stratified analysis on 240 existing real API outputs) found:
 
 | Latency Budget | Feasible Architectures | Optimal | F1 | Why |
 |---|---|---|---|---|
-| **<5s** | Single-Shot (3.9s), RAG (4.3s) | **Single-Shot** | 0.645 | RAG's apparent wins are ESCALATE artifacts (see below) |
-| **≥5s, <15s** | Voting N=3 (13.3s), Single-Shot, RAG | **Voting N=3** | 0.827 | Dominates on accuracy, precision, and expected cost |
-| **≥15s** | All architectures feasible | **Voting N=3** | 0.827 | MoA adds latency without accuracy gain; RAG non-competitive |
+| **<5s** | Single-Shot (3.9s), SS+RAG (4.3s) | **Single-Shot** | 0.645 | SS+RAG apparent wins are ESCALATE artifacts (see correction) |
+| **≥5s, <15s** | Voting N=3 (13.3s), Single-Shot, MoA | **Voting N=3** | 0.827 | Dominates on accuracy, precision, and expected cost |
+| **≥15s** | Voting N=3 (13.3s), Single-Shot, MoA | **Voting N=3** | 0.827 | MoA adds latency without accuracy gain |
 
 **Key negative result**: No base-rate-sensitive architecture switching was observed. The optimal architecture within each latency tier is stable across base rates 0.1%–50% and FP:FN ratios 1:1–1:25. This means:
 - The **architecture** is selected by latency budget (how much time is available before the trading decision deadline).
@@ -280,18 +310,19 @@ Phase 11 (base-rate-stratified analysis on 240 existing real API outputs) found:
 ```mermaid
 flowchart TD
     Q["Time until trading deadline?"]
-    Q -->|"<5s"| SS["Single-Shot<br>F1=0.645, Lat=3.9s<br>Feasible: ✅"]
-    Q -->|"≥5s"| V3["Voting N=3<br>F1=0.827, Lat=13.3s<br>Feasible: ✅"]
-    SS --> ACT["Action Policy<br>(Level 2)"]
-    V3 --> ACT
-    MOA["MoA: Pareto-dominated by Voting<br>Lat=19.2s, F1=0.747, Wins=0"] -.->|"Not recommended"| ACT
-    RAG["RAG: ESCALATE artifact<br>Lat=4.3s, F1=0.413"] -.->|"Not recommended"| ACT
+    Q -->|"<5s"| SS["Single-Shot<br>F1=0.645, Lat=3.9s"]
+    Q -->|"≥5s"| V3["Voting N=3<br>F1=0.827, Lat=13.3s"]
+    SS --> E{"Evidence available?"}
+    V3 --> E
+    E -->|"No"| ACT["Action Policy<br>(Level 2)"]
+    E -->|"Yes: +RAG"| ACT
+    MOA["MoA: Pareto-dominated by Voting<br>Lat=19.2s, F1=0.747"] -.->|"Not recommended"| ACT
 ```
 
-- **Single-Shot (<5s)**: Cross-domain F1=0.645, P=0.780, R=0.733, Lat=3.9s. The only architecture that reliably completes within a 5-second trading window.
-- **Voting N=3 (≥5s)**: Cross-domain F1=0.827, P=0.944, R=0.800, Lat=13.3s. Dominates on all accuracy metrics when latency permits.
-- **MoA**: Never uniquely optimal — Pareto-dominated by Voting N=3 (lower F1, higher latency). Dropped from routing consideration.
-- **RAG**: Wins zero regimes when ESCALATE carries any operational cost. The current TF-IDF retrieval pipeline is insufficient.
+- **Single-Shot (<5s)**: Cross-domain F1=0.645, P=0.780, R=0.733, Lat=3.9s. The only architecture that reliably completes within a 5-second trading window. Can optionally receive RAG evidence (SS+RAG prototype: F1=0.413 — worse, due to generic TF-IDF).
+- **Voting N=3 (≥5s)**: Cross-domain F1=0.827, P=0.944, R=0.800, Lat=13.3s. Dominates on all accuracy metrics when latency permits. Voting+RAG not yet tested.
+- **MoA**: Never uniquely optimal — Pareto-dominated by Voting N=3 (lower F1, higher latency). MoA+RAG not yet tested.
+- **Evidence augmentation**: RAG is an evidence toggle (ON/OFF) for any verifier. The full 2 × 3 matrix (evidence × SS/Voting/MoA) remains untested. Current SS+RAG prototype underperforms due to generic TF-IDF retrieval, not a fundamental limitation of evidence augmentation.
 
 #### Level 2: Action Policy (Base-Rate and Cost-Ratio Driven)
 
@@ -334,46 +365,50 @@ A single architecture (Voting N=3 or Single-Shot) with this **confidence-gated a
 
 ---
 
-## 4. Minimal Next Experiment Proposal
+## 4. Proposed Experiment: 2 × 3 Factorial Design
 
-### Testing the Hybrid Base-Rate Strategy
+**Phase 11 is complete** (base-rate-stratified analysis on 240 existing API outputs, 72 regimes). The next experiment should test the full experimental matrix with RAG properly framed as an evidence-augmentation toggle.
 
-**Goal**: Validate that different architectures perform differently under different base-rate regimes, and that the optimal architecture switches as base rate changes.
+### Design
 
-**Input data needed**:
-- The existing N=30 synthetic dataset (10/domain) — already collected, ground truth known
-- **OR** a larger synthetic dataset with controllable base rate: generate N=200 items per domain with class imbalance varying from P(Fake)=1% to P(Fake)=50%
+| Factor | Levels | Details |
+|--------|--------|---------|
+| Evidence | OFF, ON | Local TF-IDF corpus or curated retrieval |
+| Verifier | Single-Shot, Voting N=3, MoA | 3 architectures × with/without evidence |
+| Context | Latency budget, base rate, cost ratio | Continuous variables for policy evaluation |
 
-**Recommended approach** (minimal cost opton):
-1. **Use existing data** but compute metrics with **stratified subsampling**:
-   - Create synthetic test sets with controlled base rates by downsampling the majority class
-   - Test P(Fake) = {1%, 5%, 10%, 25%, 50%}
-   - At each base rate, evaluate: Single-Shot, Voting N=3, MoA
-   - This requires no new API calls — just recomputation on existing raw outputs
+Total: 6 architecture–evidence combinations × latency/budget/cost sweeps.
 
-2. **Metrics to compute per segment**:
-   - PPV and NPV (Bayesian, using measured TPR/FPR)
-   - Expected P&L per event using the simulator cost parameters
-   - Optimal architecture at each segment
-   - Confidence calibration per segment
+### What the SS+RAG prototype already tells us
 
-**Expected runtime**: <2 minutes (no API calls needed; pure post-processing)
+The current SS+RAG result (F1=0.413, ESCALATE=53%) is one cell of this matrix: Single-Shot with generic TF-IDF evidence. It underperforms unaugmented SS (F1=0.645). This could be because:
+1. **Evidence quality**: Generic TF-IDF from an all-REAL corpus provides no contradiction signals
+2. **Verifier sensitivity**: Single-Shot may be worse at incorporating evidence than Voting or MoA
+3. **Both**: Both factors contribute
 
-**What would count as success**:
-- Single-Shot outperforms Voting N=3 at P(Fake) < 1% (because Voting's marginal precision gain doesn't justify the latency)
-- Voting N=3 outperforms Single-Shot at P(Fake) ≥ 5% (crossover confirmed)
-- The crossover point shifts when FP/FN cost ratio changes (policy sensitivity validated)
-- Result: a table of "optimal architecture × base rate × cost ratio"
+The 2 × 3 factorial design isolates which factor drives the failure.
 
-**If no clear crossover is found**: The hybrid strategy may not be necessary — Single-Shot may be sufficient at all base rates, or Voting may dominate universally. This is still a useful negative result.
+### Proposed approach
 
-### Alternative: N=50 Scaling
+**Phase 12a: Voting+RAG and MoA+RAG (same generic TF-IDF corpus)**
+- Re-run evidence-augmented evaluation with Voting N=3 and MoA as base verifiers
+- 20 items × 2 architectures = 20 real API calls per domain (60 total, ~$0.009)
+- If Voting+RAG or MoA+RAG outperforms unaugmented Voting, the failure is verifier-specific
+- If all evidence-augmented combinations underperform, the failure is evidence quality
 
-If the professor prefers **statistical confidence** over base-rate stratification first:
-- Scale Voting N=3 to N=50/domain = 150 real API calls (~$0.023)
-- Scale Single-Shot as control: 150 calls (~$0.023)
-- Cost: ~$0.046 total
-- Outcome: 95% confidence intervals on all metrics to establish statistical significance
+**Phase 12b: Curated evidence corpus (if Phase 12a shows evidence quality is the bottleneck)**
+- Build a balanced corpus with contradiction signals and source reliability labels
+- Re-run all 6 cells of the 2 × 3 matrix
+
+### What would count as success
+
+- Voting+RAG outperforms unaugmented Voting (evidence helps stronger verifiers)
+- OR curated evidence rescues SS+RAG (evidence quality was the bottleneck)
+- OR neither helps (evidence augmentation is not beneficial for this task — useful negative result)
+
+### Metrics
+
+For each of the 6 cells: F1, precision, recall, FPR, ESCALATE rate, ECE, latency, PPV curve.
 
 ---
 
@@ -389,7 +424,7 @@ If the professor prefers **statistical confidence** over base-rate stratificatio
 
 4. **MoA has better calibration (ECE=0.133) than Voting (ECE=0.172) but worse accuracy and never uniquely wins any regime.** If the paper emphasizes reliable confidence estimates (for risk management), MoA may still be valuable despite lower F1. But with zero regimes where MoA is optimal, should we (a) include MoA as a calibration-focused architecture, (b) relegate it to a negative-result appendix, or (c) drop it entirely?
 
-5. **RAG's consistent underperformance (F1=0.413) with generic retrieval** should be distinguished from curated-RAG approaches (FEVER/SciFact). Is it worth building a better retrieval corpus to test the curated-RAG hypothesis, or should the paper simply report that generic evidence-retrieval was insufficient and cite the curated-RAG literature as future work?**
+5. **RAG should be reframed from architecture to evidence factor.** Our previous "RAG" result was an evidence-augmented single-shot prototype (SS+RAG), not a standalone architecture. The 2 × 3 factorial matrix (evidence ON/OFF × SS/Voting/MoA) is mostly untested. Should the paper: (a) run the full 2 × 3 factorial to close this gap, (b) report the current SS+RAG result as a preliminary negative result and propose the matrix as future work, or (c) deprioritize RAG entirely since even perfect evidence may not change the latency-first routing conclusion?**
 
 ### All 9 Questions
 
@@ -399,7 +434,7 @@ If the professor prefers **statistical confidence** over base-rate stratificatio
    - **A. Latency-aware verifier routing** — Formalize the two-tier routing policy (SS for <5s, Voting for ≥5s). Compare against fixed-architecture baselines. This is the "safe" direction: clear experiment, well-defined contribution, but is it novel enough?
    - **B. Base-rate-aware action thresholding** — Keep one architecture (Voting N=3) but focus on the confidence-gated action thresholds and PPV-based abstention policy. This is a decision-theoretic contribution rather than a systems contribution.
    - **C. Larger statistical validation of Voting N=3** — Scale to N=50/domain, establish significance bounds, produce reliable figures. This is empirical rigor but less conceptual novelty.
-   - **D. RAG redesign** — Build a curated, source-aware retrieval corpus (FEVER-style) to test whether RAG's failure is the retrieval paradigm or the evidence quality. This is highest-risk but could recover the RAG architecture path.
+   - **D. 2 × 3 factorial evidence experiment** — Run the full matrix: evidence ON/OFF × SS/Voting/MoA. First with generic TF-IDF (to test verifier sensitivity), then with curated retrieval (to test evidence quality). This closes the RAG framing gap and tests whether evidence augmentation helps stronger verifiers.
    - **E. Some combination** — which two or three?
 
 3. **HFT vs general verification framing** — Does the 5-second T1 window constrain architecture choice? Voting N=3 achieves F1=0.827 but at 11-16s latency. If the paper is about general LLM verification with finance as a use case, latency is less critical. Which framing is stronger for the target venue?
@@ -410,7 +445,7 @@ If the professor prefers **statistical confidence** over base-rate stratificatio
 
 6. **Hybrid strategy experiment priority after Phase 11** — Phase 11 is already done (zero API calls, 72 regimes analyzed). The next experiment depends on direction A/B/C/D from question 2 above. Which direction should we fund with API calls?
 
-7. **RAG failure description after Phase 11** — RAG's "wins" in 44% of regimes are now known to be ESCALATE artifacts. Should we report: (a) "RAG's FPR=0 is achieved by 53% abstention — not a real advantage," (b) "RAG wins no regimes when ESCALATE carries cost," or (c) "The Phase 11 analysis demonstrates that generic retrieval RAG does not improve over Single-Shot"?
+7. **RAG reframing after correction** — RAG is now understood as an evidence-augmentation factor, not a standalone architecture. The previous "RAG" was SS+RAG with generic TF-IDF. How should we proceed? (a) Run the full 2 × 3 factorial (evidence ON/OFF × SS/Voting/MoA) to close the gap, (b) report current SS+RAG as a preliminary result with the correction noted, or (c) deprioritize evidence augmentation given that Voting already achieves strong results without it?
 
 8. **Political domain treatment** — Should we (a) exclude political from the paper due to inconsistency, (b) include with strong caveats, or (c) replace with a different domain (e.g., ESG/sustainability claims, earnings call transcripts)?
 
@@ -442,11 +477,11 @@ flowchart LR
     S4 -.->|"No routing<br>insight"| O2
 ```
 
-### 1. Same-Claim Comparison Across Four Architecture Families
+### 1. Same-Claim Comparison Across the 2 × 3 Evidence-Architecture Matrix
 
-Prior work studies each architecture in isolation. We provide the **first direct comparison** (to our knowledge) of Single-Shot, Voting, MoA, and RAG on **identical claims** across **multiple domains**. This allows principled reasoning about when each architecture is worth its cost.
+Prior work studies each architecture in isolation, typically without evidence augmentation. We test a **2 × 3 factorial design** (evidence-augmentation ON/OFF × Single-Shot/Voting/MoA) on **identical claims** across **multiple domains**. This allows principled reasoning about whether evidence helps, which verifiers benefit most, and when the added complexity is worth the cost.
 
-**What this enables**: The empirical basis for a cost-aware routing policy that treats architecture selection as a decision variable.
+**What this enables**: The empirical basis for a four-dimensional design space — evidence toggle, verifier architecture, latency budget, and action threshold — rather than a one-dimensional "which architecture is best?" comparison.
 
 ### 2. PPV / Base-Rate Reporting Instead of F1 Alone
 
@@ -454,11 +489,11 @@ Standard NLP verification papers report F1, accuracy, precision, recall at 50/50
 
 **What this enables**: Whether a verifier is usable at a given base rate (PPV > 0.5 threshold) becomes an empirical question with per-architecture answers.
 
-### 3. Latency-Aware Routing
+### 3. Latency-Aware Routing with Evidence Augmentation
 
-Reporting mean, median, and p95 latency per architecture is standard. Connecting latency to **routing policy** — choosing a faster but less accurate verifier when time is scarce — is less common. If budget allows, we escalate to a more expressive (but costlier) verifier.
+Reporting mean, median, and p95 latency per architecture is standard. Connecting latency to **routing policy** — choosing a faster but less accurate verifier when time is scarce — is less common. We add an additional dimension: whether evidence retrieval (RAG) is feasible within the latency budget. Evidence retrieval adds latency overhead (0.5-2s for TF-IDF), so the evidence toggle interacts with the latency-first routing rule.
 
-**What this enables**: A decision policy that selects verifier based on time-until-deadline, not just expected accuracy.
+**What this enables**: A decision policy that selects both verifier AND evidence augmentation based on time-until-deadline, not just expected accuracy.
 
 ### 4. Cost-Sensitive Action Thresholds
 
@@ -503,8 +538,8 @@ No new API calls were made for this document.
 | "Hybrid base-rate strategy improves P&L" | Entirely untested with real API outputs; based on theoretical PPV calculations. Phase 11 found no evidence of base-rate-sensitive architecture switching — the routing strategy must be latency-first, not base-rate-driven | High |
 | "Different base-rate regimes choose different verifier architectures" | Phase 11 found the optimal architecture is stable across base rates 0.1%–50% within each latency tier. Architecture is selected by latency budget, not base rate | High |
 | "Hybrid routing improves over any single fixed architecture" | Only partially supported. Voting N=3 dominates all ≥5s regimes. The improvement comes from switching to Single-Shot when latency is tight (<5s), not from base-rate switching. Within each tier, one architecture is universally best | Medium-High |
-| "RAG wins some regimes" | RAG's 44% regime win rate is an ESCALATE abstention artifact. FPR=0.000 comes from ESCALATE-ing on 53% of items, treated as cost-free correct rejections. If ESCALATE carries any operational cost, RAG wins zero regimes | High |
-| "Generic RAG does not work for verification" | Curated, source-aware evidence retrieval (FEVER/SciFact) was not tested; only generic TF-IDF with an all-REAL corpus was evaluated | Medium |
+| "SS+RAG wins some regimes" | SS+RAG was a local-corpus evidence-augmented single-shot prototype, not a standalone architecture. Its 44% win rate is an ESCALATE abstention artifact. If ESCALATE carries cost, SS+RAG wins zero regimes | High |
+| "Evidence augmentation (RAG) does not work for verification" | Only tested on Single-Shot with generic TF-IDF. Voting+RAG, MoA+RAG not yet tested. Curated, source-aware evidence (FEVER/SciFact) not tested. The 2 × 3 matrix is mostly unfilled | High |
 | "Policy sensitivity analysis shows cost_ratio dominates" | Analysis used mock-mode metrics (TF-IDF+LR), not real API metrics | Medium |
 | "System fits 5-second trading window" | Single-Shot does; Voting and MoA do not — paper must be clear about which architecture is being discussed for which latency budget | Low |
 | "API non-determinism at temperature=0.0 is a concern" | Only observed on political domain; may be domain-specific rather than general | Low |
@@ -513,7 +548,7 @@ No new API calls were made for this document.
 
 ## Appendix: Recommended Next Experiment After Meeting
 
-**Phase 11 is complete** (base-rate-stratified analysis on 240 existing API outputs, 72 regimes). Depending on professor feedback on question 2 (the A/B/C/D direction), prioritize one of:
+**Phase 11 is complete** (base-rate-stratified analysis on 240 existing API outputs, 72 regimes). Depending on professor feedback on question 2 (the A/B/C/D/E direction), prioritize one of:
 
 1. **If professor prefers Latency-Aware Routing (A)**: Implement Phase 12 — `RoutingPolicy` with latency-first rule. Compare two-tier routing (SS for <5s, Voting for ≥5s) against fixed-architecture baselines. Deliverable: routing performance table with expected P&L.
 
@@ -521,9 +556,9 @@ No new API calls were made for this document.
 
 3. **If professor prefers Statistical Validation (C)**: Scale Voting N=3 to N=50/domain (150 real API calls, ~$0.023). Deliverable: 95% confidence intervals on F1, PPV, and expected cost.
 
-4. **If professor prefers RAG Redesign (D)**: Build a curated retrieval corpus with source reliability labels (FEVER-style) and contrastive examples. Test whether better evidence changes RAG's outcomes.
+4. **If professor prefers 2 × 3 Factorial Evidence Experiment (D)**: First test Voting+RAG and MoA+RAG with generic TF-IDF (60 API calls, ~$0.009). If those fail too, build curated evidence corpus and retest all 6 cells. Deliverable: completed 2 × 3 matrix with answer to whether evidence augmentation helps stronger verifiers.
 
-5. **If professor prefers Combination (E)**: Recommend A+B (routing + action thresholds) as the most impactful combined direction — they form a complete system (choose verifier → choose action).
+5. **If professor prefers Combination (E)**: Recommend A+D (routing + evidence experiment) as the most impactful combined direction — they close the two biggest gaps: routing rule formalization and the RAG framing correction.
 
 ---
 
