@@ -23,7 +23,7 @@ plt.rcParams.update({
 
 DOMAINS = ["finance", "healthcare", "political"]
 ARCHS = ["single_shot", "voting_n3", "moa", "rag"]
-ARCH_LABELS = ["Single-Shot", "Voting N=3", "MoA", "RAG"]
+ARCH_LABELS = ["Single-Shot", "Voting N=3", "MoA", "SS+RAG†"]
 ARCH_COLORS = ["#4C72B0", "#55A868", "#DD8452", "#C44E52"]
 BASE_RATES = [0.001, 0.01, 0.05, 0.10, 0.25, 0.50]
 BR_LABELS = ["0.1%", "1%", "5%", "10%", "25%", "50%"]
