@@ -402,7 +402,7 @@ class TestEndToEnd:
 
         adapter = FinanceDatasetAdapter()
         items = adapter.load()
-        assert len(items) == 10
+        assert len(items) > 0
 
         verifier = SingleShotVerifier()
         policy = HybridPolicy(cost_fp=1.0, cost_fn=10.0)

@@ -214,6 +214,9 @@ cython_debug/
 CLAUDE.md
 rag_cache/
 
+# Large dataset CSVs (tracked separately via DVC or direct download)
+data/raw/**/*.csv
+
 # Marimo
 marimo/_static/
 marimo/_lsp/

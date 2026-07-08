@@ -340,13 +340,15 @@ class TestRAGVerifierSmoke:
         """End-to-end: finance dataset + dense retriever."""
         from src.finance.finance_dataset_adapter import FinanceDatasetAdapter
 
+        from src.finance.finance_dataset_adapter import FinanceDatasetAdapter
+
         adapter = FinanceDatasetAdapter()
         items = adapter.load()
-        assert len(items) == 10
+        assert len(items) > 10
 
-        # Use first 5 items as corpus, rest as test
+        # Use first 5 items as corpus, next 5 as test
         corpus = items[:5]
-        test_items = items[5:]
+        test_items = items[5:10]
 
         verifier = RAGVerifier(corpus=corpus, retriever_type="dense", top_k=3)
         results = verifier.verify_batch(test_items)
@@ -370,10 +372,10 @@ class TestRAGVerifierSmoke:
 
         adapter = FinanceDatasetAdapter()
         items = adapter.load()
-        assert len(items) == 10
+        assert len(items) > 10
 
         corpus = items[:5]
-        test_items = items[5:]
+        test_items = items[5:10]
 
         verifier = RAGVerifier(corpus=corpus, retriever_type="sparse", top_k=3)
         results = verifier.verify_batch(test_items)

@@ -327,10 +327,10 @@ class TestMoASmoke:
 
         adapter = FinanceDatasetAdapter()
         items = adapter.load()
-        assert len(items) == 10
+        assert len(items) > 10
 
         verifier = MoAVerifier()
-        results = verifier.verify_batch(items)
+        results = verifier.verify_batch(items[:10])
 
         assert len(results) == 10
         for r in results:
