@@ -184,41 +184,50 @@ def plot_expected_cost(cross):
 def plot_latency_f1(data, cross):
     fig, ax = plt.subplots(figsize=(7, 5))
 
-    for d in DOMAINS + ["cross"]:
-        suffix = " (cross)" if d == "cross" else ""
+    # Per-domain points (small circles, lighter)
+    for d in DOMAINS:
         for i, a in enumerate(ARCHS):
-            if d == "cross":
-                if a not in cross:
-                    continue
-                lat = cross[a]["lat"]
-                f1v = cross[a]["f1"]
-                marker = "D"
-                s = 180
-                alpha = 0.9
-            else:
-                if a not in data.get(d, {}):
-                    continue
-                lat = data[d][a]["lat"]
-                f1v = data[d][a]["f1"]
-                marker = "o"
-                s = 80
-                alpha = 0.5
+            if a not in data.get(d, {}):
+                continue
+            lat = data[d][a]["lat"]
+            f1v = data[d][a]["f1"]
+            ax.scatter(lat, f1v, s=60, c=[ARCH_COLORS[i]], marker="o",
+                       alpha=0.35, zorder=3)
 
-            ax.scatter(lat, f1v, s=s, c=[ARCH_COLORS[i]], marker=marker,
-                       alpha=alpha, zorder=5,
-                       label=f"{ARCH_LABELS[i]}{suffix}" if d == "finance" or (d == "cross" and i == 0) else "")
+    # Cross-domain means (large diamonds, full opacity)
+    cross_legend = []
+    for i, a in enumerate(ARCHS):
+        if a not in cross:
+            continue
+        lat = cross[a]["lat"]
+        f1v = cross[a]["f1"]
+        h = ax.scatter(lat, f1v, s=200, c=[ARCH_COLORS[i]], marker="D",
+                       alpha=0.9, zorder=5, label=ARCH_LABELS[i])
+        cross_legend.append(h)
 
-    # Annotate latency budget zones
-    ax.axvspan(0, 5, alpha=0.06, color="green", label="<5s (HFT window)")
-    ax.axvspan(5, 15, alpha=0.06, color="orange", label="<15s (swing trading)")
-    ax.axvspan(15, 30, alpha=0.06, color="red", label="<30s (fundamental)")
+    from matplotlib.lines import Line2D
+    pd_handle = Line2D([0], [0], marker="o", color="gray",
+                       linestyle="", markersize=6, alpha=0.5,
+                       label="Per-domain (N=10)")
+
+    # Latency budget zones (no labels in legend — use text annotations)
+    ax.axvspan(0, 5, alpha=0.06, color="green")
+    ax.axvspan(5, 15, alpha=0.06, color="orange")
+    ax.axvspan(15, 30, alpha=0.06, color="red")
+    ax.text(2.5, 0.03, "<5s HFT window", ha="center", fontsize=8, color="green", alpha=0.7)
+    ax.text(10, 0.03, "<15s swing trading", ha="center", fontsize=8, color="orange", alpha=0.7)
+    ax.text(22, 0.03, "<30s fundamental", ha="center", fontsize=8, color="red", alpha=0.7)
 
     ax.set_xlabel("Mean Latency (seconds)")
     ax.set_ylabel("F1 Score")
     ax.set_title("Latency vs F1: Architecture Positioning")
     ax.set_xlim(0, 28)
     ax.set_ylim(0, 1.1)
-    ax.legend(loc="lower left", framealpha=0.9, fontsize=8)
+
+    lgnd1 = ax.legend(handles=cross_legend, loc="lower left",
+                      framealpha=0.9, fontsize=9, title="Cross-domain mean")
+    ax.add_artist(lgnd1)
+    ax.legend(handles=[pd_handle], loc="lower right", framealpha=0.9, fontsize=8)
     ax.grid(True, alpha=0.3)
     fig.tight_layout()
     path = os.path.join(OUT_DIR, "phase11_latency_f1.png")

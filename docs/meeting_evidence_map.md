@@ -231,7 +231,7 @@ MoA provides the best calibration (lowest ECE) despite not having the best class
 | SS+RAG (prototype) | 3.4-6.0s | ✅ Fits 5s | Fast but inaccurate; see correction |
 
 ![Latency vs F1](../plots/phase11_latency_f1.png)
-*Figure 3: Latency-F1 scatter with latency budget zones. Single-Shot is the only architecture inside the <5s HFT window. Voting N=3 dominates the 5-15s swing-trading zone. MoA and SS+RAG are never optimal within their feasibility windows.*
+*Figure 3: Latency-F1 scatter with latency budget zones (color-coded background). Diamonds = cross-domain mean (N=30); small circles = per-domain values (N=10). Single-Shot is the only architecture inside the <5s HFT window. Voting N=3 dominates the 5-15s swing-trading zone. MoA and SS+RAG are never optimal within their feasibility windows.*
 
 ### Policy Sensitivity (Phase 8 — Mock Mode)
 - **Cost ratio (86.3% variance)**: Dominates all other parameters. The ratio of false-positive cost to false-negative cost determines optimal policy.
