@@ -246,11 +246,11 @@ MoA provides the best calibration (lowest ECE) despite not having the best class
 
 **No new API calls.** Computed PPV curves, expected costs, and optimal architecture across 72 regimes (6 base rates × 4 cost ratios × 3 latency budgets) using existing real API outputs.
 
-| Architecture | F1 | Precision | Recall | FPR | Latency | ESCALATE | Regimes Won |
+| Architecture | F1 | Precision | Recall | False Posive | Latency | ESCALATE | Regimes Won |
 |---|---|---|---|---|---|---|---|
-| **Single-Shot** | 0.645 | 0.780 | 0.733 | 0.333 | 3.9s | 3% | 10 (14%) |
-| **Voting N=3** | **0.827** | **0.944** | 0.800 | **0.067** | 13.3s | 23% | 30 (42%) |
-| MoA | 0.747 | 0.738 | 0.800 | 0.267 | 19.2s | 10% | 0 (0%) |
+| Single-Shot | 0.645 | 0.780 | 0.733 | 0.333 | **3.9s** | 3% | 10 (14%) |
+| Voting N=3 | **0.827** | **0.944** | **0.800** | **0.067** | 13.3s | **23%** | 30 (42%) |
+| MoA | 0.747 | 0.738 | **0.800** | 0.267 | 19.2s | 10% | 0 (0%) |
 | SS+RAG* | 0.413 | 1.000 | 0.267 | 0.000 | 4.3s | 53% | 32 (44%)* |
 
 *\*SS+RAG was a local-corpus evidence-augmented single-shot prototype, not a standalone architecture. Its 44% win rate is an ESCALATE abstention artifact — see finding #4. Voting+RAG and MoA+RAG not yet tested.*
@@ -279,7 +279,7 @@ The only way Single-Shot wins is when Voting is **disqualified by latency** (<5s
 
 | Domain | Voting (no RAG) | Voting+RAG | MoA (no RAG) | MoA+RAG |
 |--------|:---------------:|:----------:|:------------:|:-------:|
-| Finance | F1=1.000, P=1.000 | F1=1.000, P=1.000 | F1=0.833, P=0.714 | **F1=1.000, P=1.000** |
+| Finance | **F1=1.000, P=1.000** | F1=1.000, P=1.000 | F1=0.833, P=0.714 | **F1=1.000, P=1.000** |
 | Healthcare | F1=0.909, P=0.833 | **F1=1.000, P=1.000** | F1=0.909, P=0.833 | **F1=1.000, P=1.000** |
 | Political | F1=0.571, P=1.000 | F1=0.571, P=1.000 | F1=0.500, P=0.667 | **F1=0.750, P=1.000** |
 
