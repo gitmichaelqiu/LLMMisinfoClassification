@@ -161,93 +161,80 @@ MoA provides the best calibration (lowest ECE) despite not having the best class
 - **Latency budget**: 0% variance contribution in mock sweep — but real API latencies vary 3-21s, which would change this dramatically.
 - **Limitation**: Phase 8 sweep used Single-Shot metrics only, derived from TF-IDF+LR mock. Real V3/MoA metrics would shift optimal policies.
 
+### Phase 11: Base-Rate-Stratified Routing Analysis (Real API Outputs)
+
+**No new API calls.** Computed PPV curves, expected costs, and optimal architecture across 72 regimes (6 base rates × 4 cost ratios × 3 latency budgets) using existing real API outputs.
+
+| Architecture | F1 | Precision | Recall | FPR | Latency | ESCALATE | Regimes Won |
+|---|---|---|---|---|---|---|---|
+| **Single-Shot** | 0.645 | 0.780 | 0.733 | 0.333 | 3.9s | 3% | 10 (14%) |
+| **Voting N=3** | **0.827** | **0.944** | 0.800 | **0.067** | 13.3s | 23% | 30 (42%) |
+| MoA | 0.747 | 0.738 | 0.800 | 0.267 | 19.2s | 10% | 0 (0%) |
+| RAG | 0.413 | 1.000 | 0.267 | 0.000 | 4.3s | 53% | 32 (44%)* |
+
+*\*RAG's 44% win rate is an ESCALATE abstention artifact — see Key Finding #5.*
+
+**Key findings:**
+1. **Voting N=3 is the best architecture overall** (F1=0.827, P=0.944, FPR=0.067) but requires >5s latency budget (13.3s mean).
+2. **Single-Shot is the practical choice for <5s latency budgets** (F1=0.645, latency=3.9s) — the only architecture with mean latency under 5s.
+3. **MoA never uniquely wins** — Pareto-dominated by Voting N=3 (lower F1, higher latency, similar recall).
+4. **RAG's apparent dominance at low base rates (44% of regimes) is an artifact.** FPR=0.000 is achieved by ESCALATE-ing on 53% of items (treating ESCALATE as cost-free correct rejection). Real recall = 0.267. If ESCALATE carries operational cost (manual review, delayed decision), RAG wins zero regimes.
+5. **No base-rate-sensitive architecture switching.** The optimal architecture is stable across base rates (0.1%–50%) and cost ratios (FP:FN 1:1–1:25) within each latency tier.
+6. **Latency budget is the binding constraint** and the sole driver of architecture selection.
+
+**Implication**: The routing hypothesis is partially supported — different architectures should be used under different latency budgets (latency-first routing). But true base-rate-sensitive architecture switching (different architecture at different P(Fake) levels) was not observed. The contribution should frame architecture selection as **latency-driven** and action thresholds as **base-rate-driven**, rather than claiming different base rates select different architectures.
+
 ---
 
-## 3. Hybrid / Base-Rate-Combination Strategy
+## 3. Hybrid / Latency-Aware Routing Strategy
 
-> ⚠️ **Epistemic status**: The following strategy is **hypothetical**. It is grounded in the empirical findings above but has NOT been tested with real API calls under varying base-rate conditions.
+> ⚠️ **Epistemic status**: The following strategy is **hypothetical in parts** but informed by Phase 11 analysis of 240 real API outputs. The architecture selection rule is empirically grounded; the action-threshold component is theoretically motivated but untested with real API outputs under varying base-rate conditions.
 
-### Strategy Selection Table
+### Phase 11 Finding: Latency-First Routing
 
-#### Segment A: Very Low Base Rate (P(Fake) < 0.1%)
+Phase 11 (base-rate-stratified analysis on 240 existing real API outputs) found:
+- **Architecture selection is driven by latency budget, not base rate or cost ratio.**
+- Within each latency tier, a single architecture dominates across all tested base rates (0.1%–50%) and cost ratios (FP:FN from 1:1 to 1:25).
 
-| Dimension | Detail |
-|-----------|--------|
-| **Selected architecture** | Single-Shot + abstention |
-| **Reason** | At extremely low base rates, even a 2% FPR produces more false alarms than real detections (PPV collapses to <2.5%). The optimal strategy is to abstain from trading on most alerts and only act on very high-confidence (>0.95) predictions. |
-| **Expected strength** | Avoids FP costs that would dominate P&L at low base rates |
-| **Expected weakness** | Misses rare genuine fake news events (recall on high-confidence threshold unknown) |
-| **Evidence** | PPV at 0.1% base rate for Single-Shot finance: PPV=0.0025 (the verifier's "alerts" are 99.75% false alarms) |
-| **Tested?** | ❌ **Untested** — PPV computed mathematically but no experiment with base-rate-stratified data |
+| Latency Budget | Feasible Architectures | Optimal | F1 | Why |
+|---|---|---|---|---|
+| **<5s** | Single-Shot (3.9s), RAG (4.3s) | **Single-Shot** | 0.645 | RAG's apparent wins are ESCALATE artifacts (see below) |
+| **≥5s, <15s** | Voting N=3 (13.3s), Single-Shot, RAG | **Voting N=3** | 0.827 | Dominates on accuracy, precision, and expected cost |
+| **≥15s** | All architectures feasible | **Voting N=3** | 0.827 | MoA adds latency without accuracy gain; RAG non-competitive |
 
-**Confidence-conditioned gating**: Use the predicted confidence as a soft threshold:
-- Confidence ≤ 0.85 → abstain (do not override initial trade)
-- Confidence 0.85-0.95 → reduce position by 25%
-- Confidence > 0.95 → full reversal
-- Benefit: avoids acting on low-confidence predictions that are mostly false alarms at low base rates.
+**Key negative result**: No base-rate-sensitive architecture switching was observed. The optimal architecture within each latency tier is stable across base rates 0.1%–50% and FP:FN ratios 1:1–1:25. This means:
+- The **architecture** is selected by latency budget (how much time is available before the trading decision deadline).
+- The **base rate** and **FP:FN cost ratio** determine the **intervention threshold and action policy** (how to act on the verifier's output), not which verifier to call.
 
-#### Segment B: Low Base Rate (0.1% ≤ P(Fake) < 1%)
+### Revised Strategy: Two-Level Decision
 
-| Dimension | Detail |
-|-----------|--------|
-| **Selected architecture** | Single-Shot + three-tier confidence gating |
-| **Reason** | PPV is 2.5-24.6% at this range. Verifier alerts are still mostly false alarms, so hedging (partial position reduction) is safer than full reversal. Single-Shot's 3.4s latency fits the trading window. |
-| **Expected strength** | Viable for operational use; latency-compliant; captures some TP savings |
-| **Expected weakness** | Misses most fake news events due to high confidence threshold |
-| **Evidence** | PPV at 1% base rate: Single-Shot finance=0.025, Voting=1.0. But Voting N=3 FPR=0.0 here also means it would predict nothing — the FPR of 0.0 is from N=10 and likely not real. |
-| **Tested?** | ❌ **Untested** — need stratified evaluation with real low-base-rate data |
-
-#### Segment C: Medium Base Rate (1% ≤ P(Fake) < 10%)
-
-| Dimension | Detail |
-|--------|-------|
-| **Selected architecture** | Voting N=3 |
-| **Reason** | This is the crossover zone where verifier PPV becomes operational (PPV reaches 10-46% for Single-Shot at 5% base rate). Voting N=3's superior precision (1.0 on finance, 0.833 on healthcare) and 11.7-12.8s latency are acceptable for non-HFT contexts. |
-| **Expected strength** | Best measured performance; Voting N=3 achieves highest overall F1 |
-| **Expected weakness** | Voting has 20-30% ESCALATE rate which may be operationally costly (human review needed) |
-| **Crossover verification**: At P(Fake)=5.8% (the crossover from Phase 22 calibration), verify-first expected P&L becomes positive for Single-Shot. But this is computed from legacy FPR values — needs recomputation with real-api Voting metrics. |
-| **Tested?** | ⚠️ **Partially tested** — Voting N=3 evaluated at 50/50 base rate only |
-
-#### Segment D: High Base Rate (10% ≤ P(Fake) < 50%)
-
-| Dimension | Detail |
-|--------|-------|
-| **Selected architecture** | Voting N=3 or MoA (preference: Voting) |
-| **Reason** | At higher base rates, FN cost dominates FP cost — maximizing recall is critical. Both Voting and MoA achieve recall=1.0 on finance and healthcare. Voting is preferred due to lower latency and strong calibration. |
-| **Expected strength** | Captures nearly all fake news events (recall=1.0) |
-| **Expected weakness** | FPR of 20-40% means substantial unnecessary reversals |
-| **Evidence** | Both Voting and MoA: finance recall=1.0, healthcare recall=1.0. At 25% base rate, Voting PPV=0.625 — still 37.5% of reversals are unnecessary. |
-| **Tested?** | ⚠️ **Partially tested** — metrics at 50/50 only |
-
-#### Segment E: Crisis / Adversarial Regime (P(Fake) > 50% or active attack)
-
-| Dimension | Detail |
-|--------|-------|
-| **Selected architecture** | Ensemble: Voting N=3 + MoA (use both, override if both flag FAKE) |
-| **Reason** | During active misinformation attacks, the social stream may be contaminated (a known failure mode from stress tests). Using both architectures as independent signals provides redundancy. If both agree on FAKE, confidence is high. If they disagree, escalate for manual review. |
-| **Expected strength** | Maximum detection coverage during crisis |
-| **Expected weakness** | High operational cost (human review for disagreements); latency likely exceeds 20s |
-| **Evidence** | Stress test (adversarial bot stream) was only run in mock mode — no real-API evidence |
-| **Tested?** | ❌ **Untested** — ensemble not implemented; adversarial testing only in mock mode |
-
-### Strategy Decision Flowchart
+#### Level 1: Architecture Selection (Latency-Driven)
 
 ```
-P(Fake) estimate from recent news stream?
-    ├── < 0.1% → Single-Shot + confidence gating + partial hedge only
-    ├── 0.1% – 1% → Single-Shot + three-tier gating
-    ├── 1% – 10% → Voting N=3 (operational crossover zone)
-    ├── 10% – 50% → Voting N=3 (high-recall mode)
-    └── > 50% → Ensemble Voting + MoA + escalation
+Time until deadline?
+    ├── <5s → Single-Shot (fastest feasible verifier)
+    └── ≥5s → Voting N=3 (best accuracy when time permits)
 ```
 
-### How to Estimate Base Rate Online
+- **Single-Shot (<5s)**: Cross-domain F1=0.645, P=0.780, R=0.733, Lat=3.9s. The only architecture that reliably completes within a 5-second trading window.
+- **Voting N=3 (≥5s)**: Cross-domain F1=0.827, P=0.944, R=0.800, Lat=13.3s. Dominates on all accuracy metrics when latency permits.
+- **MoA**: Never uniquely optimal — Pareto-dominated by Voting N=3 (lower F1, higher latency). Dropped from routing consideration.
+- **RAG**: Wins zero regimes when ESCALATE carries any operational cost. The current TF-IDF retrieval pipeline is insufficient.
 
-The `BaseRateEstimator` class in `src/base_rate.py` provides a rolling-window estimator:
-- Tracks last N verdicts (default 100)
-- Falls back to configurable prior (default 5%)
-- Updates after each prediction
-- Could be adapted to weight by recency or incorporate domain-specific priors
+#### Level 2: Action Policy (Base-Rate and Cost-Ratio Driven)
+
+Once the verifier architecture is selected, the action threshold and position sizing are determined by the estimated base rate and FP:FN cost ratio:
+
+| Base Rate Regime | Action Rule | Rationale |
+|---|---|---|
+| **Very Low (<0.1%)** | High-confidence gating: only act on P(fake) > 0.95 | PPV collapse at low base rates makes most "alerts" false alarms regardless of architecture |
+| **Low (0.1%–1%)** | Moderate-confidence gating: hedge (partial reduction) on P(fake) > 0.85, full reverse on >0.95 | PPV 2.5%–24.6% even for Single-Shot; most positive predictions are still FP |
+| **Medium (1%–10%)** | Standard asymmetric threshold: reverse when P(fake) > cost_fp/(cost_fp+cost_fn) | PPV becomes operational (10%–46+%); cost-sensitive threshold selects the optimal trade-off |
+| **High (>10%)** | Low threshold: reverse on weak signals | FN cost dominates; maximizing recall is more important than precision |
+
+### Action Implementation
+
+A single architecture (Voting N=3 or Single-Shot) with a **confidence-gated action policy** achieves the same effect as the previously hypothesized multi-architecture segments. The `BaseRateEstimator` class in `src/base_rate.py` provides a rolling-window estimator to track the current base rate and adjust thresholds online.
 
 ---
 
@@ -298,33 +285,40 @@ If the professor prefers **statistical confidence** over base-rate stratificatio
 
 ### Strongest 5 Discussion Points
 
-1. **Should our contribution be hybrid verifier routing under base-rate, cost, and latency constraints?** Prior work already studies single-shot, voting/self-consistency, debate/MoA, and RAG individually. A simple "Voting N=3 beats Single-Shot" is not novel — it replicates an expected result. The question is whether the paper's novelty should be: **given base rate, cost asymmetry, and latency budget, which verifier should be deployed for this specific claim?** This would reframe the contribution from architecture comparison to cost- and context-aware routing.
+1. **Should the contribution be latency-aware verification routing plus base-rate-aware action thresholds, rather than base-rate-driven architecture switching?** Phase 11 found no evidence that different base rates select different architectures — the optimal architecture is stable across 0.1%–50% base rates within each latency tier. Architecture choice is driven by latency budget (<5s → Single-Shot, ≥5s → Voting N=3). The base rate and cost ratio determine the **action policy** (confidence threshold, position sizing), not which verifier to call. This is an important correction to the previously hypothesized multi-architecture base-rate strategy. Should the paper frame the contribution as: *latency-driven verifier selection + base-rate-aware intervention thresholding*?
 
 2. **Political domain inconsistency (F1 ranges 0.333-0.571 across runs) is a methodological concern. Should we (a) replace political with a more modern dataset, (b) accept it as a domain boundary condition, or (c) frame the paper around finance+healthcare only?**
 
-3. **The hybrid/base-rate strategy is theoretically grounded (PPV collapses at low base rates) but empirically untested with real API outputs. Is this worth a dedicated experiment, or is the mathematical argument sufficient for the paper?**
+3. **Voting N=3 dominates all latency-permissive regimes** (F1=0.827, P=0.944, FPR=0.067, 42% of regimes optimal). But self-consistency/voting is well-studied. Is Voting N=3's dominance a sufficient result for the paper, or does the paper need a novel contribution like the latency-aware routing policy to differentiate from prior work?
 
-4. **MoA has better calibration (ECE=0.133) than Voting (ECE=0.172) but worse accuracy. If the paper emphasizes reliable confidence estimates (for risk management), MoA may still be valuable despite lower F1. How should we weigh calibration vs classification accuracy?**
+4. **MoA has better calibration (ECE=0.133) than Voting (ECE=0.172) but worse accuracy and never uniquely wins any regime.** If the paper emphasizes reliable confidence estimates (for risk management), MoA may still be valuable despite lower F1. But with zero regimes where MoA is optimal, should we (a) include MoA as a calibration-focused architecture, (b) relegate it to a negative-result appendix, or (c) drop it entirely?
 
-5. **RAG's consistent underperformance (F1=0.413) with generic retrieval should be distinguished from curated-RAG approaches (FEVER/SciFact). Is it worth building a better retrieval corpus to test the curated-RAG hypothesis, or should the paper simply report that generic evidence-retrieval was insufficient and cite the curated-RAG literature as future work?**
+5. **RAG's consistent underperformance (F1=0.413) with generic retrieval** should be distinguished from curated-RAG approaches (FEVER/SciFact). Is it worth building a better retrieval corpus to test the curated-RAG hypothesis, or should the paper simply report that generic evidence-retrieval was insufficient and cite the curated-RAG literature as future work?**
 
-### All 8 Questions
+### All 9 Questions
 
-1. **Novelty framing: architecture comparison vs hybrid routing** — Prior work covers all four architectures individually. The gap is not "which architecture wins" but "under what conditions should each be deployed." Should the paper's contribution shift to cost-aware, base-rate-aware, latency-aware verifier routing policy?
+1. **Novelty: latency-aware routing + base-rate-aware thresholds vs architecture comparison** — Phase 11 found no base-rate-sensitive architecture switching. The optimal architecture is stable across base rates 0.1%–50% within each latency tier. Should the paper frame the contribution as: (a) latency-driven verifier routing + base-rate-aware action thresholds, or (b) is that too incremental for the target venue? This is the most important framing decision.
 
-2. **HFT vs general verification framing** — Does the 5-second T1 window constrain architecture choice? Voting N=3 achieves F1=0.827 but at 11-16s latency. If the paper is about general LLM verification with finance as a use case, latency is less critical. Which framing is stronger for the target venue?
+2. **Which research direction should we prioritize** given Phase 11's negative result (no base-rate-sensitive architecture switching)? Options:
+   - **A. Latency-aware verifier routing** — Formalize the two-tier routing policy (SS for <5s, Voting for ≥5s). Compare against fixed-architecture baselines. This is the "safe" direction: clear experiment, well-defined contribution, but is it novel enough?
+   - **B. Base-rate-aware action thresholding** — Keep one architecture (Voting N=3) but focus on the confidence-gated action thresholds and PPV-based abstention policy. This is a decision-theoretic contribution rather than a systems contribution.
+   - **C. Larger statistical validation of Voting N=3** — Scale to N=50/domain, establish significance bounds, produce reliable figures. This is empirical rigor but less conceptual novelty.
+   - **D. RAG redesign** — Build a curated, source-aware retrieval corpus (FEVER-style) to test whether RAG's failure is the retrieval paradigm or the evidence quality. This is highest-risk but could recover the RAG architecture path.
+   - **E. Some combination** — which two or three?
 
-3. **Voting N=3 scaling** — Is the improvement from Single-Shot (F1=0.645 → 0.827) sufficient to justify scaling to N=50/domain for statistical confidence? Would the committee expect confidence intervals on all F1 claims?
+3. **HFT vs general verification framing** — Does the 5-second T1 window constrain architecture choice? Voting N=3 achieves F1=0.827 but at 11-16s latency. If the paper is about general LLM verification with finance as a use case, latency is less critical. Which framing is stronger for the target venue?
 
-4. **MoA's role** — MoA beats Single-Shot but doesn't beat Voting N=3, while adding 4-9s latency. Given the degeneracy was fixed, is MoA still a contribution (better calibration, consistent abstention behavior) or should it be relegated to a negative-result appendix?
+4. **Voting N=3 scaling** — Is the improvement from Single-Shot (F1=0.645 → 0.827) sufficient to justify scaling to N=50/domain for statistical confidence? Phase 11 already confirms Voting N=3 dominance across 72 regimes — would CIs change the story?
 
-5. **Hybrid strategy experiment priority** — The base-rate-stratified strategy (different architecture per P(Fake) segment) is the most novel claim of this work. Is it worth investing API calls to test, or is the theoretical PPV framework sufficient?
+5. **MoA's role after Phase 11** — MoA now wins zero regimes. It never outperforms Voting N=3 on any regime. Should MoA be (a) dropped from the paper, (b) kept as a calibration-focused negative result (ECE=0.133 vs Voting 0.172), or (c) kept as evidence that debate architectures add latency without accuracy benefit?
 
-6. **RAG failure description** — How should we describe RAG's failure fairly? Options: (a) "Generic evidence retrieval is insufficient for claim verification" (nuanced negative result), (b) "RAG requires curated, source-aware evidence corpora to be effective" (positive framing of future work), (c) "Evidence-category prompting is not suitable for all-REAL corpora" (technical diagnosis).
+6. **Hybrid strategy experiment priority after Phase 11** — Phase 11 is already done (zero API calls, 72 regimes analyzed). The next experiment depends on direction A/B/C/D from question 2 above. Which direction should we fund with API calls?
 
-7. **Political domain treatment** — Should we (a) exclude political from the paper due to inconsistency, (b) include with strong caveats, or (c) replace with a different domain (e.g., ESG/sustainability claims, earnings call transcripts)?
+7. **RAG failure description after Phase 11** — RAG's "wins" in 44% of regimes are now known to be ESCALATE artifacts. Should we report: (a) "RAG's FPR=0 is achieved by 53% abstention — not a real advantage," (b) "RAG wins no regimes when ESCALATE carries cost," or (c) "The Phase 11 analysis demonstrates that generic retrieval RAG does not improve over Single-Shot"?
 
-8. **Calibration vs accuracy** — For risk management applications (e.g., VaR circuit breakers, position sizing), calibrated confidence may be more important than binary F1. Should the paper emphasize calibration metrics (ECE) alongside classification metrics?
+8. **Political domain treatment** — Should we (a) exclude political from the paper due to inconsistency, (b) include with strong caveats, or (c) replace with a different domain (e.g., ESG/sustainability claims, earnings call transcripts)?
+
+9. **Calibration vs accuracy** — For risk management applications (e.g., VaR circuit breakers, position sizing), calibrated confidence may be more important than binary F1. Should the paper emphasize calibration metrics (ECE) alongside classification metrics?
 
 ---
 
@@ -390,7 +384,10 @@ No new API calls were made for this document.
 | "Voting N=3 achieves F1=0.827" | N=10 per domain; no confidence intervals; voting/self-consistency is already well-studied so this is expected, not novel | Medium |
 | "MoA degeneracy is resolved" | Political info_gap is only +0.167, and political precision=0.667 is borderline | Low-Medium |
 | "Cross-domain generalization demonstrated" | Only 3 domains, only N=10, political is not representative of modern disinformation | High |
-| "Hybrid base-rate strategy improves P&L" | Entirely untested with real API outputs; based on theoretical PPV calculations | High |
+| "Hybrid base-rate strategy improves P&L" | Entirely untested with real API outputs; based on theoretical PPV calculations. Phase 11 found no evidence of base-rate-sensitive architecture switching — the routing strategy must be latency-first, not base-rate-driven | High |
+| "Different base-rate regimes choose different verifier architectures" | Phase 11 found the optimal architecture is stable across base rates 0.1%–50% within each latency tier. Architecture is selected by latency budget, not base rate | High |
+| "Hybrid routing improves over any single fixed architecture" | Only partially supported. Voting N=3 dominates all ≥5s regimes. The improvement comes from switching to Single-Shot when latency is tight (<5s), not from base-rate switching. Within each tier, one architecture is universally best | Medium-High |
+| "RAG wins some regimes" | RAG's 44% regime win rate is an ESCALATE abstention artifact. FPR=0.000 comes from ESCALATE-ing on 53% of items, treated as cost-free correct rejections. If ESCALATE carries any operational cost, RAG wins zero regimes | High |
 | "Generic RAG does not work for verification" | Curated, source-aware evidence retrieval (FEVER/SciFact) was not tested; only generic TF-IDF with an all-REAL corpus was evaluated | Medium |
 | "Policy sensitivity analysis shows cost_ratio dominates" | Analysis used mock-mode metrics (TF-IDF+LR), not real API metrics | Medium |
 | "System fits 5-second trading window" | Single-Shot does; Voting and MoA do not — paper must be clear about which architecture is being discussed for which latency budget | Low |
@@ -400,17 +397,17 @@ No new API calls were made for this document.
 
 ## Appendix: Recommended Next Experiment After Meeting
 
-Depending on professor feedback, prioritize one of:
+**Phase 11 is complete** (base-rate-stratified analysis on 240 existing API outputs, 72 regimes). Depending on professor feedback on question 2 (the A/B/C/D direction), prioritize one of:
 
-1. **If hybrid strategy is interesting**: Run base-rate-stratified analysis on existing data (no new API calls). Deliverable: crossover table showing optimal architecture × base rate.
+1. **If professor prefers Latency-Aware Routing (A)**: Implement Phase 12 — `RoutingPolicy` with latency-first rule. Compare two-tier routing (SS for <5s, Voting for ≥5s) against fixed-architecture baselines. Deliverable: routing performance table with expected P&L.
 
-2. **If statistical significance is priority**: Scale Voting N=3 to N=50/domain (150 API calls, ~$0.023). Deliverable: 95% confidence intervals on all metrics.
+2. **If professor prefers Action Thresholding (B)**: Focus on confidence-gated abstention policy using Voting N=3 only. Compute optimal thresholds from cost-sensitive framework. Deliverable: PPV-operating curves with threshold recommendations.
 
-3. **If political domain needs fixing**: Replace political with a modern social-media dataset (e.g., tweets about stock manipulation, earnings rumors). Or exclude political and run finance + healthcare at N=50 each.
+3. **If professor prefers Statistical Validation (C)**: Scale Voting N=3 to N=50/domain (150 real API calls, ~$0.023). Deliverable: 95% confidence intervals on F1, PPV, and expected cost.
 
-4. **If RAG root cause is critical**: Build a curated retrieval corpus with source reliability labels (FEVER-style) and contrastive examples. Test whether better evidence changes RAG outcomes.
+4. **If professor prefers RAG Redesign (D)**: Build a curated retrieval corpus with source reliability labels (FEVER-style) and contrastive examples. Test whether better evidence changes RAG's outcomes.
 
-5. **If calibration framing wins**: Run MoA at N=50/domain to get stable ECE estimates. Deliverable: calibration reliability diagrams with confidence intervals.
+5. **If professor prefers Combination (E)**: Recommend A+B (routing + action thresholds) as the most impactful combined direction — they form a complete system (choose verifier → choose action).
 
 ---
 
