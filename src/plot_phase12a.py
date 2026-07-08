@@ -146,8 +146,8 @@ def plot_rag_comparison(p11, p12a):
             ax.legend(fontsize=7, loc="lower right")
             ax.grid(True, alpha=0.2)
 
-    fig.suptitle("Evidence Augmentation Impact: No RAG vs +RAG", fontsize=12, y=1.02)
-    fig.tight_layout()
+    fig.suptitle("Evidence Augmentation Impact: No RAG vs +RAG", fontsize=12)
+    fig.tight_layout(rect=[0, 0, 1, 0.96])
     path = os.path.join(OUT_DIR, "phase12a_rag_comparison.png")
     fig.savefig(path)
     plt.close(fig)

@@ -171,8 +171,8 @@ def plot_expected_cost(cross):
         ax.grid(True, alpha=0.3)
 
     axes[0].legend(loc="upper right", framealpha=0.9, fontsize=8)
-    fig.suptitle("Expected Cost Across Cost Ratios (Cross-Domain Mean)", fontsize=12, y=1.02)
-    fig.tight_layout()
+    fig.suptitle("Expected Cost Across Cost Ratios (Cross-Domain Mean)", fontsize=12)
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
     path = os.path.join(OUT_DIR, "phase11_expected_cost.png")
     fig.savefig(path)
     plt.close(fig)
@@ -224,10 +224,10 @@ def plot_latency_f1(data, cross):
     ax.set_xlim(0, 28)
     ax.set_ylim(0, 1.1)
 
-    lgnd1 = ax.legend(handles=cross_legend, loc="lower left",
+    lgnd1 = ax.legend(handles=cross_legend, loc="upper left",
                       framealpha=0.9, fontsize=9, title="Cross-domain mean")
     ax.add_artist(lgnd1)
-    ax.legend(handles=[pd_handle], loc="lower right", framealpha=0.9, fontsize=8)
+    ax.legend(handles=[pd_handle], loc="center right", framealpha=0.9, fontsize=8)
     ax.grid(True, alpha=0.3)
     fig.tight_layout()
     path = os.path.join(OUT_DIR, "phase11_latency_f1.png")
