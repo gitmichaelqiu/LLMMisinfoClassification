@@ -217,8 +217,10 @@ rag_cache/
 # Documentation (generated reports, not source)
 docs/
 
-# Large dataset CSVs (tracked separately via DVC or direct download)
+# Experiment outputs and large datasets
 data/raw/**/*.csv
+results/revised_validation/
+results/voting_audit/
 
 # Marimo
 marimo/_static/
