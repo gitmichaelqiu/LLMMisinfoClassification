@@ -1,0 +1,1734 @@
+{
+  "metadata": {
+    "phase": "final_validation",
+    "model": "deepseek-v4-flash",
+    "timestamp": "2026-07-11T12:38:38.069353",
+    "concurrency": 400,
+    "domains": [
+      "finance",
+      "healthcare"
+    ],
+    "sample_config": {
+      "finance": {
+        "n": 50,
+        "n_real": 25,
+        "n_fake": 25
+      },
+      "healthcare": {
+        "n": 40,
+        "n_real": 20,
+        "n_fake": 20
+      }
+    },
+    "pilot_note": "Healthcare N=40 (only 20 REAL available). Finance N=50 balanced 25/25.",
+    "total_api_calls": 990,
+    "estimated_cost_usd": 0.1485
+  },
+  "domains": {
+    "finance": {
+      "single_shot": {
+        "n": 50,
+        "n_fake": 25,
+        "n_real": 25,
+        "class_balance": "25F/25R",
+        "metrics": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "accuracy": 0.5,
+          "n_total": 50,
+          "confusion": {
+            "tp": 0,
+            "fp": 0,
+            "tn": 25,
+            "fn": 25
+          },
+          "latency": {
+            "mean": 4.843941593170166,
+            "median": 4.444899916648865,
+            "p95": 7.637762331962585,
+            "min": 2.4041411876678467,
+            "max": 8.138620853424072
+          }
+        },
+        "verdict_distribution": {
+          "REAL": 49,
+          "ESCALATE": 1
+        },
+        "escalate_rate": 0.02,
+        "ece": 0.2624000000000001,
+        "ppv": [
+          {
+            "base_rate": 0.001,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.01,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.05,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.1,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.25,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.5,
+            "ppv": 0.0
+          }
+        ],
+        "expected_cost": {
+          "FP1_FN1": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.001
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.01
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.05
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.1
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 0.25
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 0.5
+            }
+          ],
+          "FP1_FN5": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.005
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.05
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.25
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.5
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 1.25
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 2.5
+            }
+          ],
+          "FP1_FN10": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.01
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.1
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.5
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 1.0
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 2.5
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 5.0
+            }
+          ],
+          "FP1_FN25": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.025
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.25
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 1.25
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 2.5
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 6.25
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 12.5
+            }
+          ]
+        },
+        "confidence_intervals": {
+          "f1_95": [
+            0.0,
+            0.0
+          ],
+          "precision_95": [
+            0.0,
+            0.0
+          ],
+          "recall_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "latency": {
+          "mean": 4.843941593170166,
+          "median": 4.444899916648865,
+          "p95": 7.637762331962585,
+          "min": 2.4041411876678467,
+          "max": 8.138620853424072
+        },
+        "total_api_calls": 50,
+        "elapsed_s": 10.0,
+        "raw_output_path": "results/final_validation/raw_outputs/finance_single_shot.json"
+      },
+      "voting_n3": {
+        "n": 50,
+        "n_fake": 25,
+        "n_real": 25,
+        "class_balance": "25F/25R",
+        "metrics": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "accuracy": 0.5,
+          "n_total": 50,
+          "confusion": {
+            "tp": 0,
+            "fp": 0,
+            "tn": 25,
+            "fn": 25
+          },
+          "latency": {
+            "mean": 13.745295763015747,
+            "median": 13.745295763015747,
+            "p95": 13.745295763015747,
+            "min": 13.745295763015747,
+            "max": 13.745295763015747
+          }
+        },
+        "verdict_distribution": {
+          "REAL": 49,
+          "ESCALATE": 1
+        },
+        "escalate_rate": 0.02,
+        "ece": 0.3612,
+        "ppv": [
+          {
+            "base_rate": 0.001,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.01,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.05,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.1,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.25,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.5,
+            "ppv": 0.0
+          }
+        ],
+        "expected_cost": {
+          "FP1_FN1": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.001
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.01
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.05
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.1
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 0.25
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 0.5
+            }
+          ],
+          "FP1_FN5": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.005
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.05
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.25
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.5
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 1.25
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 2.5
+            }
+          ],
+          "FP1_FN10": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.01
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.1
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.5
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 1.0
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 2.5
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 5.0
+            }
+          ],
+          "FP1_FN25": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.025
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.25
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 1.25
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 2.5
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 6.25
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 12.5
+            }
+          ]
+        },
+        "confidence_intervals": {
+          "f1_95": [
+            0.0,
+            0.0
+          ],
+          "precision_95": [
+            0.0,
+            0.0
+          ],
+          "recall_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "latency": {
+          "mean": 13.745295763015747,
+          "median": 13.745295763015747,
+          "p95": 13.745295763015747,
+          "min": 13.745295763015747,
+          "max": 13.745295763015747
+        },
+        "total_api_calls": 150,
+        "elapsed_s": 13.7,
+        "raw_output_path": "results/final_validation/raw_outputs/finance_voting_n3.json"
+      },
+      "moa_rag": {
+        "n": 50,
+        "n_fake": 25,
+        "n_real": 25,
+        "class_balance": "25F/25R",
+        "metrics": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "accuracy": 0.5,
+          "n_total": 50,
+          "confusion": {
+            "tp": 0,
+            "fp": 0,
+            "tn": 25,
+            "fn": 25
+          },
+          "latency": {
+            "mean": 25.466943979263306,
+            "median": 25.466943979263306,
+            "p95": 25.466943979263306,
+            "min": 25.466943979263306,
+            "max": 25.466943979263306
+          }
+        },
+        "verdict_distribution": {
+          "ESCALATE": 8,
+          "REAL": 42
+        },
+        "escalate_rate": 0.16,
+        "ece": 0.23239999999999997,
+        "ppv": [
+          {
+            "base_rate": 0.001,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.01,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.05,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.1,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.25,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.5,
+            "ppv": 0.0
+          }
+        ],
+        "expected_cost": {
+          "FP1_FN1": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.001
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.01
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.05
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.1
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 0.25
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 0.5
+            }
+          ],
+          "FP1_FN5": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.005
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.05
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.25
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.5
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 1.25
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 2.5
+            }
+          ],
+          "FP1_FN10": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.01
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.1
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.5
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 1.0
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 2.5
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 5.0
+            }
+          ],
+          "FP1_FN25": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.025
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.25
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 1.25
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 2.5
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 6.25
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 12.5
+            }
+          ]
+        },
+        "confidence_intervals": {
+          "f1_95": [
+            0.0,
+            0.0
+          ],
+          "precision_95": [
+            0.0,
+            0.0
+          ],
+          "recall_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "latency": {
+          "mean": 25.466943979263306,
+          "median": 25.466943979263306,
+          "p95": 25.466943979263306,
+          "min": 25.466943979263306,
+          "max": 25.466943979263306
+        },
+        "total_api_calls": 200,
+        "elapsed_s": 25.5,
+        "raw_output_path": "results/final_validation/raw_outputs/finance_moa_rag.json"
+      },
+      "voting_n3_rag": {
+        "n": 50,
+        "n_fake": 25,
+        "n_real": 25,
+        "class_balance": "25F/25R",
+        "metrics": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "accuracy": 0.5,
+          "n_total": 50,
+          "confusion": {
+            "tp": 0,
+            "fp": 0,
+            "tn": 25,
+            "fn": 25
+          },
+          "latency": {
+            "mean": 13.894968748092651,
+            "median": 13.894968748092651,
+            "p95": 13.894968748092651,
+            "min": 13.894968748092651,
+            "max": 13.894968748092651
+          }
+        },
+        "verdict_distribution": {
+          "ESCALATE": 18,
+          "REAL": 32
+        },
+        "escalate_rate": 0.36,
+        "ece": 0.3692666666666666,
+        "ppv": [
+          {
+            "base_rate": 0.001,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.01,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.05,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.1,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.25,
+            "ppv": 0.0
+          },
+          {
+            "base_rate": 0.5,
+            "ppv": 0.0
+          }
+        ],
+        "expected_cost": {
+          "FP1_FN1": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.001
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.01
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.05
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.1
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 0.25
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 0.5
+            }
+          ],
+          "FP1_FN5": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.005
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.05
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.25
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.5
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 1.25
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 2.5
+            }
+          ],
+          "FP1_FN10": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.01
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.1
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.5
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 1.0
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 2.5
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 5.0
+            }
+          ],
+          "FP1_FN25": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.025
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.25
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 1.25
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 2.5
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 6.25
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 12.5
+            }
+          ]
+        },
+        "confidence_intervals": {
+          "f1_95": [
+            0.0,
+            0.0
+          ],
+          "precision_95": [
+            0.0,
+            0.0
+          ],
+          "recall_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "latency": {
+          "mean": 13.894968748092651,
+          "median": 13.894968748092651,
+          "p95": 13.894968748092651,
+          "min": 13.894968748092651,
+          "max": 13.894968748092651
+        },
+        "total_api_calls": 150,
+        "elapsed_s": 13.9,
+        "raw_output_path": "results/final_validation/raw_outputs/finance_voting_n3_rag.json"
+      }
+    },
+    "healthcare": {
+      "single_shot": {
+        "n": 40,
+        "n_fake": 20,
+        "n_real": 20,
+        "class_balance": "20F/20R",
+        "metrics": {
+          "precision": 0.53125,
+          "recall": 0.85,
+          "f1": 0.6538461538461537,
+          "fpr": 0.75,
+          "fnr": 0.15,
+          "accuracy": 0.55,
+          "n_total": 40,
+          "confusion": {
+            "tp": 17,
+            "fp": 15,
+            "tn": 5,
+            "fn": 3
+          },
+          "latency": {
+            "mean": 5.273340213298797,
+            "median": 4.959799528121948,
+            "p95": 7.920130395889283,
+            "min": 2.4833412170410156,
+            "max": 8.035477876663208
+          }
+        },
+        "verdict_distribution": {
+          "FAKE": 32,
+          "REAL": 7,
+          "ESCALATE": 1
+        },
+        "escalate_rate": 0.025,
+        "ece": 0.33199999999999996,
+        "ppv": [
+          {
+            "base_rate": 0.001,
+            "ppv": 0.001133
+          },
+          {
+            "base_rate": 0.01,
+            "ppv": 0.011318
+          },
+          {
+            "base_rate": 0.05,
+            "ppv": 0.056291
+          },
+          {
+            "base_rate": 0.1,
+            "ppv": 0.111842
+          },
+          {
+            "base_rate": 0.25,
+            "ppv": 0.274194
+          },
+          {
+            "base_rate": 0.5,
+            "ppv": 0.53125
+          }
+        ],
+        "expected_cost": {
+          "FP1_FN1": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.7494
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.744
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.72
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.69
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 0.6
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 0.45
+            }
+          ],
+          "FP1_FN5": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.75
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.75
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.75
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.75
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 0.75
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 0.75
+            }
+          ],
+          "FP1_FN10": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.75075
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.7575
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.7875
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.825
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 0.9375
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 1.125
+            }
+          ],
+          "FP1_FN25": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.753
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.78
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.9
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 1.05
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 1.5
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 2.25
+            }
+          ]
+        },
+        "confidence_intervals": {
+          "f1_95": [
+            0.4888888888888889,
+            0.7931171319102353
+          ],
+          "precision_95": [
+            0.35714285714285715,
+            0.7142857142857143
+          ],
+          "recall_95": [
+            0.6666666666666666,
+            1.0
+          ]
+        },
+        "latency": {
+          "mean": 5.273340213298797,
+          "median": 4.959799528121948,
+          "p95": 7.920130395889283,
+          "min": 2.4833412170410156,
+          "max": 8.035477876663208
+        },
+        "total_api_calls": 40,
+        "elapsed_s": 9.6,
+        "raw_output_path": "results/final_validation/raw_outputs/healthcare_single_shot.json"
+      },
+      "voting_n3": {
+        "n": 40,
+        "n_fake": 20,
+        "n_real": 20,
+        "class_balance": "20F/20R",
+        "metrics": {
+          "precision": 0.5862068965517241,
+          "recall": 0.85,
+          "f1": 0.6938775510204082,
+          "fpr": 0.6,
+          "fnr": 0.15,
+          "accuracy": 0.625,
+          "n_total": 40,
+          "confusion": {
+            "tp": 17,
+            "fp": 12,
+            "tn": 8,
+            "fn": 3
+          },
+          "latency": {
+            "mean": 13.365870952606201,
+            "median": 13.365870952606201,
+            "p95": 13.365870952606201,
+            "min": 13.365870952606201,
+            "max": 13.365870952606201
+          }
+        },
+        "verdict_distribution": {
+          "FAKE": 29,
+          "ESCALATE": 4,
+          "REAL": 7
+        },
+        "escalate_rate": 0.1,
+        "ece": 0.30825,
+        "ppv": [
+          {
+            "base_rate": 0.001,
+            "ppv": 0.001416
+          },
+          {
+            "base_rate": 0.01,
+            "ppv": 0.014108
+          },
+          {
+            "base_rate": 0.05,
+            "ppv": 0.069388
+          },
+          {
+            "base_rate": 0.1,
+            "ppv": 0.136
+          },
+          {
+            "base_rate": 0.25,
+            "ppv": 0.320755
+          },
+          {
+            "base_rate": 0.5,
+            "ppv": 0.586207
+          }
+        ],
+        "expected_cost": {
+          "FP1_FN1": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.59955
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.5955
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.5775
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.555
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 0.4875
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 0.375
+            }
+          ],
+          "FP1_FN5": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.60015
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.6015
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.6075
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.615
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 0.6375
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 0.675
+            }
+          ],
+          "FP1_FN10": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.6009
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.609
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.645
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.69
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 0.825
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 1.05
+            }
+          ],
+          "FP1_FN25": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.60315
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.6315
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.7575
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.915
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 1.3875
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 2.175
+            }
+          ]
+        },
+        "confidence_intervals": {
+          "f1_95": [
+            0.5305048335123523,
+            0.82765126870527
+          ],
+          "precision_95": [
+            0.40609375000000003,
+            0.7692307692307693
+          ],
+          "recall_95": [
+            0.6666666666666666,
+            1.0
+          ]
+        },
+        "latency": {
+          "mean": 13.365870952606201,
+          "median": 13.365870952606201,
+          "p95": 13.365870952606201,
+          "min": 13.365870952606201,
+          "max": 13.365870952606201
+        },
+        "total_api_calls": 120,
+        "elapsed_s": 13.4,
+        "raw_output_path": "results/final_validation/raw_outputs/healthcare_voting_n3.json"
+      },
+      "moa_rag": {
+        "n": 40,
+        "n_fake": 20,
+        "n_real": 20,
+        "class_balance": "20F/20R",
+        "metrics": {
+          "precision": 0.5161290322580645,
+          "recall": 0.8,
+          "f1": 0.6274509803921569,
+          "fpr": 0.75,
+          "fnr": 0.2,
+          "accuracy": 0.525,
+          "n_total": 40,
+          "confusion": {
+            "tp": 16,
+            "fp": 15,
+            "tn": 5,
+            "fn": 4
+          },
+          "latency": {
+            "mean": 21.513563871383667,
+            "median": 21.513563871383667,
+            "p95": 21.513563871383667,
+            "min": 21.513563871383667,
+            "max": 21.513563871383667
+          }
+        },
+        "verdict_distribution": {
+          "FAKE": 31,
+          "ESCALATE": 4,
+          "REAL": 5
+        },
+        "escalate_rate": 0.1,
+        "ece": 0.37525,
+        "ppv": [
+          {
+            "base_rate": 0.001,
+            "ppv": 0.001067
+          },
+          {
+            "base_rate": 0.01,
+            "ppv": 0.01066
+          },
+          {
+            "base_rate": 0.05,
+            "ppv": 0.053156
+          },
+          {
+            "base_rate": 0.1,
+            "ppv": 0.10596
+          },
+          {
+            "base_rate": 0.25,
+            "ppv": 0.262295
+          },
+          {
+            "base_rate": 0.5,
+            "ppv": 0.516129
+          }
+        ],
+        "expected_cost": {
+          "FP1_FN1": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.74945
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.7445
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.7225
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.695
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 0.6125
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 0.475
+            }
+          ],
+          "FP1_FN5": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.75025
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.7525
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.7625
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.775
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 0.8125
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 0.875
+            }
+          ],
+          "FP1_FN10": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.75125
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.7625
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.8125
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.875
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 1.0625
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 1.375
+            }
+          ],
+          "FP1_FN25": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.75425
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.7925
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.9625
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 1.175
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 1.8125
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 2.875
+            }
+          ]
+        },
+        "confidence_intervals": {
+          "f1_95": [
+            0.44997448979591836,
+            0.7719298245614036
+          ],
+          "precision_95": [
+            0.34285714285714286,
+            0.7000925925925925
+          ],
+          "recall_95": [
+            0.6111111111111112,
+            0.9545454545454546
+          ]
+        },
+        "latency": {
+          "mean": 21.513563871383667,
+          "median": 21.513563871383667,
+          "p95": 21.513563871383667,
+          "min": 21.513563871383667,
+          "max": 21.513563871383667
+        },
+        "total_api_calls": 160,
+        "elapsed_s": 21.5,
+        "raw_output_path": "results/final_validation/raw_outputs/healthcare_moa_rag.json"
+      },
+      "voting_n3_rag": {
+        "n": 40,
+        "n_fake": 20,
+        "n_real": 20,
+        "class_balance": "20F/20R",
+        "metrics": {
+          "precision": 0.7083333333333334,
+          "recall": 0.85,
+          "f1": 0.7727272727272727,
+          "fpr": 0.35,
+          "fnr": 0.15,
+          "accuracy": 0.75,
+          "n_total": 40,
+          "confusion": {
+            "tp": 17,
+            "fp": 7,
+            "tn": 13,
+            "fn": 3
+          },
+          "latency": {
+            "mean": 13.262776851654053,
+            "median": 13.262776851654053,
+            "p95": 13.262776851654053,
+            "min": 13.262776851654053,
+            "max": 13.262776851654053
+          }
+        },
+        "verdict_distribution": {
+          "FAKE": 24,
+          "ESCALATE": 15,
+          "REAL": 1
+        },
+        "escalate_rate": 0.375,
+        "ece": 0.24466666666666664,
+        "ppv": [
+          {
+            "base_rate": 0.001,
+            "ppv": 0.002425
+          },
+          {
+            "base_rate": 0.01,
+            "ppv": 0.023944
+          },
+          {
+            "base_rate": 0.05,
+            "ppv": 0.113333
+          },
+          {
+            "base_rate": 0.1,
+            "ppv": 0.2125
+          },
+          {
+            "base_rate": 0.25,
+            "ppv": 0.447368
+          },
+          {
+            "base_rate": 0.5,
+            "ppv": 0.708333
+          }
+        ],
+        "expected_cost": {
+          "FP1_FN1": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.3498
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.348
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.34
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.33
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 0.3
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 0.25
+            }
+          ],
+          "FP1_FN5": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.3504
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.354
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.37
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.39
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 0.45
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 0.55
+            }
+          ],
+          "FP1_FN10": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.35115
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.3615
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.4075
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.465
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 0.6375
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 0.925
+            }
+          ],
+          "FP1_FN25": [
+            {
+              "base_rate": 0.001,
+              "expected_cost": 0.3534
+            },
+            {
+              "base_rate": 0.01,
+              "expected_cost": 0.384
+            },
+            {
+              "base_rate": 0.05,
+              "expected_cost": 0.52
+            },
+            {
+              "base_rate": 0.1,
+              "expected_cost": 0.69
+            },
+            {
+              "base_rate": 0.25,
+              "expected_cost": 1.2
+            },
+            {
+              "base_rate": 0.5,
+              "expected_cost": 2.05
+            }
+          ]
+        },
+        "confidence_intervals": {
+          "f1_95": [
+            0.6249305555555555,
+            0.8889880952380952
+          ],
+          "precision_95": [
+            0.521695652173913,
+            0.8888888888888888
+          ],
+          "recall_95": [
+            0.6666666666666666,
+            1.0
+          ]
+        },
+        "latency": {
+          "mean": 13.262776851654053,
+          "median": 13.262776851654053,
+          "p95": 13.262776851654053,
+          "min": 13.262776851654053,
+          "max": 13.262776851654053
+        },
+        "total_api_calls": 120,
+        "elapsed_s": 13.3,
+        "raw_output_path": "results/final_validation/raw_outputs/healthcare_voting_n3_rag.json"
+      }
+    }
+  },
+  "cross_domain": {
+    "single_shot": {
+      "per_domain_f1": {
+        "finance": 0.0,
+        "healthcare": 0.6538461538461537
+      },
+      "mean_f1": 0.32692307692307687,
+      "std_f1": 0.32692307692307687
+    },
+    "voting_n3": {
+      "per_domain_f1": {
+        "finance": 0.0,
+        "healthcare": 0.6938775510204082
+      },
+      "mean_f1": 0.3469387755102041,
+      "std_f1": 0.3469387755102041
+    },
+    "moa_rag": {
+      "per_domain_f1": {
+        "finance": 0.0,
+        "healthcare": 0.6274509803921569
+      },
+      "mean_f1": 0.3137254901960784,
+      "std_f1": 0.3137254901960784
+    },
+    "voting_n3_rag": {
+      "per_domain_f1": {
+        "finance": 0.0,
+        "healthcare": 0.7727272727272727
+      },
+      "mean_f1": 0.38636363636363635,
+      "std_f1": 0.38636363636363635
+    }
+  },
+  "routing": {
+    "finance": {
+      "<5s": {
+        "feasible_count": 1,
+        "recommended": "single_shot",
+        "recommended_f1": 0.0,
+        "alternatives": []
+      },
+      "<15s": {
+        "feasible_count": 3,
+        "recommended": "single_shot",
+        "recommended_f1": 0.0,
+        "alternatives": [
+          {
+            "architecture": "voting_n3",
+            "f1": 0.0,
+            "latency_s": 13.745295763015747
+          },
+          {
+            "architecture": "voting_n3_rag",
+            "f1": 0.0,
+            "latency_s": 13.894968748092651
+          }
+        ]
+      },
+      "<30s": {
+        "feasible_count": 4,
+        "recommended": "single_shot",
+        "recommended_f1": 0.0,
+        "alternatives": [
+          {
+            "architecture": "voting_n3",
+            "f1": 0.0,
+            "latency_s": 13.745295763015747
+          },
+          {
+            "architecture": "moa_rag",
+            "f1": 0.0,
+            "latency_s": 25.466943979263306
+          },
+          {
+            "architecture": "voting_n3_rag",
+            "f1": 0.0,
+            "latency_s": 13.894968748092651
+          }
+        ]
+      }
+    },
+    "healthcare": {
+      "<5s": {
+        "feasible_count": 0,
+        "recommended": null,
+        "recommended_f1": null,
+        "alternatives": []
+      },
+      "<15s": {
+        "feasible_count": 3,
+        "recommended": "voting_n3_rag",
+        "recommended_f1": 0.7727272727272727,
+        "alternatives": [
+          {
+            "architecture": "voting_n3",
+            "f1": 0.6938775510204082,
+            "latency_s": 13.365870952606201
+          },
+          {
+            "architecture": "single_shot",
+            "f1": 0.6538461538461537,
+            "latency_s": 5.273340213298797
+          }
+        ]
+      },
+      "<30s": {
+        "feasible_count": 4,
+        "recommended": "voting_n3_rag",
+        "recommended_f1": 0.7727272727272727,
+        "alternatives": [
+          {
+            "architecture": "voting_n3",
+            "f1": 0.6938775510204082,
+            "latency_s": 13.365870952606201
+          },
+          {
+            "architecture": "single_shot",
+            "f1": 0.6538461538461537,
+            "latency_s": 5.273340213298797
+          },
+          {
+            "architecture": "moa_rag",
+            "f1": 0.6274509803921569,
+            "latency_s": 21.513563871383667
+          }
+        ]
+      }
+    },
+    "cross_domain": {
+      "<5s": {
+        "feasible_count": 0,
+        "recommended": null,
+        "recommended_f1": null,
+        "alternatives": []
+      },
+      "<15s": {
+        "feasible_count": 3,
+        "recommended": "voting_n3_rag",
+        "recommended_f1": 0.38636363636363635,
+        "alternatives": [
+          {
+            "architecture": "voting_n3",
+            "f1": 0.3469387755102041,
+            "latency_s": 13.555583357810974
+          },
+          {
+            "architecture": "single_shot",
+            "f1": 0.32692307692307687,
+            "latency_s": 5.0586409032344815
+          }
+        ]
+      },
+      "<30s": {
+        "feasible_count": 4,
+        "recommended": "voting_n3_rag",
+        "recommended_f1": 0.38636363636363635,
+        "alternatives": [
+          {
+            "architecture": "voting_n3",
+            "f1": 0.3469387755102041,
+            "latency_s": 13.555583357810974
+          },
+          {
+            "architecture": "single_shot",
+            "f1": 0.32692307692307687,
+            "latency_s": 5.0586409032344815
+          },
+          {
+            "architecture": "moa_rag",
+            "f1": 0.3137254901960784,
+            "latency_s": 23.490253925323486
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,759 @@
+{
+  "architecture": "moa_rag",
+  "domain": "finance",
+  "model": "deepseek-v4-flash",
+  "items": [
+    {
+      "id": "2346292b",
+      "claim": "The worker who founded the #AppleToo movement has accused Epic Games of taking a similarly anti-labor stance. The Washington Post reports former Apple employee Cher Scarlett has filed a National Labor",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "05584a52",
+      "claim": "Inspectors launch virtual inspections by utilizing the existing Procore Inspection Checklist, thereby saving time, boosting productivity, and substantially reducing inspection costs. WATSONVILLE, Cali",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "f0f019d6",
+      "claim": "Bloomberg Leaked ByteDance Memo Shows Blockbuster Revenue Projections (Bloomberg) -- As ByteDance Ltd. prepares for a historic initial public offering, an internal memo leaked showing TikTok\u2019s owner a",
+      "ground_truth": null
+    },
+    {
+      "id": "05f44778",
+      "claim": "Mobile Drive will be equally owned by Stellantis and Foxconn Technology Group Stellantis accelerates execution of technology roadmap through innovative partnership Shared technology expertise, market ",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "ea036b97",
+      "claim": "Britain\u2019s economy shrank by more than expected last month, official figures show, as businesses and households grappled with the impact of 14 consecutive interest rate rises. Gross domestic product (G",
+      "ground_truth": null
+    },
+    {
+      "id": "b92776d9",
+      "claim": "TipRanks 2 Big Dividend Stocks Yielding 10%; RBC Says \u2018Buy\u2019 Soaring commodity prices, additional federal stimulus, and government bond yields on the rise are all raising the specter of inflation. Furt",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "52a2745e",
+      "claim": "When you buy a stock there is always a possibility that it could drop 100%. But on the bright side, if you buy shares in a high quality company at the right price, you can gain well over 100%. One gre",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "a7db8a71",
+      "claim": "Bed Bath & Beyond (BBBY) filed for chapter 11 bankruptcy protection on Sunday after a years-long decline in sales doomed the home goods retailer. In a statement on Sunday, the company said its Bed Bat",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "fc2ff282",
+      "claim": "TipRanks 2 \u201cStrong Buy\u201d Penny Stocks That Could Rally Over 100% Bank of America has a strong reputation for keeping finger on the pulse of the financial world \u2013 and one of its key tools is the Global ",
+      "ground_truth": null
+    },
+    {
+      "id": "e11ac6b6",
+      "claim": "NEW YORK, Sept. 9, 2021 /PRNewswire/ -- The fog computing market is poised to grow by USD 2.79 billion during 2021-2025, progressing at a CAGR of 58.53% during the forecast period. The fog computing m",
+      "ground_truth": null
+    },
+    {
+      "id": "ea34279d",
+      "claim": "Whether you're looking to do some leisurely shopping or working on a home improvement project, you'll have plenty of shopping options this Labor Day. Most major retailers will be open Monday, Sept. 4,",
+      "ground_truth": null
+    },
+    {
+      "id": "e822bbaf",
+      "claim": "Bloomberg Why Crypto Billionaire Mike Novogratz Bought Facebook Stock (Bloomberg) -- Billionaire investor Mike Novogratz said he\u2019s bought Facebook Inc. stock to benefit from crypto\u2019s ascent and is als",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "3162ee22",
+      "claim": "Bank of America was fined $250 million this week by US federal regulators for allegedly harming customers by double-dipping on fees, withholding credit card rewards and opening fake accounts. Of those",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "bbbc14dc",
+      "claim": "NEW YORK (AP) -- With new streaming services in the works, Disney is trying to set itself up for a future that's so far largely been framed by Netflix: stuff I want to watch, when I want it. The Magic",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "730f7be6",
+      "claim": "Billionaire David Shaw Bets Big on These 3 Healthcare Stocks The last few months have seen high volatility and a rising market trend, as one of the biggest sources of uncertainty \u2013 namely, the electio",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "bebf4950",
+      "claim": "When we invest, we're generally looking for stocks that outperform the market average. Buying under-rated businesses is one path to excess returns. To wit, the MVV Energie share price has climbed 19% ",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "7ad66980",
+      "claim": "Bloomberg One-Time Pioneer LG Electronics to Close Smartphone Business (Bloomberg) -- LG Electronics Inc. is shutting down its loss-making mobile communications unit in a move to streamline operations",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "c8798f52",
+      "claim": "Sonos has acquired Mayht, a Dutch startup best known for co-creating a Bluetooth speaker powered by light. Mayht specializes in an audio technology called Heartmotion. The company claims to have reinv",
+      "ground_truth": null
+    },
+    {
+      "id": "f8feda0c",
+      "claim": "Textile Chemicals Market Insights and Industry Analysis by Fiber Type (Natural, Fiber), Product Type (Coating & Sizing Agent, Colorants & Auxiliaries, Finishing Agent), Application (Apparels, Home Tex",
+      "ground_truth": null
+    },
+    {
+      "id": "ef7d88a3",
+      "claim": "[115+ Pages Research Study] According to Polaris Market Research, the global black phosphorus market Size & share was valued at USD 13.13 Million in 2022 and is predicted to increase at a CAGR of 43.0",
+      "ground_truth": null
+    },
+    {
+      "id": "bf0f3d8a",
+      "claim": "Air Condition (AC) Market Research Report Trends and Insights by Application (Commercial, Residential, Institutional, Industrial others) By Product Type (Split, Rooftop, Indoor packaged, Chillers air ",
+      "ground_truth": null
+    },
+    {
+      "id": "c41645f0",
+      "claim": "Generative AI is making it easier to work multiple jobs at the same time. AI tools will lift earnings from multiple jobs by at least $83 billion by 2030, Morgan Stanley says. Multi-earning in the US h",
+      "ground_truth": null
+    },
+    {
+      "id": "133429b9",
+      "claim": "Bloomberg One of World\u2019s Greatest Hidden Fortunes Is Wiped Out in Days (Bloomberg) -- From his perch high above Midtown Manhattan, just across from Carnegie Hall, Bill Hwang was quietly building one o",
+      "ground_truth": null
+    },
+    {
+      "id": "d51e6406",
+      "claim": "KUALA LUMPUR, Malaysia, March 25, 2022 /PRNewswire/ -- On March 24th, MoonXBT officially launched its new options product - Warrant Options - during its press conference held in the official Discord c",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "2a323bca",
+      "claim": "Major players in the veterinary patient monitoring market are Smiths Group plc; Hallowell Engineering & Manufacturing Corporation; DRE Veterinary; Digicare Biomedical Technology Inc.; Midmark Corporat",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "e1120bc5",
+      "claim": "Bloomberg China Tech Giants Dive as Delisting Threat Joins Crackdown Fears (Bloomberg) -- Tech giants from Tencent Holdings Ltd. to Alibaba Group Holding Ltd. dived after U.S. regulators revived threa",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "d1a0eeca",
+      "claim": "Now might be a good time to buy the Apple Watch Series 6 \u2014 at least, if you're fond of red. Amazon is selling the 40mm Product Red edition of the Apple smartwatch for just $265 at checkout, well below",
+      "ground_truth": null
+    },
+    {
+      "id": "42840083",
+      "claim": "Drug Research and Development Progressing Well-Capitalized to Further Efforts and Opportunistically Expand Portfolio NEW YORK, April 5, 2021 /PRNewswire/ -- AIkido Pharma Inc. (Nasdaq: AIKI) (\"AIkido\"",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "d735242a",
+      "claim": "TikTok has a vaping problem. Although a 2019 U.S. law made it illegal to sell or market e-cigarettes to anyone under the age of 21, TikTok videos featuring top brands of disposable e-cigarettes and va",
+      "ground_truth": null
+    },
+    {
+      "id": "8e01e00f",
+      "claim": "Benzinga Cathie Wood Talks Tesla, Bitcoin, SPACs And More On CNBC: Here Are The Highlights Famed investor and ETF manager Cathie Wood joined Scott Wapner and Bob Pisani on the \u201cHalftime Report\u201d on CNB",
+      "ground_truth": null
+    },
+    {
+      "id": "5b3c1d4d",
+      "claim": "Napster Co-Founder Shawn Fanning\u2019s story is a testament to the potential rewards that can come from taking a calculated risk on an unproven idea. Fanning rolled the dice by investing $25,000 in then-s",
+      "ground_truth": null
+    },
+    {
+      "id": "2896357f",
+      "claim": "VANCOUVER, BC, March 17, 2022 /CNW/ - TSX VENTURE COMPANIES BESSOR MINERALS INC. (\"BST.H\") [formerly Bessor Minerals Inc. (\"BST\")] BULLETIN TYPE: Transfer and New Addition to NEX, Symbol Change BULLET",
+      "ground_truth": null
+    },
+    {
+      "id": "3c96893c",
+      "claim": "Bloomberg EU Pushes Back on China With Powers to Thwart State-Backed Firms (Bloomberg) -- The European Union is looking to strengthen its hand against the growing economic threat posed by China, with ",
+      "ground_truth": null
+    },
+    {
+      "id": "8f000a1f",
+      "claim": "In news that will come as no surprise to their boomer parents, millennials in their 30s are digging themselves deeper and deeper into debt. And it\u2019s not just due to their long-abiding love for avocado",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "380d5a98",
+      "claim": "Tesla CEO Elon Musk is asking people on Twitter whether he should sell 10% of his shares in the electric-powered vehicle company's stock. The eccentric billionaire is apparently responding to a Democr",
+      "ground_truth": null
+    },
+    {
+      "id": "05b4db1a",
+      "claim": "News of the global chip shortage has been so far-reaching this year, it's become a meme. \"I'm sorry I forgot to do the dishes, there's a global chip shortage.\" But as with many online jokes, there's a",
+      "ground_truth": null
+    },
+    {
+      "id": "afce1ff0",
+      "claim": "The job market in the tech industry is starting to show some cracks. On Tuesday, streaming giant Netflix (NFLX) confirmed it is laying off 150 workers amid slowing demand. That same day, e-commerce gi",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "4c2ffe03",
+      "claim": "NEW YORK, Nov. 29, 2022 /PRNewswire/ -- According to Technavio, the global bare metal cloud market size is projected to grow by USD 10,993.03 million from 2022 to 2027. The market is estimated to grow",
+      "ground_truth": null
+    },
+    {
+      "id": "477f1858",
+      "claim": "A 1976 check to Radio Shack signed by Steve Jobs is expected to sell for more than $20,000. Jobs famously did not give autographs, and a letter from him saying so sold for nearly $500,000. Radio Shack",
+      "ground_truth": null
+    },
+    {
+      "id": "afcd879a",
+      "claim": "TipRanks These 2 Penny Stocks Could Rack up Triple-Digit Gains, Say Analysts Is a pause to the stock market\u2019s continued surge finally in the cards? The talk has turned to rising interest rates and the",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "242004ee",
+      "claim": "Bloomberg Credit Suisse Sells $2.3 Billion of Stocks Tied to Archegos (Bloomberg) -- Credit Suisse Group AG unloaded about $2.3 billion worth of stocks tied to the Archegos Capital blowup more than a ",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "bc79259e",
+      "claim": "",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "c08a4111",
+      "claim": "(Bloomberg) -- The biggest fossil fuel players are making the message clear: the transition to a green future will require much more natural gas. Most Read from Bloomberg Titanic Sub Crew Dead After V",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "9110ea45",
+      "claim": "NEW YORK, Oct. 11, 2021 /PRNewswire/ -- In a new interview with the Beverly Hills Bar Association, Reputation Communications Founder and CEO Shannon Wilkinson explains reputation management and expert",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "02b4f50d",
+      "claim": "The new MacBook Air is one of Apple's most important computers since Steve Jobs pulled the original Air out of an envelope. It shows what's possible when Apple builds an ultraportable entirely around ",
+      "ground_truth": null
+    },
+    {
+      "id": "1ed8560b",
+      "claim": "(Bloomberg) -- Hedge funds and private equity firms will have to disclose more about their fees and face new restrictions from the US Securities and Exchange Commission on giving investors special tre",
+      "ground_truth": null
+    },
+    {
+      "id": "23c183b6",
+      "claim": "(Bloomberg) -- International Battery Company has committed to investing $1 billion in India\u2019s southern Karnataka state to build a factory that will produce lithium-ion cells, the provincial government",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "a1370d63",
+      "claim": "Bloomberg Crypto Mania Sends Doge Soaring, Crashes Robinhood Token Trading (Bloomberg) -- Investors are piling back into some of the fringe corners of the cryptocurrency world, with the frenzy sending",
+      "ground_truth": null
+    },
+    {
+      "id": "3d5ef527",
+      "claim": "(Bloomberg) -- Coming soon: Sign up for the India Edition newsletter by Menaka Doshi \u2013 an insider's guide to the emerging economic powerhouse, and the billionaires and businesses behind its rise, deli",
+      "ground_truth": null
+    },
+    {
+      "id": "06599c56",
+      "claim": "Laxis SAN FRANCISCO, July 27, 2022 (GLOBE NEWSWIRE) -- Laxis, the AI meeting assistant and conversational intelligence company announces its direct integration with Webex by Cisco to support business ",
+      "ground_truth": "FAKE"
+    }
+  ],
+  "results": [
+    {
+      "item_id": "2346292b",
+      "verdict": "ESCALATE",
+      "confidence": 0.3,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "05584a52",
+      "verdict": "REAL",
+      "confidence": 0.9,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "f0f019d6",
+      "verdict": "REAL",
+      "confidence": 0.98,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "05f44778",
+      "verdict": "REAL",
+      "confidence": 0.95,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "ea036b97",
+      "verdict": "REAL",
+      "confidence": 0.5,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "b92776d9",
+      "verdict": "REAL",
+      "confidence": 1.0,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "52a2745e",
+      "verdict": "REAL",
+      "confidence": 0.5,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "a7db8a71",
+      "verdict": "REAL",
+      "confidence": 0.95,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "fc2ff282",
+      "verdict": "REAL",
+      "confidence": 0.5,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "e11ac6b6",
+      "verdict": "REAL",
+      "confidence": 0.85,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "ea34279d",
+      "verdict": "REAL",
+      "confidence": 0.75,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "e822bbaf",
+      "verdict": "REAL",
+      "confidence": 0.5,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "3162ee22",
+      "verdict": "ESCALATE",
+      "confidence": 0.1,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "bbbc14dc",
+      "verdict": "REAL",
+      "confidence": 0.95,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "730f7be6",
+      "verdict": "REAL",
+      "confidence": 0.9,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "bebf4950",
+      "verdict": "REAL",
+      "confidence": 0.5,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "7ad66980",
+      "verdict": "REAL",
+      "confidence": 1.0,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "c8798f52",
+      "verdict": "REAL",
+      "confidence": 0.5,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "f8feda0c",
+      "verdict": "REAL",
+      "confidence": 0.6,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "ef7d88a3",
+      "verdict": "REAL",
+      "confidence": 0.5,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "bf0f3d8a",
+      "verdict": "ESCALATE",
+      "confidence": 0.4,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "c41645f0",
+      "verdict": "REAL",
+      "confidence": 0.5,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "133429b9",
+      "verdict": "REAL",
+      "confidence": 0.95,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "d51e6406",
+      "verdict": "REAL",
+      "confidence": 0.8,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "2a323bca",
+      "verdict": "REAL",
+      "confidence": 0.85,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "e1120bc5",
+      "verdict": "REAL",
+      "confidence": 1.0,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "d1a0eeca",
+      "verdict": "REAL",
+      "confidence": 0.5,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "42840083",
+      "verdict": "REAL",
+      "confidence": 0.95,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "d735242a",
+      "verdict": "REAL",
+      "confidence": 0.5,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "8e01e00f",
+      "verdict": "REAL",
+      "confidence": 0.98,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "5b3c1d4d",
+      "verdict": "ESCALATE",
+      "confidence": 0.0,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "2896357f",
+      "verdict": "REAL",
+      "confidence": 0.92,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "3c96893c",
+      "verdict": "REAL",
+      "confidence": 1.0,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "8f000a1f",
+      "verdict": "REAL",
+      "confidence": 0.9,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "380d5a98",
+      "verdict": "REAL",
+      "confidence": 0.9,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "05b4db1a",
+      "verdict": "REAL",
+      "confidence": 0.95,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "afce1ff0",
+      "verdict": "REAL",
+      "confidence": 0.9,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "4c2ffe03",
+      "verdict": "REAL",
+      "confidence": 0.9,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "477f1858",
+      "verdict": "ESCALATE",
+      "confidence": 0.1,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "afcd879a",
+      "verdict": "REAL",
+      "confidence": 0.95,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "242004ee",
+      "verdict": "REAL",
+      "confidence": 0.95,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "bc79259e",
+      "verdict": "ESCALATE",
+      "confidence": 0.0,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "c08a4111",
+      "verdict": "ESCALATE",
+      "confidence": 0.5,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "9110ea45",
+      "verdict": "REAL",
+      "confidence": 0.65,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "02b4f50d",
+      "verdict": "REAL",
+      "confidence": 0.95,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "1ed8560b",
+      "verdict": "REAL",
+      "confidence": 0.95,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "23c183b6",
+      "verdict": "REAL",
+      "confidence": 0.5,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "a1370d63",
+      "verdict": "REAL",
+      "confidence": 0.99,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "3d5ef527",
+      "verdict": "REAL",
+      "confidence": 0.95,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "06599c56",
+      "verdict": "ESCALATE",
+      "confidence": 0.5,
+      "latency_s": 25.466943979263306,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    }
+  ]
+}
