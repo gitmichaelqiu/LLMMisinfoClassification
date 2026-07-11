@@ -4,752 +4,752 @@
   "model": "deepseek-v4-flash",
   "items": [
     {
-      "id": "d5fde149",
-      "claim": " Occupy Wall Street Is Getting The Band Back Together To Rally Behind A New Leader",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "710d5069",
-      "claim": "BREAKING: REPORTER Says Secret Service Took Debate Attendees Phones To Avoid Flash That Could Trigger Hillary\u2019s Seizures [VIDEO]",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "43817c30",
-      "claim": "China grants economic aid to Djibouti, site of overseas military base",
+      "id": "e527840f",
+      "claim": "Under pressure from Trump, Price resigns as health secretary over private plane uproar",
       "ground_truth": null
     },
     {
-      "id": "ce86f86f",
-      "claim": "SAUDI ARABIA\u2019S Secret Holding Of U.S. Debt A Big Deal",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "29de3b8f",
-      "claim": "U.S. health secretary says his job is to follow Obamacare law",
+      "id": "fbba734b",
+      "claim": "U.S. government watchdog to review Mar-a-Lago trips, Trump hotel profits",
       "ground_truth": null
     },
     {
-      "id": "95a2aa7a",
-      "claim": "OBAMA UNDERMINES AMERICA\u2026Plans To Slash Nuclear Stockpiles\u2026Again",
+      "id": "cd0917cd",
+      "claim": "House Speaker Ryan backs swift action on Iran, Russia sanctions",
+      "ground_truth": null
+    },
+    {
+      "id": "17032614",
+      "claim": " Trump And Putin Had A Secret Meeting After Their \u2018Official\u2019 One",
       "ground_truth": "FAKE"
     },
     {
-      "id": "3636aa2a",
+      "id": "087ad433",
+      "claim": "Defense Secretary Mattis promises support to Ukraine, says reviewing lethal aid",
+      "ground_truth": null
+    },
+    {
+      "id": "6b723d63",
+      "claim": "South Korea calls for 'bone-numbing' sanctions on North for nuclear test",
+      "ground_truth": null
+    },
+    {
+      "id": "4774acc9",
+      "claim": " \u2018Grow The F*ck Up!\u2019: Trump Gets Taken To The Woodshed After Calling For A Government Shutdown",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "d244c865",
+      "claim": "Turkey's economy minister defends predecessor over Iran sanctions charges",
+      "ground_truth": null
+    },
+    {
+      "id": "71a67015",
+      "claim": "Uber, Google, Twitter, Netflix and Other Tech Giants File \u2018Unlawful\u2019 Immigration Retort Against Trump",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "c372e001",
+      "claim": "South Sudan media regulator bans press groups, raising censorship fears",
+      "ground_truth": null
+    },
+    {
+      "id": "baeca983",
+      "claim": " Matt Damon SHREDS Trump And Wall Street Bankers During MIT Commencement (VIDEO)",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "913593af",
+      "claim": "JUST IN: OBAMA REGIME Demanded Homeland Security Officials Stop Using \u201cSharia\u201d and \u201cJihadist\u201d Language\u2026Look Who Just Changed That Language [VIDEO]",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "b4ba899f",
+      "claim": " God Gave Me Illegal Stock Shares At Dairy Queen Fair and Square, Claims Texas AG Accused Of Fraud",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "a3e59bf1",
+      "claim": "HOUSE VOTES TO BEEF UP OUR \u201cGUN GRABBER IN CHIEF\u2019S\u201d SECURITY",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "f7262af3",
+      "claim": " Hollywood\u2019s Secret Conservative Club Shuts Down Because Actors Can\u2019t Stop Fighting Over Trump",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "9de4edea",
+      "claim": "Congress could undo Obama-era student loan relief",
+      "ground_truth": null
+    },
+    {
+      "id": "af216f6d",
+      "claim": "HANDS ON! DHS SECRETARY JOHN KELLY TOURS BORDER: \u201cStunned\u201d that local officials harboring criminal illegals [VIDEO]",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "7ecdabfd",
+      "claim": "Obama unveils wage insurance plan to spur job seekers",
+      "ground_truth": null
+    },
+    {
+      "id": "137ecc7d",
+      "claim": " Trump Just Got A Secret Intel Briefing From A Foreign Power, And It\u2019s Not Who You Think",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "f0439900",
+      "claim": "Incoming New Zealand government to review central bank objectives",
+      "ground_truth": null
+    },
+    {
+      "id": "d456c6b7",
+      "claim": "European businesses working in Russia slam proposed U.S. sanctions",
+      "ground_truth": null
+    },
+    {
+      "id": "8e711a87",
+      "claim": "VACATIONING LAME-DUCK OBAMA Ready To Announce Sanctions Against Russia",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "7ad4abeb",
+      "claim": "Conservatives bristle as Trump backs off Clinton prosecution",
+      "ground_truth": null
+    },
+    {
+      "id": "f6c88c99",
+      "claim": "JUDGE JEANINE PIRRO: Rioters Need To Pay The Price With Prosecution! [Video]",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "482608dc",
+      "claim": "London security alert ends as package ruled non-suspicious",
+      "ground_truth": null
+    },
+    {
+      "id": "fee4fdaa",
+      "claim": "BREAKING\u2026NYC: Stunning Video Captures Hillary As She Appears To Be Convulsing Then Falling, Secret Service Forced To Lift Her Into Van",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "289c7079",
+      "claim": "#BoycottStarbucks\u2026CEO Puts Leftist Agenda Over Company Profits\u2026Plans To Hire 10,000 Refugees In Response To Trump\u2019s 4 Month Refugee Moratorium\u2026IGNORED Obama\u2019s 6 Month Ban On Refugees",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "8557541c",
+      "claim": "France to skip 2018 Winter Games if security not assured",
+      "ground_truth": null
+    },
+    {
+      "id": "6e3cab5d",
+      "claim": "Factbox: Republicans to keep an eye on as Senate nears vote on tax bill",
+      "ground_truth": null
+    },
+    {
+      "id": "ea71c66c",
+      "claim": "Trump Commerce nominee Ross to sell private equity firm stake",
+      "ground_truth": null
+    },
+    {
+      "id": "4cf97a96",
+      "claim": "Trump likely to name Exxon CEO secretary of state - source",
+      "ground_truth": null
+    },
+    {
+      "id": "801e58d9",
+      "claim": " Incompetent Trump Begged Thanksgiving Guests For Advice On Who Should Be Secretary Of State",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "c6d4cb62",
+      "claim": "U.S. Senate votes near unanimously for Russia, Iran sanctions",
+      "ground_truth": null
+    },
+    {
+      "id": "6e886dd5",
+      "claim": " Nunes ADMITS He Was Secretly At WH Right Before He Magically Found Source \u2018Vindicating\u2019 Trump",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "26cc4881",
+      "claim": "NANCY PELOSI Connected to DNC Staffer Charged With Bank Fraud After Trying to Flee the US",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "3712399c",
+      "claim": " Kansas Governor Wants To Steal Money From State Investment Fund To Cover Budget Disaster He Caused",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "c338923d",
+      "claim": "U.S. government shares technical details on North Korean hacking campaign",
+      "ground_truth": null
+    },
+    {
+      "id": "5a5173a4",
+      "claim": " Marco \u2018Roboto\u2019 Rubio Short-Circuits Again, Repeats Same Line Twice In 30 Seconds (VIDEO)",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "78dbe075",
+      "claim": "OBAMACARE LOAN SHARK: If Gov\u2019t Can Extort More Money From TAXPAYERS\u2026OBAMACARE Can Still Work [VIDEO]",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "d651e75b",
+      "claim": " Trump\u2019s Taking Credit For Inaugural Singer\u2019s Album Sales In PATHETIC, Ego-Fueled Tweet",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "e40f6c77",
+      "claim": "U.S. House Dems reject Deutsche Bank privacy claim in Trump query",
+      "ground_truth": null
+    },
+    {
+      "id": "d203570f",
+      "claim": "IRS CHIEF: Okay For Illegal Aliens To Use Stolen Social Security Numbers [VIDEO]",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "f2b07177",
+      "claim": " Trump National Security Pick Monica Crowley\u2019s Book No Longer For Sale Over Plagiarism",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "8a62a3f5",
+      "claim": "House committee moves to cut funding for financial regulators",
+      "ground_truth": null
+    },
+    {
+      "id": "3d6f938d",
+      "claim": "OBAMA Made CHRISTIAN Pastor Pay For His Own Ticket Home After Iran Got Secret $1.7 Billion Ransom For His Release",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "ac09b3db",
+      "claim": "Germany mulls adding Turkey to list of states posing high security risk: media",
+      "ground_truth": null
+    },
+    {
+      "id": "1ba72d72",
       "claim": "Trump to nominate Exxon CEO Tillerson as U.S. secretary of state: statement",
       "ground_truth": null
     },
     {
-      "id": "28dd3dd0",
-      "claim": "House panel approves budget measure that advances tax reform",
-      "ground_truth": null
-    },
-    {
-      "id": "37654bb0",
-      "claim": "Giuliani sought to end prosecution of Turk in Iran sanctions case",
-      "ground_truth": null
-    },
-    {
-      "id": "5c8c5674",
-      "claim": "BREAKING: HOUSE Votes \u201cYes\u201d On American Security Against Foreign Enemies Act\u2026But What Does That Really Mean For Our Nation\u2019s Security?",
+      "id": "909c4d4c",
+      "claim": "BEHIND THE CURTAIN: How Obama Plans To Prevent \u201cCertain\u201d Social Security Beneficiaries From Owning Guns",
       "ground_truth": "FAKE"
     },
     {
-      "id": "8138f0cb",
-      "claim": "ERIC HOLDER DOUBLES DOWN with Second Threat Against Firing Mueller",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "ec8ac223",
-      "claim": "HOLY BETRAYAL OF AMERICA\u2019S NATIONAL SECURITY: New Evidence Shows Hillary Emailed \u201cMost Secretive\u201d Classified Material On Private Unsecured Server",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "3f8a6fe0",
-      "claim": "LOL! The Woman Who Couldn\u2019t Be Bothered With Protecting Lives Of Brave Americans Serving In Benghazi Attacks Trump On National Security",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "12ac40d8",
-      "claim": "OBAMA REGIME AGREES TO CUT DEAL WITH IRAN THAT FURTHER THREATENS OUR NATIONAL SECURITY",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "05460104",
-      "claim": "After 'bloody mess' jab, Macron eyes training, job insurance reform",
+      "id": "8f3b4642",
+      "claim": "Trump 'dossier' firm: Republicans leaked bank records in retaliation",
       "ground_truth": null
     },
     {
-      "id": "baa7f609",
-      "claim": " Conservative Christian Running For Congress Shares Screenshot With Porn Tabs Open (IMAGES)",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "c2efdb96",
-      "claim": "Four killed as militants attack airport security camp in Indian-controlled Kashmir",
+      "id": "22c91896",
+      "claim": "Final Republican tax bill slashes U.S. corporate rate, voting next week",
       "ground_truth": null
-    },
-    {
-      "id": "7f1f0770",
-      "claim": "HILLARY SHARES PRO-ILLEGAL MANIFESTO: Plans To Open Borders, Create Taxpayer Funded Agency To Give ILLEGALS Amnesty",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "ea8bfc0b",
-      "claim": "Swedish airport explosive suspect released without charge: prosecutor",
-      "ground_truth": null
-    },
-    {
-      "id": "89675b97",
-      "claim": "North Korea's 'princess' now one of the secretive state's top policy makers",
-      "ground_truth": null
-    },
-    {
-      "id": "66920b66",
-      "claim": "Goldman's Donovan to withdraw from deputy Treasury secretary nomination: source",
-      "ground_truth": null
-    },
-    {
-      "id": "c2796465",
-      "claim": "Factbox: Trump on Twitter (Aug 30) - Hurricane Harvey, North Korea, tax reform",
-      "ground_truth": null
-    },
-    {
-      "id": "dd28b64b",
-      "claim": "Trump's deportation plan could slice 2 percent off U.S. GDP: study",
-      "ground_truth": null
-    },
-    {
-      "id": "66fe50b0",
-      "claim": " WATCH: Trump Literally Promises To Gut Financial Regulations So His Friends Can Screw The Economy",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "c823e681",
-      "claim": "Secretary of State nominee Tillerson veers from Trump on key issues",
-      "ground_truth": null
-    },
-    {
-      "id": "4d0a7c0b",
-      "claim": "Polls open as Slovenian president runs for his second mandate",
-      "ground_truth": null
-    },
-    {
-      "id": "4b0b6111",
-      "claim": " Fox Credits Bush For Obama\u2019s Economic Recovery They Spent 8 Years Saying Didn\u2019t Exist",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "abe149f2",
-      "claim": "Three police officers killed, eight injured in shoot-out in Giza: security sources",
-      "ground_truth": null
-    },
-    {
-      "id": "6a889cb9",
-      "claim": "(VIDEO) ALAN DERSHOWITZ \u2013 SAD DAY FOR JUSTICE \u2013 BALTIMORE PROSECUTOR OVERCHARGED AND IDENTIFIED WITH PROTESTERS",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "70464eae",
-      "claim": "Trump to nominate Heather Wilson as Air Force secretary",
-      "ground_truth": null
-    },
-    {
-      "id": "7d3af887",
-      "claim": "CLINTON E-MAIL SHOCKER: Key Security Features Disabled On Server Making It A Hacker\u2019s Paradise",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "01d643fb",
-      "claim": "Saudi purge worries investors but may speed reforms",
-      "ground_truth": null
-    },
-    {
-      "id": "bafe628a",
-      "claim": " Trump Campaign Manager And CEO Outed As Members Of A Secret Far-Right Extremist Group",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "045868ab",
-      "claim": "Saudi crackdown will not hit investments: energy minister Falih",
-      "ground_truth": null
-    },
-    {
-      "id": "b559035e",
-      "claim": "BREAKING: TRUMP Announces \u201cPhenomenal\u201d Tax Cut Plan For Businesses In Next 2-3 Weeks\u2026Stock Markets Respond [VIDEO]",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "5978fa8d",
-      "claim": "THE OBAMA LEGACY: Worst Economic Growth Of All 13 Post-WWII Presidents [VIDEO]",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "9f21785a",
-      "claim": "Factbox: Provisions of the U.S. Republicans' final tax bill",
-      "ground_truth": null
-    },
-    {
-      "id": "fc4f9baa",
-      "claim": "OBAMA\u2019S BAILOUT OF PUERTO RICO: TAXPAYERS Take A BIG Hit But Rewards Go To Political And Financial Players",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "10c8f0d8",
-      "claim": "OBAMA USES LABOR DAY TO HARM PRIVATE SECTOR WITH NEW EXECUTIVE ORDER Giving Government An Unfair Advantage With Workers",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "ced3127c",
-      "claim": "Troops make progress in Tal Afar battle as U.S. defense secretary visits Iraq",
-      "ground_truth": null
-    },
-    {
-      "id": "0d8c78e0",
-      "claim": " These 4 Trump University Secrets Will Give Democrats The Ammo To Destroy Trump In November",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "df71ee00",
-      "claim": "Trump may reinstate secret CIA 'black site' prisons: U.S. officials",
-      "ground_truth": null
-    },
-    {
-      "id": "a3fd36c0",
-      "claim": "U.S. Senate still on track to release tax bill Thursday: aide",
-      "ground_truth": null
-    },
-    {
-      "id": "6435bf94",
-      "claim": " The 7 Biggest Republican Lies About The Economy Torn Apart In Three Minutes (VIDEO)",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "0831eb26",
-      "claim": "Congress faces tricky path to avoid government shutdown",
-      "ground_truth": null
-    },
-    {
-      "id": "358d4f33",
-      "claim": "Liberia party submits complaint over alleged vote fraud",
-      "ground_truth": null
-    },
-    {
-      "id": "f6a9bed0",
-      "claim": "Trump says he is considering quotas, tariffs on Chinese steel dumping",
-      "ground_truth": null
-    },
-    {
-      "id": "6127d852",
-      "claim": "CUOMO OUTRAGED That Iowans Cheered When Trump Said He Doesn\u2019t Want A Poor Person As Commerce Secretary",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "c73b9694",
-      "claim": "HARD-CORE, CONSERVATIVE, Street Artist, Sabo Videotapes Visit From Secret Service\u2026Who Is This Guy? Why Does Obama Fear Him?",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "d7b006bd",
-      "claim": " Economists Warn Trump Would CRASH The Global Economy",
-      "ground_truth": "FAKE"
     }
   ],
   "results": [
     {
-      "item_id": "d5fde149",
-      "verdict": "ESCALATE",
-      "confidence": 0.15,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "710d5069",
-      "verdict": "FAKE",
-      "confidence": 0.95,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "43817c30",
-      "verdict": "ESCALATE",
-      "confidence": 0.15,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "ce86f86f",
+      "item_id": "e527840f",
       "verdict": "FAKE",
       "confidence": 0.85,
-      "latency_s": 22.509315967559814,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "29de3b8f",
-      "verdict": "REAL",
-      "confidence": 0.5,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "95a2aa7a",
-      "verdict": "FAKE",
-      "confidence": 0.95,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "3636aa2a",
-      "verdict": "REAL",
-      "confidence": 0.95,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "28dd3dd0",
+      "item_id": "fbba734b",
       "verdict": "FAKE",
       "confidence": 0.8,
-      "latency_s": 22.509315967559814,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "37654bb0",
-      "verdict": "ESCALATE",
-      "confidence": 0.4,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "5c8c5674",
-      "verdict": "FAKE",
-      "confidence": 0.95,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "8138f0cb",
-      "verdict": "FAKE",
-      "confidence": 0.95,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "ec8ac223",
-      "verdict": "REAL",
-      "confidence": 0.7,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "3f8a6fe0",
+      "item_id": "cd0917cd",
       "verdict": "FAKE",
       "confidence": 0.8,
-      "latency_s": 22.509315967559814,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "12ac40d8",
-      "verdict": "REAL",
-      "confidence": 0.5,
-      "latency_s": 22.509315967559814,
+      "item_id": "17032614",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "05460104",
-      "verdict": "REAL",
-      "confidence": 0.5,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "baa7f609",
+      "item_id": "087ad433",
       "verdict": "FAKE",
       "confidence": 0.85,
-      "latency_s": 22.509315967559814,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "c2efdb96",
-      "verdict": "FAKE",
+      "item_id": "6b723d63",
+      "verdict": "REAL",
+      "confidence": 0.85,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "4774acc9",
+      "verdict": "REAL",
       "confidence": 0.75,
-      "latency_s": 22.509315967559814,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "7f1f0770",
+      "item_id": "d244c865",
+      "verdict": "FAKE",
+      "confidence": 0.2,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "71a67015",
       "verdict": "FAKE",
       "confidence": 0.95,
-      "latency_s": 22.509315967559814,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "ea8bfc0b",
-      "verdict": "ESCALATE",
-      "confidence": 0.4,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "89675b97",
+      "item_id": "c372e001",
       "verdict": "ESCALATE",
       "confidence": 0.2,
-      "latency_s": 22.509315967559814,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "66920b66",
+      "item_id": "baeca983",
       "verdict": "FAKE",
       "confidence": 0.95,
-      "latency_s": 22.509315967559814,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "c2796465",
+      "item_id": "913593af",
       "verdict": "FAKE",
       "confidence": 0.95,
-      "latency_s": 22.509315967559814,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "dd28b64b",
-      "verdict": "ESCALATE",
-      "confidence": 0.2,
-      "latency_s": 22.509315967559814,
+      "item_id": "b4ba899f",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "66fe50b0",
+      "item_id": "a3e59bf1",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "f7262af3",
       "verdict": "FAKE",
       "confidence": 0.85,
-      "latency_s": 22.509315967559814,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "c823e681",
-      "verdict": "FAKE",
-      "confidence": 0.75,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "4d0a7c0b",
-      "verdict": "REAL",
-      "confidence": 0.5,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "4b0b6111",
+      "item_id": "9de4edea",
       "verdict": "ESCALATE",
       "confidence": 0.1,
-      "latency_s": 22.509315967559814,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "abe149f2",
-      "verdict": "ESCALATE",
-      "confidence": 0.2,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "6a889cb9",
-      "verdict": "REAL",
-      "confidence": 0.95,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "70464eae",
-      "verdict": "REAL",
-      "confidence": 0.95,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "7d3af887",
-      "verdict": "FAKE",
-      "confidence": 0.95,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "01d643fb",
-      "verdict": "ESCALATE",
-      "confidence": 0.2,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "bafe628a",
-      "verdict": "FAKE",
-      "confidence": 0.98,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "045868ab",
-      "verdict": "REAL",
-      "confidence": 0.5,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "b559035e",
-      "verdict": "REAL",
-      "confidence": 0.5,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "5978fa8d",
-      "verdict": "REAL",
-      "confidence": 0.5,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "9f21785a",
-      "verdict": "REAL",
-      "confidence": 0.95,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "fc4f9baa",
+      "item_id": "af216f6d",
       "verdict": "FAKE",
       "confidence": 0.85,
-      "latency_s": 22.509315967559814,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "10c8f0d8",
+      "item_id": "7ecdabfd",
       "verdict": "FAKE",
       "confidence": 0.95,
-      "latency_s": 22.509315967559814,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "ced3127c",
-      "verdict": "FAKE",
-      "confidence": 0.85,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "0d8c78e0",
+      "item_id": "137ecc7d",
       "verdict": "FAKE",
       "confidence": 0.95,
-      "latency_s": 22.509315967559814,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "df71ee00",
-      "verdict": "ESCALATE",
-      "confidence": 0.2,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "a3fd36c0",
+      "item_id": "f0439900",
       "verdict": "REAL",
       "confidence": 0.5,
-      "latency_s": 22.509315967559814,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "6435bf94",
+      "item_id": "d456c6b7",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "8e711a87",
+      "verdict": "FAKE",
+      "confidence": 0.85,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "7ad4abeb",
+      "verdict": "FAKE",
+      "confidence": 0.75,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "f6c88c99",
       "verdict": "ESCALATE",
-      "confidence": 0.2,
-      "latency_s": 22.509315967559814,
+      "confidence": 0.3,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "0831eb26",
+      "item_id": "482608dc",
+      "verdict": "ESCALATE",
+      "confidence": 0.3,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "fee4fdaa",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "289c7079",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "8557541c",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "6e3cab5d",
       "verdict": "REAL",
+      "confidence": 0.5,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "ea71c66c",
+      "verdict": "REAL",
+      "confidence": 0.5,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "4cf97a96",
+      "verdict": "REAL",
+      "confidence": 0.88,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "801e58d9",
+      "verdict": "FAKE",
       "confidence": 0.9,
-      "latency_s": 22.509315967559814,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "358d4f33",
-      "verdict": "ESCALATE",
-      "confidence": 0.4,
-      "latency_s": 22.509315967559814,
-      "evidence": [],
-      "metadata": {
-        "architecture": "moa_rag"
-      }
-    },
-    {
-      "item_id": "f6a9bed0",
+      "item_id": "c6d4cb62",
       "verdict": "FAKE",
-      "confidence": 0.85,
-      "latency_s": 22.509315967559814,
+      "confidence": 0.9,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "6127d852",
+      "item_id": "6e886dd5",
+      "verdict": "ESCALATE",
+      "confidence": 0.3,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "26cc4881",
       "verdict": "FAKE",
       "confidence": 0.95,
-      "latency_s": 22.509315967559814,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "c73b9694",
+      "item_id": "3712399c",
       "verdict": "FAKE",
       "confidence": 0.95,
-      "latency_s": 22.509315967559814,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"
       }
     },
     {
-      "item_id": "d7b006bd",
+      "item_id": "c338923d",
       "verdict": "ESCALATE",
-      "confidence": 0.1,
-      "latency_s": 22.509315967559814,
+      "confidence": 0.25,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "5a5173a4",
+      "verdict": "FAKE",
+      "confidence": 0.8,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "78dbe075",
+      "verdict": "FAKE",
+      "confidence": 0.9,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "d651e75b",
+      "verdict": "REAL",
+      "confidence": 0.5,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "e40f6c77",
+      "verdict": "FAKE",
+      "confidence": 0.75,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "d203570f",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "f2b07177",
+      "verdict": "ESCALATE",
+      "confidence": 0.2,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "8a62a3f5",
+      "verdict": "FAKE",
+      "confidence": 0.7,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "3d6f938d",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "ac09b3db",
+      "verdict": "ESCALATE",
+      "confidence": 0.3,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "1ba72d72",
+      "verdict": "REAL",
+      "confidence": 0.95,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "909c4d4c",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "8f3b4642",
+      "verdict": "FAKE",
+      "confidence": 0.9,
+      "latency_s": 20.974000215530396,
+      "evidence": [],
+      "metadata": {
+        "architecture": "moa_rag"
+      }
+    },
+    {
+      "item_id": "22c91896",
+      "verdict": "REAL",
+      "confidence": 0.8,
+      "latency_s": 20.974000215530396,
       "evidence": [],
       "metadata": {
         "architecture": "moa_rag"

@@ -53,23 +53,23 @@ PPV at base rates {0.1%, 1%, 5%, 10%, 25%, 50%}. Expected cost under FP:FN ratio
 
 | Architecture | F1 | Precision | Recall | FPR | FNR | Accuracy | ESC Rate | ECE | Latency |
 |---|---|---|---|---|---|---|---|---|---|
-| Single-Shot | **0.732** | 0.938 | 0.600 | 0.040 | 0.400 | 0.780 | 8.0% | **0.088** | 4.3s |
-| Voting N=3 | 0.485 | **1.000** | 0.320 | **0.000** | 0.680 | 0.660 | 14.0% | 0.152 | 14.5s |
-| MoA+RAG | 0.667 | 0.696 | 0.640 | 0.280 | 0.360 | 0.680 | 26.0% | 0.158 | 22.5s |
-| **Voting N=3+RAG** | **0.750** | **1.000** | 0.600 | **0.000** | 0.400 | **0.800** | 50.0% | 0.166 | 13.3s |
+| Single-Shot | **0.700** | 0.933 | 0.560 | 0.040 | 0.440 | 0.760 | 4.0% | **0.090** | 3.8s |
+| Voting N=3 | 0.595 | 0.917 | 0.440 | 0.040 | 0.560 | 0.700 | 10.0% | 0.152 | 12.9s |
+| MoA+RAG | 0.690 | 0.606 | **0.800** | 0.520 | **0.200** | 0.640 | 16.0% | 0.240 | 21.0s |
+| Voting N=3+RAG | 0.698 | 0.833 | 0.600 | 0.120 | 0.400 | 0.740 | 48.0% | 0.198 | 12.6s |
 
-**Key observation**: All architectures achieve non-trivial F1 on the clean finance data. **Voting N=3+RAG leads** (F1=0.750) with perfect precision (1.000) and zero FPR — but at the cost of 50% ESCALATE rate. Single-Shot is a strong contender (F1=0.732) with much lower latency (4.3s) and ESC rate (8%).
+**Key observation**: **Single-Shot leads finance** (F1=0.700) with the lowest latency (3.8s), lowest ESC rate (4%), and best calibration (ECE=0.090). MoA+RAG achieves the highest recall (0.800) but at 52% FPR. Voting N=3+RAG has strong precision (0.833) but 48% ESC rate, making it impractical without human review capacity.
 
 ### Healthcare (N=40 balanced)
 
 | Architecture | F1 | Precision | Recall | FPR | FNR | Accuracy | ESC Rate | ECE | Latency |
 |---|---|---|---|---|---|---|---|---|---|
-| Single-Shot | 0.745 | 0.613 | 0.950 | 0.600 | 0.050 | 0.675 | 2.5% | 0.300 | 4.8s |
-| Voting N=3 | 0.720 | 0.600 | 0.900 | 0.600 | 0.100 | 0.650 | 2.5% | 0.229 | 12.1s |
-| MoA+RAG | 0.741 | 0.588 | **1.000** | 0.700 | **0.000** | 0.650 | 12.5% | 0.326 | 21.4s |
-| **Voting N=3+RAG** | **0.800** | **0.720** | 0.900 | **0.350** | 0.100 | **0.775** | 37.5% | 0.234 | 12.0s |
+| Single-Shot | 0.706 | 0.581 | 0.900 | 0.650 | 0.100 | 0.625 | 5.0% | 0.310 | 4.4s |
+| Voting N=3 | 0.694 | 0.586 | 0.850 | 0.600 | 0.150 | 0.625 | 7.5% | 0.294 | 11.6s |
+| MoA+RAG | 0.706 | 0.581 | 0.900 | 0.650 | 0.100 | 0.625 | 7.5% | 0.319 | 16.9s |
+| **Voting N=3+RAG** | **0.783** | **0.692** | 0.900 | **0.400** | 0.100 | **0.750** | 30.0% | 0.218 | 10.9s |
 
-**Key observation**: Voting N=3+RAG is the best healthcare architecture (F1=0.800) with substantially lower FPR (0.35 vs 0.60+ for others). MoA+RAG achieves perfect recall (1.000) but at high FPR (0.70) and reduced precision (0.588). Single-Shot delivers competitive F1 (0.745) at the lowest latency and ESC rate.
+**Key observation**: **Voting N=3+RAG is the best healthcare architecture** (F1=0.783) with substantially lower FPR (0.40 vs 0.60+ for others), best precision (0.692), and best accuracy (0.750). The FPR reduction from 0.65 (SS) to 0.40 (VRAG) represents a 38% relative improvement. All non-RAG architectures cluster tightly at F1≈0.700, suggesting ceiling effects on this synthetic dataset.
 
 ---
 
@@ -79,19 +79,19 @@ PPV at base rates {0.1%, 1%, 5%, 10%, 25%, 50%}. Expected cost under FP:FN ratio
 
 | Architecture | F1 CI | Precision CI | Recall CI |
 |---|---|---|---|
-| Single-Shot | (0.545, 0.864) | (0.800, 1.000) | (0.400, 0.790) |
-| Voting N=3 | (0.250, 0.667) | (1.000, 1.000) | (0.143, 0.500) |
-| MoA+RAG | (0.500, 0.815) | (0.500, 0.875) | (0.458, 0.821) |
-| Voting N=3+RAG | (0.579, 0.880) | (1.000, 1.000) | (0.407, 0.786) |
+| Single-Shot | (0.516, 0.844) | (0.778, 1.000) | (0.364, 0.750) |
+| Voting N=3 | (0.385, 0.765) | (0.727, 1.000) | (0.250, 0.640) |
+| MoA+RAG | (0.539, 0.814) | (0.433, 0.771) | (0.630, 0.952) |
+| Voting N=3+RAG | (0.514, 0.837) | (0.643, 1.000) | (0.400, 0.793) |
 
 ### Healthcare
 
 | Architecture | F1 CI | Precision CI | Recall CI |
 |---|---|---|---|
-| Single-Shot | (0.605, 0.863) | (0.452, 0.793) | (0.833, 1.000) |
-| Voting N=3 | (0.560, 0.851) | (0.424, 0.778) | (0.737, 1.000) |
-| MoA+RAG | (0.600, 0.867) | (0.428, 0.765) | (1.000, 1.000) |
-| Voting N=3+RAG | (0.651, 0.917) | (0.542, 0.893) | (0.737, 1.000) |
+| Single-Shot | (0.546, 0.836) | (0.406, 0.750) | (0.750, 1.000) |
+| Voting N=3 | (0.529, 0.828) | (0.407, 0.767) | (0.667, 1.000) |
+| MoA+RAG | (0.546, 0.836) | (0.406, 0.758) | (0.750, 1.000) |
+| Voting N=3+RAG | (0.632, 0.898) | (0.500, 0.864) | (0.750, 1.000) |
 
 ---
 
@@ -101,14 +101,14 @@ PPV at base rates {0.1%, 1%, 5%, 10%, 25%, 50%}. Expected cost under FP:FN ratio
 
 | Base Rate | Single-Shot | Voting N=3 | MoA+RAG | Voting N=3+RAG |
 |-----------|-------------|------------|---------|----------------|
-| 0.1% | 0.015 | 1.000 | 0.002 | 1.000 |
-| 1% | 0.132 | 1.000 | 0.023 | 1.000 |
-| 5% | 0.441 | 1.000 | 0.109 | 1.000 |
-| 10% | 0.625 | 1.000 | 0.202 | 1.000 |
-| 25% | 0.833 | 1.000 | 0.406 | 1.000 |
-| 50% | 0.938 | 1.000 | 0.696 | 1.000 |
+| 0.1% | 0.014 | 0.011 | 0.001 | 0.007 |
+| 1% | 0.124 | 0.099 | 0.012 | 0.066 |
+| 5% | 0.424 | 0.366 | 0.058 | 0.268 |
+| 10% | 0.609 | 0.550 | 0.113 | 0.417 |
+| 25% | 0.828 | 0.792 | 0.269 | 0.694 |
+| 50% | 0.933 | 0.917 | 0.606 | 0.833 |
 
-Voting N=3 and Voting+RAG have PPV=1.000 at all base rates due to zero FPs. However, at low base rates (0.1-1%), this reflects extreme conservatism (only 8-15 FAKE predictions total) rather than practical deployability.
+Single-Shot achieves the highest PPV at every base rate on finance, driven by its low FPR (0.04) and strong precision (0.933). MoA+RAG suffers from elevated FPR (0.52) which destroys PPV at low base rates.
 
 ### Healthcare
 
@@ -153,15 +153,15 @@ Voting architectures have near-zero expected cost due to FPR=0, making them opti
 
 | Latency Budget | Finance | Healthcare |
 |----------------|---------|------------|
-| < 5s | **Single-Shot** (F1=0.732) | **Single-Shot** (F1=0.745) |
-| < 15s | **Voting N=3+RAG** (F1=0.750) | **Voting N=3+RAG** (F1=0.800) |
-| < 30s | **Voting N=3+RAG** (F1=0.750) | **Voting N=3+RAG** (F1=0.800) |
+| < 5s | **Single-Shot** (F1=0.700) | **Single-Shot** (F1=0.706) |
+| < 15s | **Single-Shot** (F1=0.700) | **Voting N=3+RAG** (F1=0.783) |
+| < 30s | **Single-Shot** (F1=0.700) | **Voting N=3+RAG** (F1=0.783) |
 
 **Cross-domain architecture ranking**:
-1. **Voting N=3+RAG** — F1=0.775 (mean across domains) ← best
-2. Single-Shot — F1=0.739
-3. MoA+RAG — F1=0.704
-4. Voting N=3 — F1=0.602
+1. **Single-Shot** — F1=0.703 (mean across domains) ← best cross-domain at lowest latency
+2. Voting N=3+RAG — F1=0.698 (finance) / 0.783 (healthcare)
+3. MoA+RAG — F1=0.690 / 0.706
+4. Voting N=3 — F1=0.595 / 0.694
 
 ---
 
@@ -189,17 +189,19 @@ Voting architectures have near-zero expected cost due to FPR=0, making them opti
 
 ## Key Findings
 
-1. **Voting N=3+RAG is the best validated architecture**: Achieves the highest F1 on both finance (0.750) and healthcare (0.800), with perfect precision and zero FPR on finance. However, ESCALATE rates are high (38-50%).
+1. **Single-Shot is the most efficient and consistent architecture**: Achieves the highest mean F1 across domains (0.703) at the lowest latency (3.8-4.4s) and lowest ESC rate (4-5%). On finance, it outperforms all complex architectures. On healthcare, it is within 8% of the best.
 
-2. **Single-Shot is surprisingly competitive**: F1=0.732 finance, F1=0.745 healthcare — within 2-7% of the best architecture, at <5s latency and <10% ESC rate. The marginal benefit of complex architectures is modest.
+2. **Voting N=3+RAG excels on healthcare but struggles on finance**: F1=0.783 (healthcare) with 38% lower FPR than Single-Shot, but F1=0.698 (finance) with 48% ESC rate. RAG adds value only when the base verifier is competent and evidence is informative.
 
-3. **Voting N=3 (without RAG) underperforms**: Too conservative — perfect precision but recall <32% on finance. The majority-vote mechanism suppresses correct FAKE detections.
+3. **No architecture difference is statistically significant**: Paired bootstrap 95% CIs for ΔF1 (Voting+RAG vs Single-Shot) span from -0.16 to +0.20 on finance and -0.04 to +0.20 on healthcare. N=50 per domain lacks statistical power to detect F1 differences <0.15.
 
-4. **MoA+RAG doesn't outperform simpler approaches**: On clean data, MoA+RAG (F1=0.667 finance, 0.741 healthcare) is beaten by both Single-Shot and Voting+RAG. The debate mechanism adds latency and complexity without F1 gain.
+4. **MoA+RAG adds latency without F1 gain**: On healthcare, MoA+RAG (F1=0.706 at 16.9s) is identical to Single-Shot (F1=0.706 at 4.4s). The debate mechanism adds 12.4s with no accuracy benefit.
 
-5. **ESCALATE rate is architecture-dependent**: RAG-based architectures have 2-5× higher ESC rates than non-RAG ones (26-50% vs 2-14%). Evidence retrieval often introduces uncertainty rather than conviction.
+5. **TF-IDF baseline matches or exceeds LLM performance**: On finance, TF-IDF+LR achieves F1=0.749 (5-fold CV) vs LLM best of 0.700. The ISOT finance subset has strong lexical signal that simpler models exploit.
 
-6. **RAG helps Voting but not MoA**: Adding RAG to Voting improves F1 by +0.27 on finance and +0.08 on healthcare. Adding RAG to MoA improves recall but hurts precision, leaving F1 unchanged or lower.
+6. **ESCALATE rate increases with architecture complexity**: Non-RAG architectures ESC at 4-10%, RAG architectures at 16-48%. Adding evidence introduces more uncertainty than conviction for this model-dataset combination.
+
+7. **PPV is low at realistic base rates for RAG architectures**: MoA+RAG's high FPR (0.52 finance, 0.65 healthcare) gives PPV<0.06 at 5% prevalence. Only high-precision architectures (SS, Voting) achieve usable PPV at low base rates.
 
 ---
 
@@ -217,12 +219,12 @@ Voting architectures have near-zero expected cost due to FPR=0, making them opti
 
 ## Dataset Provenance
 
-### Finance: ISOT Fake News Dataset (filtered)
+### Finance: ISOT Fake News Dataset (filtered, deduplicated)
 - **Source**: University of Victoria ISOT Research Lab / Kaggle (clmentbisaillon)
-- **Original format**: True.csv (21,417 Reuters articles) + Fake.csv (23,481 articles from unreliable sources)
-- **Finance filter**: 3,731 articles containing finance/economic keywords in title
-- **Labels**: 0 = REAL (Reuters), 1 = FAKE (misinformation sources flagged by Politifact/Wikipedia)
-- **Label conflicts**: 0 verified
+- **Original format**: True.csv (21,417 Reuters articles) + Fake.csv (23,481 articles from flagged sources)
+- **Finance filter**: Articles containing finance/economic keywords in title → 3,731 raw, **3,324 after deduplication** (removed 407 exact-duplicate rows)
+- **Labels**: 0 = REAL (Reuters), 1 = FAKE (misinformation sources) — **zero conflicts**
+- **Dedup**: 402 titles appeared 2+ times (identical text+label); all deduplicated
 - **License**: CC-BY-NC-SA-4.0
 - **Files**: `data/raw/finance/financial_news.csv` (clean), `data/raw/finance/financial_news_CORRUPTED.csv` (original, deprecated)
 
@@ -248,6 +250,7 @@ Voting architectures have near-zero expected cost due to FPR=0, making them opti
 
 - Full report: `results/final_validation/report.json`
 - Raw outputs: `results/final_validation/raw_outputs/{domain}_{architecture}.json`
+- **Audit report**: `docs/paper_audit_report.md` — full significance tests, leakage audit, TF-IDF baselines
 
 ---
 
@@ -257,5 +260,5 @@ Voting architectures have near-zero expected cost due to FPR=0, making them opti
 |--------|-------|
 | Total API calls | 990 |
 | Estimated cost | $0.1485 |
-| Total runtime | 117s (2.0 min) |
+| Total runtime | 114s (1.9 min) |
 | Concurrency | 400 workers |
