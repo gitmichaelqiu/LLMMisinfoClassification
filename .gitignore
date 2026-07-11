@@ -214,6 +214,9 @@ cython_debug/
 CLAUDE.md
 rag_cache/
 
+# Documentation (generated reports, not source)
+docs/
+
 # Large dataset CSVs (tracked separately via DVC or direct download)
 data/raw/**/*.csv
 
