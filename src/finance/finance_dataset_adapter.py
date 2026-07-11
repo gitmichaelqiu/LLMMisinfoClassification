@@ -74,7 +74,9 @@ class FinanceDatasetAdapter(DatasetAdapter):
         with open(fpath, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                headline = row.get("headline", row.get("text", row.get("claim", "")))
+                # BUGFIX: 'text' column may contain concatenated articles;
+                # prefer explicit 'headline' or 'title' over raw 'text'.
+                headline = row.get("headline", row.get("title", row.get("text", row.get("claim", ""))))
                 label_raw = row.get("label", row.get("ground_truth", ""))
                 label = self._parse_label(label_raw)
                 items.append(

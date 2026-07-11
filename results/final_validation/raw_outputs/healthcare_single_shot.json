@@ -4,602 +4,602 @@
   "model": "deepseek-v4-flash",
   "items": [
     {
-      "id": "5efc4135",
+      "id": "823d2073",
       "claim": "CDC reports 99% decline in influenza cases following public awareness campaign.",
       "ground_truth": null
     },
     {
-      "id": "4f8bfca6",
+      "id": "18339d2c",
       "claim": "Biogen nasal spray claims to detect and neutralize all known carcinogens instantly.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "2e6fe37d",
+      "id": "f091b696",
       "claim": "Roche opens depression treatment center on the Moon for zero-gravity rehabilitation.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "ef2fa91f",
+      "id": "e4393d84",
       "claim": "Merck launches telehealth platform for COVID-19 management in rural communities.",
       "ground_truth": null
     },
     {
-      "id": "3a51e9e4",
+      "id": "99f0ecfc",
       "claim": "NIH completes enrollment of 37 patients in pivotal RSV trial.",
       "ground_truth": null
     },
     {
-      "id": "94963766",
+      "id": "75bec888",
       "claim": "FDA advisory committee votes 14-16 in favor of WHO Type 2 diabetes treatment.",
       "ground_truth": null
     },
     {
-      "id": "8c4e86eb",
+      "id": "7f2746a3",
       "claim": "WHO declares polio eradicated globally after single patient recovery in Germany.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "64876493",
+      "id": "a27c545c",
       "claim": "FDA advisory committee votes 12-18 in favor of Moderna hypertension treatment.",
       "ground_truth": null
     },
     {
-      "id": "1c3ae0ba",
+      "id": "fef1b965",
       "claim": "Novartis announces AI doctor that replaces all medical specialists with 21% accuracy.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "dc6733c4",
+      "id": "ec064525",
       "claim": "CDC attributes 67% of meningitis cases to urbanization based on survey of 195 patients at single clinic.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "69bf6852",
+      "id": "3ca5f9e8",
       "claim": "WHO endorses Merck rheumatoid arthritis treatment after receiving $465M donation from Merck foundation.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "735da72d",
+      "id": "56c7f08e",
       "claim": "WHO completes enrollment of 134 patients in pivotal depression trial.",
       "ground_truth": null
     },
     {
-      "id": "07d7bf28",
+      "id": "e22a29b4",
       "claim": "AstraZeneca lung cancer trial halted early for 'overwhelming efficacy' after 25 of planned 2729 patients enrolled.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "63159613",
+      "id": "816ee47f",
       "claim": "Pfizer claims its vaccine batch eliminates need for sleep, tested on 169 college students.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "e4bddd2f",
+      "id": "9be5d41f",
       "claim": "Study finds antiviral distribution programs reduce measles transmission by 49% in urban populations.",
       "ground_truth": null
     },
     {
-      "id": "4f5f08cb",
+      "id": "b6be9252",
       "claim": "Amgen to expand rheumatoid arthritis trial to Japan sites after positive interim analysis.",
       "ground_truth": null
     },
     {
-      "id": "a5334580",
+      "id": "e4725916",
       "claim": "AbbVie announces RSV cure in press release before peer review, stock price surges 27%.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "aaa26dd7",
+      "id": "f1a51b7b",
       "claim": "CDC reports 90% decline in polio cases following screening campaign.",
       "ground_truth": null
     },
     {
-      "id": "a5126c2b",
+      "id": "d083cac5",
       "claim": "WHO recommends FDA vaccine for routine immunization against measles.",
       "ground_truth": null
     },
     {
-      "id": "87fefa3b",
+      "id": "efdf9544",
       "claim": "Moderna announces Phase II clinical trial results showing 33% efficacy for malaria treatment.",
       "ground_truth": null
     },
     {
-      "id": "2e024738",
+      "id": "6f4c6be2",
       "claim": "Johnson & Johnson gene therapy enables humans to photosynthesize, ending world hunger.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "0865034e",
+      "id": "e748a60f",
       "claim": "CDC seeks FDA approval for migraine drug with only Phase I safety data in 97 volunteers.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "a74ddf7e",
+      "id": "71472217",
       "claim": "FDA approves AbbVie lung cancer drug based on 75-patient open-label trial with no randomization.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "e973e26e",
+      "id": "92ffc755",
       "claim": "AstraZeneca launches telehealth platform for rheumatoid arthritis management in rural communities.",
       "ground_truth": null
     },
     {
-      "id": "0680db53",
+      "id": "76e1f3a6",
       "claim": "WHO recommends NIH vaccine for routine immunization against malaria.",
       "ground_truth": null
     },
     {
-      "id": "fcc6bba3",
+      "id": "2953d4c2",
       "claim": "Bristol Myers rebrands failed multiple sclerosis drug as multiple sclerosis treatment, claims new mechanism of action.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "98c5bf92",
+      "id": "e29cedda",
       "claim": "CDC issues updated guidance on RSV screening, lowering recommended age to 37.",
       "ground_truth": null
     },
     {
-      "id": "46eca262",
+      "id": "b1f4226e",
       "claim": "Amgen opens depression treatment center on the Moon for zero-gravity rehabilitation.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "5c076878",
+      "id": "2310780d",
       "claim": "Eli Lilly receives EMA approval for influenza biosimilar, expanding European access.",
       "ground_truth": null
     },
     {
-      "id": "d076c783",
+      "id": "c0fcb287",
       "claim": "NIH study concludes Alzheimer's caused by GMO foods, recommends complete avoidance.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "f88eaaad",
+      "id": "a74524b6",
       "claim": "CDC reports 97% reduction in migraine hospitalizations in real-world study.",
       "ground_truth": null
     },
     {
-      "id": "4b29e0b0",
+      "id": "b899803a",
       "claim": "CDC reports 48% decline in hepatitis B cases following public awareness campaign.",
       "ground_truth": null
     },
     {
-      "id": "a8d3a9ff",
+      "id": "d7572348",
       "claim": "Pfizer publishes II trial data: multiple sclerosis drug meets primary endpoint with p<0.001.",
       "ground_truth": null
     },
     {
-      "id": "458af233",
+      "id": "e0210d57",
       "claim": "Eli Lilly claims migraine breakthrough after reanalyzing same dataset seven different ways.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "752d4094",
+      "id": "ed1999bc",
       "claim": "Eli Lilly gene therapy enables humans to photosynthesize, ending world hunger.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "f3fcff7c",
+      "id": "797434e0",
       "claim": "Pfizer launches obesity treatment at $691K per year despite manufacturing cost of $35.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "64ea8331",
+      "id": "b4835832",
       "claim": "WHO receives EMA approval for hypertension biosimilar, expanding European access.",
       "ground_truth": null
     },
     {
-      "id": "b72d48e4",
+      "id": "32b15e20",
       "claim": "AstraZeneca announces vaccine that prevents aging, eternal youth guaranteed for $157.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "f272c2ec",
+      "id": "7018ea1c",
       "claim": "WHO declares hepatitis B eradicated globally after single patient recovery in India.",
       "ground_truth": "FAKE"
     },
     {
-      "id": "0100a619",
+      "id": "e60bf24c",
       "claim": "Novartis publishes III trial data: COVID-19 drug meets primary endpoint with p<0.001.",
       "ground_truth": null
     }
   ],
   "results": [
     {
-      "item_id": "5efc4135",
+      "item_id": "823d2073",
       "verdict": "FAKE",
       "confidence": 0.95,
-      "latency_s": 7.727535247802734,
+      "latency_s": 2.884192943572998,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"
       }
     },
     {
-      "item_id": "4f8bfca6",
+      "item_id": "18339d2c",
       "verdict": "FAKE",
       "confidence": 0.98,
-      "latency_s": 3.9786670207977295,
+      "latency_s": 3.559492826461792,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"
       }
     },
     {
-      "item_id": "2e6fe37d",
+      "item_id": "f091b696",
       "verdict": "FAKE",
       "confidence": 1.0,
-      "latency_s": 4.216698169708252,
+      "latency_s": 3.1336309909820557,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"
       }
     },
     {
-      "item_id": "ef2fa91f",
+      "item_id": "e4393d84",
+      "verdict": "REAL",
+      "confidence": 0.5,
+      "latency_s": 7.73626184463501,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "99f0ecfc",
       "verdict": "FAKE",
-      "confidence": 0.6,
-      "latency_s": 7.56491231918335,
+      "confidence": 0.9,
+      "latency_s": 5.273848056793213,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"
       }
     },
     {
-      "item_id": "3a51e9e4",
-      "verdict": "FAKE",
-      "confidence": 0.75,
-      "latency_s": 5.714631080627441,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "94963766",
+      "item_id": "75bec888",
       "verdict": "FAKE",
       "confidence": 0.95,
-      "latency_s": 2.9768528938293457,
+      "latency_s": 3.3509209156036377,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"
       }
     },
     {
-      "item_id": "8c4e86eb",
+      "item_id": "7f2746a3",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 3.155756950378418,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "a27c545c",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 6.7861950397491455,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "fef1b965",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 4.357120037078857,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "ec064525",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 4.029705286026001,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "3ca5f9e8",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 3.6805789470672607,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "56c7f08e",
+      "verdict": "FAKE",
+      "confidence": 0.9,
+      "latency_s": 4.716969966888428,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "e22a29b4",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 4.3254311084747314,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "816ee47f",
       "verdict": "FAKE",
       "confidence": 1.0,
-      "latency_s": 2.964240074157715,
+      "latency_s": 3.8363871574401855,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"
       }
     },
     {
-      "item_id": "64876493",
+      "item_id": "9be5d41f",
+      "verdict": "FAKE",
+      "confidence": 0.9,
+      "latency_s": 3.5321309566497803,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "b6be9252",
+      "verdict": "REAL",
+      "confidence": 0.8,
+      "latency_s": 6.375675201416016,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "e4725916",
       "verdict": "FAKE",
       "confidence": 0.95,
-      "latency_s": 7.547332763671875,
+      "latency_s": 6.540283203125,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"
       }
     },
     {
-      "item_id": "1c3ae0ba",
+      "item_id": "f1a51b7b",
       "verdict": "FAKE",
-      "confidence": 0.98,
-      "latency_s": 3.6705398559570312,
+      "confidence": 0.8,
+      "latency_s": 6.892257928848267,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"
       }
     },
     {
-      "item_id": "dc6733c4",
-      "verdict": "FAKE",
-      "confidence": 0.95,
-      "latency_s": 5.296159267425537,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "69bf6852",
-      "verdict": "FAKE",
-      "confidence": 0.95,
-      "latency_s": 7.438739776611328,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "735da72d",
-      "verdict": "FAKE",
-      "confidence": 0.75,
-      "latency_s": 4.057057619094849,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "07d7bf28",
-      "verdict": "FAKE",
-      "confidence": 0.95,
-      "latency_s": 5.677046060562134,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "63159613",
-      "verdict": "FAKE",
-      "confidence": 1.0,
-      "latency_s": 2.4833412170410156,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "e4bddd2f",
+      "item_id": "d083cac5",
       "verdict": "FAKE",
       "confidence": 0.85,
-      "latency_s": 5.106404066085815,
+      "latency_s": 4.955008029937744,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"
       }
     },
     {
-      "item_id": "4f5f08cb",
-      "verdict": "REAL",
-      "confidence": 0.7,
-      "latency_s": 3.7913930416107178,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "a5334580",
+      "item_id": "efdf9544",
       "verdict": "REAL",
       "confidence": 0.5,
-      "latency_s": 7.644986867904663,
+      "latency_s": 7.703089952468872,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"
       }
     },
     {
-      "item_id": "aaa26dd7",
-      "verdict": "FAKE",
-      "confidence": 0.9,
-      "latency_s": 5.502640008926392,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "a5126c2b",
-      "verdict": "FAKE",
-      "confidence": 0.9,
-      "latency_s": 7.36785101890564,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "87fefa3b",
-      "verdict": "FAKE",
-      "confidence": 0.95,
-      "latency_s": 7.2394700050354,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "2e024738",
-      "verdict": "FAKE",
-      "confidence": 0.99,
-      "latency_s": 2.7605810165405273,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "0865034e",
-      "verdict": "FAKE",
-      "confidence": 0.95,
-      "latency_s": 4.659571886062622,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "a74ddf7e",
-      "verdict": "REAL",
-      "confidence": 0.5,
-      "latency_s": 7.335101842880249,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "e973e26e",
-      "verdict": "REAL",
-      "confidence": 0.75,
-      "latency_s": 4.029681205749512,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "0680db53",
-      "verdict": "FAKE",
-      "confidence": 0.95,
-      "latency_s": 5.294055938720703,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "fcc6bba3",
-      "verdict": "FAKE",
-      "confidence": 0.9,
-      "latency_s": 4.632798910140991,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "98c5bf92",
-      "verdict": "FAKE",
-      "confidence": 0.95,
-      "latency_s": 3.0594730377197266,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "46eca262",
+      "item_id": "6f4c6be2",
       "verdict": "FAKE",
       "confidence": 1.0,
-      "latency_s": 3.8535449504852295,
+      "latency_s": 2.3804221153259277,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"
       }
     },
     {
-      "item_id": "5c076878",
+      "item_id": "e748a60f",
       "verdict": "FAKE",
       "confidence": 0.95,
-      "latency_s": 6.404666900634766,
+      "latency_s": 2.7139832973480225,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"
       }
     },
     {
-      "item_id": "d076c783",
-      "verdict": "FAKE",
-      "confidence": 0.95,
-      "latency_s": 5.353623151779175,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "f88eaaad",
-      "verdict": "FAKE",
-      "confidence": 0.9,
-      "latency_s": 4.5159759521484375,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "4b29e0b0",
+      "item_id": "71472217",
       "verdict": "REAL",
       "confidence": 0.5,
-      "latency_s": 7.941210985183716,
+      "latency_s": 7.07270884513855,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"
       }
     },
     {
-      "item_id": "a8d3a9ff",
+      "item_id": "92ffc755",
+      "verdict": "REAL",
+      "confidence": 0.85,
+      "latency_s": 3.6230549812316895,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "76e1f3a6",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 4.150475978851318,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "2953d4c2",
+      "verdict": "FAKE",
+      "confidence": 0.5,
+      "latency_s": 7.569710969924927,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "e29cedda",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 3.3595387935638428,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "b1f4226e",
+      "verdict": "FAKE",
+      "confidence": 1.0,
+      "latency_s": 3.231196880340576,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "2310780d",
+      "verdict": "REAL",
+      "confidence": 0.5,
+      "latency_s": 7.1911938190460205,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "c0fcb287",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 2.7668581008911133,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "a74524b6",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 4.104779005050659,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "b899803a",
       "verdict": "ESCALATE",
-      "confidence": 0.6,
-      "latency_s": 6.628414869308472,
+      "confidence": 0.5,
+      "latency_s": 4.715418815612793,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"
       }
     },
     {
-      "item_id": "458af233",
+      "item_id": "d7572348",
       "verdict": "REAL",
       "confidence": 0.5,
-      "latency_s": 8.035477876663208,
+      "latency_s": 7.698157072067261,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"
       }
     },
     {
-      "item_id": "752d4094",
+      "item_id": "e0210d57",
       "verdict": "FAKE",
-      "confidence": 0.99,
-      "latency_s": 3.311263084411621,
+      "confidence": 0.8,
+      "latency_s": 7.1149818897247314,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"
       }
     },
     {
-      "item_id": "f3fcff7c",
+      "item_id": "ed1999bc",
       "verdict": "FAKE",
-      "confidence": 0.95,
-      "latency_s": 4.760500907897949,
+      "confidence": 1.0,
+      "latency_s": 2.689091682434082,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"
       }
     },
     {
-      "item_id": "64ea8331",
-      "verdict": "FAKE",
-      "confidence": 0.95,
-      "latency_s": 4.813194990158081,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "b72d48e4",
-      "verdict": "FAKE",
-      "confidence": 0.99,
-      "latency_s": 4.665421962738037,
-      "evidence": [],
-      "metadata": {
-        "architecture": "single_shot"
-      }
-    },
-    {
-      "item_id": "f272c2ec",
+      "item_id": "797434e0",
       "verdict": "FAKE",
       "confidence": 0.95,
-      "latency_s": 2.993529796600342,
+      "latency_s": 4.590944051742554,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"
       }
     },
     {
-      "item_id": "0100a619",
+      "item_id": "b4835832",
+      "verdict": "FAKE",
+      "confidence": 0.95,
+      "latency_s": 5.748416900634766,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "32b15e20",
+      "verdict": "FAKE",
+      "confidence": 1.0,
+      "latency_s": 2.8718838691711426,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "7018ea1c",
+      "verdict": "FAKE",
+      "confidence": 1.0,
+      "latency_s": 3.282855749130249,
+      "evidence": [],
+      "metadata": {
+        "architecture": "single_shot"
+      }
+    },
+    {
+      "item_id": "e60bf24c",
       "verdict": "REAL",
       "confidence": 0.5,
-      "latency_s": 7.919020891189575,
+      "latency_s": 6.988983869552612,
       "evidence": [],
       "metadata": {
         "architecture": "single_shot"

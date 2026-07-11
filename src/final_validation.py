@@ -169,9 +169,11 @@ def _sample_balanced(domain: str) -> Tuple[List[VerificationItem], List[Verifica
     sel_fake = fake[:n_fake]
 
     def to_item(r: Dict[str, str], gt: Verdict) -> VerificationItem:
-        text = r.get("headline", r.get("text", r.get("title", "")))
+        # BUGFIX: 'text' column contains multiple concatenated articles;
+        # 'title' is the actual headline/claim. Prefer 'headline' > 'title' > 'text'.
+        claim = r.get("headline", r.get("title", r.get("text", "")))
         return VerificationItem.create(
-            claim_text=text, ground_truth=gt,
+            claim_text=claim, ground_truth=gt,
             metadata={"domain": domain, "source": "csv_sample"},
         )
 

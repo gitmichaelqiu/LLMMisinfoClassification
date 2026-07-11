@@ -4,262 +4,294 @@
   "model": "deepseek-v4-flash",
   "items": [
     {
-      "id": "2346292b",
-      "claim": "The worker who founded the #AppleToo movement has accused Epic Games of taking a similarly anti-labor stance. The Washington Post reports former Apple employee Cher Scarlett has filed a National Labor",
+      "id": "d5fde149",
+      "claim": " Occupy Wall Street Is Getting The Band Back Together To Rally Behind A New Leader",
       "ground_truth": "FAKE"
     },
     {
-      "id": "05584a52",
-      "claim": "Inspectors launch virtual inspections by utilizing the existing Procore Inspection Checklist, thereby saving time, boosting productivity, and substantially reducing inspection costs. WATSONVILLE, Cali",
+      "id": "710d5069",
+      "claim": "BREAKING: REPORTER Says Secret Service Took Debate Attendees Phones To Avoid Flash That Could Trigger Hillary\u2019s Seizures [VIDEO]",
       "ground_truth": "FAKE"
     },
     {
-      "id": "f0f019d6",
-      "claim": "Bloomberg Leaked ByteDance Memo Shows Blockbuster Revenue Projections (Bloomberg) -- As ByteDance Ltd. prepares for a historic initial public offering, an internal memo leaked showing TikTok\u2019s owner a",
+      "id": "43817c30",
+      "claim": "China grants economic aid to Djibouti, site of overseas military base",
       "ground_truth": null
     },
     {
-      "id": "05f44778",
-      "claim": "Mobile Drive will be equally owned by Stellantis and Foxconn Technology Group Stellantis accelerates execution of technology roadmap through innovative partnership Shared technology expertise, market ",
+      "id": "ce86f86f",
+      "claim": "SAUDI ARABIA\u2019S Secret Holding Of U.S. Debt A Big Deal",
       "ground_truth": "FAKE"
     },
     {
-      "id": "ea036b97",
-      "claim": "Britain\u2019s economy shrank by more than expected last month, official figures show, as businesses and households grappled with the impact of 14 consecutive interest rate rises. Gross domestic product (G",
+      "id": "29de3b8f",
+      "claim": "U.S. health secretary says his job is to follow Obamacare law",
       "ground_truth": null
     },
     {
-      "id": "b92776d9",
-      "claim": "TipRanks 2 Big Dividend Stocks Yielding 10%; RBC Says \u2018Buy\u2019 Soaring commodity prices, additional federal stimulus, and government bond yields on the rise are all raising the specter of inflation. Furt",
+      "id": "95a2aa7a",
+      "claim": "OBAMA UNDERMINES AMERICA\u2026Plans To Slash Nuclear Stockpiles\u2026Again",
       "ground_truth": "FAKE"
     },
     {
-      "id": "52a2745e",
-      "claim": "When you buy a stock there is always a possibility that it could drop 100%. But on the bright side, if you buy shares in a high quality company at the right price, you can gain well over 100%. One gre",
+      "id": "3636aa2a",
+      "claim": "Trump to nominate Exxon CEO Tillerson as U.S. secretary of state: statement",
+      "ground_truth": null
+    },
+    {
+      "id": "28dd3dd0",
+      "claim": "House panel approves budget measure that advances tax reform",
+      "ground_truth": null
+    },
+    {
+      "id": "37654bb0",
+      "claim": "Giuliani sought to end prosecution of Turk in Iran sanctions case",
+      "ground_truth": null
+    },
+    {
+      "id": "5c8c5674",
+      "claim": "BREAKING: HOUSE Votes \u201cYes\u201d On American Security Against Foreign Enemies Act\u2026But What Does That Really Mean For Our Nation\u2019s Security?",
       "ground_truth": "FAKE"
     },
     {
-      "id": "a7db8a71",
-      "claim": "Bed Bath & Beyond (BBBY) filed for chapter 11 bankruptcy protection on Sunday after a years-long decline in sales doomed the home goods retailer. In a statement on Sunday, the company said its Bed Bat",
+      "id": "8138f0cb",
+      "claim": "ERIC HOLDER DOUBLES DOWN with Second Threat Against Firing Mueller",
       "ground_truth": "FAKE"
     },
     {
-      "id": "fc2ff282",
-      "claim": "TipRanks 2 \u201cStrong Buy\u201d Penny Stocks That Could Rally Over 100% Bank of America has a strong reputation for keeping finger on the pulse of the financial world \u2013 and one of its key tools is the Global ",
-      "ground_truth": null
-    },
-    {
-      "id": "e11ac6b6",
-      "claim": "NEW YORK, Sept. 9, 2021 /PRNewswire/ -- The fog computing market is poised to grow by USD 2.79 billion during 2021-2025, progressing at a CAGR of 58.53% during the forecast period. The fog computing m",
-      "ground_truth": null
-    },
-    {
-      "id": "ea34279d",
-      "claim": "Whether you're looking to do some leisurely shopping or working on a home improvement project, you'll have plenty of shopping options this Labor Day. Most major retailers will be open Monday, Sept. 4,",
-      "ground_truth": null
-    },
-    {
-      "id": "e822bbaf",
-      "claim": "Bloomberg Why Crypto Billionaire Mike Novogratz Bought Facebook Stock (Bloomberg) -- Billionaire investor Mike Novogratz said he\u2019s bought Facebook Inc. stock to benefit from crypto\u2019s ascent and is als",
+      "id": "ec8ac223",
+      "claim": "HOLY BETRAYAL OF AMERICA\u2019S NATIONAL SECURITY: New Evidence Shows Hillary Emailed \u201cMost Secretive\u201d Classified Material On Private Unsecured Server",
       "ground_truth": "FAKE"
     },
     {
-      "id": "3162ee22",
-      "claim": "Bank of America was fined $250 million this week by US federal regulators for allegedly harming customers by double-dipping on fees, withholding credit card rewards and opening fake accounts. Of those",
+      "id": "3f8a6fe0",
+      "claim": "LOL! The Woman Who Couldn\u2019t Be Bothered With Protecting Lives Of Brave Americans Serving In Benghazi Attacks Trump On National Security",
       "ground_truth": "FAKE"
     },
     {
-      "id": "bbbc14dc",
-      "claim": "NEW YORK (AP) -- With new streaming services in the works, Disney is trying to set itself up for a future that's so far largely been framed by Netflix: stuff I want to watch, when I want it. The Magic",
+      "id": "12ac40d8",
+      "claim": "OBAMA REGIME AGREES TO CUT DEAL WITH IRAN THAT FURTHER THREATENS OUR NATIONAL SECURITY",
       "ground_truth": "FAKE"
     },
     {
-      "id": "730f7be6",
-      "claim": "Billionaire David Shaw Bets Big on These 3 Healthcare Stocks The last few months have seen high volatility and a rising market trend, as one of the biggest sources of uncertainty \u2013 namely, the electio",
+      "id": "05460104",
+      "claim": "After 'bloody mess' jab, Macron eyes training, job insurance reform",
+      "ground_truth": null
+    },
+    {
+      "id": "baa7f609",
+      "claim": " Conservative Christian Running For Congress Shares Screenshot With Porn Tabs Open (IMAGES)",
       "ground_truth": "FAKE"
     },
     {
-      "id": "bebf4950",
-      "claim": "When we invest, we're generally looking for stocks that outperform the market average. Buying under-rated businesses is one path to excess returns. To wit, the MVV Energie share price has climbed 19% ",
+      "id": "c2efdb96",
+      "claim": "Four killed as militants attack airport security camp in Indian-controlled Kashmir",
+      "ground_truth": null
+    },
+    {
+      "id": "7f1f0770",
+      "claim": "HILLARY SHARES PRO-ILLEGAL MANIFESTO: Plans To Open Borders, Create Taxpayer Funded Agency To Give ILLEGALS Amnesty",
       "ground_truth": "FAKE"
     },
     {
-      "id": "7ad66980",
-      "claim": "Bloomberg One-Time Pioneer LG Electronics to Close Smartphone Business (Bloomberg) -- LG Electronics Inc. is shutting down its loss-making mobile communications unit in a move to streamline operations",
+      "id": "ea8bfc0b",
+      "claim": "Swedish airport explosive suspect released without charge: prosecutor",
+      "ground_truth": null
+    },
+    {
+      "id": "89675b97",
+      "claim": "North Korea's 'princess' now one of the secretive state's top policy makers",
+      "ground_truth": null
+    },
+    {
+      "id": "66920b66",
+      "claim": "Goldman's Donovan to withdraw from deputy Treasury secretary nomination: source",
+      "ground_truth": null
+    },
+    {
+      "id": "c2796465",
+      "claim": "Factbox: Trump on Twitter (Aug 30) - Hurricane Harvey, North Korea, tax reform",
+      "ground_truth": null
+    },
+    {
+      "id": "dd28b64b",
+      "claim": "Trump's deportation plan could slice 2 percent off U.S. GDP: study",
+      "ground_truth": null
+    },
+    {
+      "id": "66fe50b0",
+      "claim": " WATCH: Trump Literally Promises To Gut Financial Regulations So His Friends Can Screw The Economy",
       "ground_truth": "FAKE"
     },
     {
-      "id": "c8798f52",
-      "claim": "Sonos has acquired Mayht, a Dutch startup best known for co-creating a Bluetooth speaker powered by light. Mayht specializes in an audio technology called Heartmotion. The company claims to have reinv",
+      "id": "c823e681",
+      "claim": "Secretary of State nominee Tillerson veers from Trump on key issues",
       "ground_truth": null
     },
     {
-      "id": "f8feda0c",
-      "claim": "Textile Chemicals Market Insights and Industry Analysis by Fiber Type (Natural, Fiber), Product Type (Coating & Sizing Agent, Colorants & Auxiliaries, Finishing Agent), Application (Apparels, Home Tex",
+      "id": "4d0a7c0b",
+      "claim": "Polls open as Slovenian president runs for his second mandate",
       "ground_truth": null
     },
     {
-      "id": "ef7d88a3",
-      "claim": "[115+ Pages Research Study] According to Polaris Market Research, the global black phosphorus market Size & share was valued at USD 13.13 Million in 2022 and is predicted to increase at a CAGR of 43.0",
-      "ground_truth": null
-    },
-    {
-      "id": "bf0f3d8a",
-      "claim": "Air Condition (AC) Market Research Report Trends and Insights by Application (Commercial, Residential, Institutional, Industrial others) By Product Type (Split, Rooftop, Indoor packaged, Chillers air ",
-      "ground_truth": null
-    },
-    {
-      "id": "c41645f0",
-      "claim": "Generative AI is making it easier to work multiple jobs at the same time. AI tools will lift earnings from multiple jobs by at least $83 billion by 2030, Morgan Stanley says. Multi-earning in the US h",
-      "ground_truth": null
-    },
-    {
-      "id": "133429b9",
-      "claim": "Bloomberg One of World\u2019s Greatest Hidden Fortunes Is Wiped Out in Days (Bloomberg) -- From his perch high above Midtown Manhattan, just across from Carnegie Hall, Bill Hwang was quietly building one o",
-      "ground_truth": null
-    },
-    {
-      "id": "d51e6406",
-      "claim": "KUALA LUMPUR, Malaysia, March 25, 2022 /PRNewswire/ -- On March 24th, MoonXBT officially launched its new options product - Warrant Options - during its press conference held in the official Discord c",
+      "id": "4b0b6111",
+      "claim": " Fox Credits Bush For Obama\u2019s Economic Recovery They Spent 8 Years Saying Didn\u2019t Exist",
       "ground_truth": "FAKE"
     },
     {
-      "id": "2a323bca",
-      "claim": "Major players in the veterinary patient monitoring market are Smiths Group plc; Hallowell Engineering & Manufacturing Corporation; DRE Veterinary; Digicare Biomedical Technology Inc.; Midmark Corporat",
+      "id": "abe149f2",
+      "claim": "Three police officers killed, eight injured in shoot-out in Giza: security sources",
+      "ground_truth": null
+    },
+    {
+      "id": "6a889cb9",
+      "claim": "(VIDEO) ALAN DERSHOWITZ \u2013 SAD DAY FOR JUSTICE \u2013 BALTIMORE PROSECUTOR OVERCHARGED AND IDENTIFIED WITH PROTESTERS",
       "ground_truth": "FAKE"
     },
     {
-      "id": "e1120bc5",
-      "claim": "Bloomberg China Tech Giants Dive as Delisting Threat Joins Crackdown Fears (Bloomberg) -- Tech giants from Tencent Holdings Ltd. to Alibaba Group Holding Ltd. dived after U.S. regulators revived threa",
+      "id": "70464eae",
+      "claim": "Trump to nominate Heather Wilson as Air Force secretary",
+      "ground_truth": null
+    },
+    {
+      "id": "7d3af887",
+      "claim": "CLINTON E-MAIL SHOCKER: Key Security Features Disabled On Server Making It A Hacker\u2019s Paradise",
       "ground_truth": "FAKE"
     },
     {
-      "id": "d1a0eeca",
-      "claim": "Now might be a good time to buy the Apple Watch Series 6 \u2014 at least, if you're fond of red. Amazon is selling the 40mm Product Red edition of the Apple smartwatch for just $265 at checkout, well below",
+      "id": "01d643fb",
+      "claim": "Saudi purge worries investors but may speed reforms",
       "ground_truth": null
     },
     {
-      "id": "42840083",
-      "claim": "Drug Research and Development Progressing Well-Capitalized to Further Efforts and Opportunistically Expand Portfolio NEW YORK, April 5, 2021 /PRNewswire/ -- AIkido Pharma Inc. (Nasdaq: AIKI) (\"AIkido\"",
+      "id": "bafe628a",
+      "claim": " Trump Campaign Manager And CEO Outed As Members Of A Secret Far-Right Extremist Group",
       "ground_truth": "FAKE"
     },
     {
-      "id": "d735242a",
-      "claim": "TikTok has a vaping problem. Although a 2019 U.S. law made it illegal to sell or market e-cigarettes to anyone under the age of 21, TikTok videos featuring top brands of disposable e-cigarettes and va",
+      "id": "045868ab",
+      "claim": "Saudi crackdown will not hit investments: energy minister Falih",
       "ground_truth": null
     },
     {
-      "id": "8e01e00f",
-      "claim": "Benzinga Cathie Wood Talks Tesla, Bitcoin, SPACs And More On CNBC: Here Are The Highlights Famed investor and ETF manager Cathie Wood joined Scott Wapner and Bob Pisani on the \u201cHalftime Report\u201d on CNB",
-      "ground_truth": null
-    },
-    {
-      "id": "5b3c1d4d",
-      "claim": "Napster Co-Founder Shawn Fanning\u2019s story is a testament to the potential rewards that can come from taking a calculated risk on an unproven idea. Fanning rolled the dice by investing $25,000 in then-s",
-      "ground_truth": null
-    },
-    {
-      "id": "2896357f",
-      "claim": "VANCOUVER, BC, March 17, 2022 /CNW/ - TSX VENTURE COMPANIES BESSOR MINERALS INC. (\"BST.H\") [formerly Bessor Minerals Inc. (\"BST\")] BULLETIN TYPE: Transfer and New Addition to NEX, Symbol Change BULLET",
-      "ground_truth": null
-    },
-    {
-      "id": "3c96893c",
-      "claim": "Bloomberg EU Pushes Back on China With Powers to Thwart State-Backed Firms (Bloomberg) -- The European Union is looking to strengthen its hand against the growing economic threat posed by China, with ",
-      "ground_truth": null
-    },
-    {
-      "id": "8f000a1f",
-      "claim": "In news that will come as no surprise to their boomer parents, millennials in their 30s are digging themselves deeper and deeper into debt. And it\u2019s not just due to their long-abiding love for avocado",
+      "id": "b559035e",
+      "claim": "BREAKING: TRUMP Announces \u201cPhenomenal\u201d Tax Cut Plan For Businesses In Next 2-3 Weeks\u2026Stock Markets Respond [VIDEO]",
       "ground_truth": "FAKE"
     },
     {
-      "id": "380d5a98",
-      "claim": "Tesla CEO Elon Musk is asking people on Twitter whether he should sell 10% of his shares in the electric-powered vehicle company's stock. The eccentric billionaire is apparently responding to a Democr",
-      "ground_truth": null
-    },
-    {
-      "id": "05b4db1a",
-      "claim": "News of the global chip shortage has been so far-reaching this year, it's become a meme. \"I'm sorry I forgot to do the dishes, there's a global chip shortage.\" But as with many online jokes, there's a",
-      "ground_truth": null
-    },
-    {
-      "id": "afce1ff0",
-      "claim": "The job market in the tech industry is starting to show some cracks. On Tuesday, streaming giant Netflix (NFLX) confirmed it is laying off 150 workers amid slowing demand. That same day, e-commerce gi",
+      "id": "5978fa8d",
+      "claim": "THE OBAMA LEGACY: Worst Economic Growth Of All 13 Post-WWII Presidents [VIDEO]",
       "ground_truth": "FAKE"
     },
     {
-      "id": "4c2ffe03",
-      "claim": "NEW YORK, Nov. 29, 2022 /PRNewswire/ -- According to Technavio, the global bare metal cloud market size is projected to grow by USD 10,993.03 million from 2022 to 2027. The market is estimated to grow",
+      "id": "9f21785a",
+      "claim": "Factbox: Provisions of the U.S. Republicans' final tax bill",
       "ground_truth": null
     },
     {
-      "id": "477f1858",
-      "claim": "A 1976 check to Radio Shack signed by Steve Jobs is expected to sell for more than $20,000. Jobs famously did not give autographs, and a letter from him saying so sold for nearly $500,000. Radio Shack",
+      "id": "fc4f9baa",
+      "claim": "OBAMA\u2019S BAILOUT OF PUERTO RICO: TAXPAYERS Take A BIG Hit But Rewards Go To Political And Financial Players",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "10c8f0d8",
+      "claim": "OBAMA USES LABOR DAY TO HARM PRIVATE SECTOR WITH NEW EXECUTIVE ORDER Giving Government An Unfair Advantage With Workers",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "ced3127c",
+      "claim": "Troops make progress in Tal Afar battle as U.S. defense secretary visits Iraq",
       "ground_truth": null
     },
     {
-      "id": "afcd879a",
-      "claim": "TipRanks These 2 Penny Stocks Could Rack up Triple-Digit Gains, Say Analysts Is a pause to the stock market\u2019s continued surge finally in the cards? The talk has turned to rising interest rates and the",
+      "id": "0d8c78e0",
+      "claim": " These 4 Trump University Secrets Will Give Democrats The Ammo To Destroy Trump In November",
       "ground_truth": "FAKE"
     },
     {
-      "id": "242004ee",
-      "claim": "Bloomberg Credit Suisse Sells $2.3 Billion of Stocks Tied to Archegos (Bloomberg) -- Credit Suisse Group AG unloaded about $2.3 billion worth of stocks tied to the Archegos Capital blowup more than a ",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "bc79259e",
-      "claim": "",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "c08a4111",
-      "claim": "(Bloomberg) -- The biggest fossil fuel players are making the message clear: the transition to a green future will require much more natural gas. Most Read from Bloomberg Titanic Sub Crew Dead After V",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "9110ea45",
-      "claim": "NEW YORK, Oct. 11, 2021 /PRNewswire/ -- In a new interview with the Beverly Hills Bar Association, Reputation Communications Founder and CEO Shannon Wilkinson explains reputation management and expert",
-      "ground_truth": "FAKE"
-    },
-    {
-      "id": "02b4f50d",
-      "claim": "The new MacBook Air is one of Apple's most important computers since Steve Jobs pulled the original Air out of an envelope. It shows what's possible when Apple builds an ultraportable entirely around ",
+      "id": "df71ee00",
+      "claim": "Trump may reinstate secret CIA 'black site' prisons: U.S. officials",
       "ground_truth": null
     },
     {
-      "id": "1ed8560b",
-      "claim": "(Bloomberg) -- Hedge funds and private equity firms will have to disclose more about their fees and face new restrictions from the US Securities and Exchange Commission on giving investors special tre",
+      "id": "a3fd36c0",
+      "claim": "U.S. Senate still on track to release tax bill Thursday: aide",
       "ground_truth": null
     },
     {
-      "id": "23c183b6",
-      "claim": "(Bloomberg) -- International Battery Company has committed to investing $1 billion in India\u2019s southern Karnataka state to build a factory that will produce lithium-ion cells, the provincial government",
+      "id": "6435bf94",
+      "claim": " The 7 Biggest Republican Lies About The Economy Torn Apart In Three Minutes (VIDEO)",
       "ground_truth": "FAKE"
     },
     {
-      "id": "a1370d63",
-      "claim": "Bloomberg Crypto Mania Sends Doge Soaring, Crashes Robinhood Token Trading (Bloomberg) -- Investors are piling back into some of the fringe corners of the cryptocurrency world, with the frenzy sending",
+      "id": "0831eb26",
+      "claim": "Congress faces tricky path to avoid government shutdown",
       "ground_truth": null
     },
     {
-      "id": "3d5ef527",
-      "claim": "(Bloomberg) -- Coming soon: Sign up for the India Edition newsletter by Menaka Doshi \u2013 an insider's guide to the emerging economic powerhouse, and the billionaires and businesses behind its rise, deli",
+      "id": "358d4f33",
+      "claim": "Liberia party submits complaint over alleged vote fraud",
       "ground_truth": null
     },
     {
-      "id": "06599c56",
-      "claim": "Laxis SAN FRANCISCO, July 27, 2022 (GLOBE NEWSWIRE) -- Laxis, the AI meeting assistant and conversational intelligence company announces its direct integration with Webex by Cisco to support business ",
+      "id": "f6a9bed0",
+      "claim": "Trump says he is considering quotas, tariffs on Chinese steel dumping",
+      "ground_truth": null
+    },
+    {
+      "id": "6127d852",
+      "claim": "CUOMO OUTRAGED That Iowans Cheered When Trump Said He Doesn\u2019t Want A Poor Person As Commerce Secretary",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "c73b9694",
+      "claim": "HARD-CORE, CONSERVATIVE, Street Artist, Sabo Videotapes Visit From Secret Service\u2026Who Is This Guy? Why Does Obama Fear Him?",
+      "ground_truth": "FAKE"
+    },
+    {
+      "id": "d7b006bd",
+      "claim": " Economists Warn Trump Would CRASH The Global Economy",
       "ground_truth": "FAKE"
     }
   ],
   "results": [
     {
-      "item_id": "2346292b",
+      "item_id": "d5fde149",
+      "verdict": "FAKE",
+      "confidence": 0.7999999999999999,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.FAKE: 1>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "FAKE": 3
+        }
+      }
+    },
+    {
+      "item_id": "710d5069",
+      "verdict": "FAKE",
+      "confidence": 0.9499999999999998,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.FAKE: 1>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "FAKE": 3
+        }
+      }
+    },
+    {
+      "item_id": "43817c30",
       "verdict": "REAL",
       "confidence": 0.9499999999999998,
-      "latency_s": 13.745295763015747,
+      "latency_s": 14.453557014465332,
       "evidence": [
         "Voting: {<Verdict.REAL: 0>: 3}"
       ],
@@ -272,90 +304,127 @@
       }
     },
     {
-      "item_id": "05584a52",
-      "verdict": "REAL",
-      "confidence": 0.9499999999999998,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "f0f019d6",
-      "verdict": "REAL",
-      "confidence": 0.9666666666666667,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "05f44778",
-      "verdict": "REAL",
-      "confidence": 0.9499999999999998,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "ea036b97",
-      "verdict": "REAL",
-      "confidence": 0.9499999999999998,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "b92776d9",
-      "verdict": "REAL",
-      "confidence": 0.8099999999999999,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "52a2745e",
-      "verdict": "REAL",
+      "item_id": "ce86f86f",
+      "verdict": "ESCALATE",
       "confidence": 0.7000000000000001,
-      "latency_s": 13.745295763015747,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.ESCALATE: 2>: 1, <Verdict.FAKE: 1>: 1, <Verdict.REAL: 0>: 1}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "ESCALATE": 1,
+          "FAKE": 1,
+          "REAL": 1
+        }
+      }
+    },
+    {
+      "item_id": "29de3b8f",
+      "verdict": "REAL",
+      "confidence": 0.7333333333333334,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.ESCALATE: 2>: 1, <Verdict.REAL: 0>: 2}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "ESCALATE": 1,
+          "REAL": 2
+        }
+      }
+    },
+    {
+      "item_id": "95a2aa7a",
+      "verdict": "REAL",
+      "confidence": 0.85,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 2, <Verdict.FAKE: 1>: 1}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 2,
+          "FAKE": 1
+        }
+      }
+    },
+    {
+      "item_id": "3636aa2a",
+      "verdict": "REAL",
+      "confidence": 1.0,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "28dd3dd0",
+      "verdict": "REAL",
+      "confidence": 0.85,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "37654bb0",
+      "verdict": "REAL",
+      "confidence": 0.9499999999999998,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "5c8c5674",
+      "verdict": "FAKE",
+      "confidence": 0.7166666666666667,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.FAKE: 1>: 2, <Verdict.REAL: 0>: 1}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "FAKE": 2,
+          "REAL": 1
+        }
+      }
+    },
+    {
+      "item_id": "8138f0cb",
+      "verdict": "REAL",
+      "confidence": 0.5,
+      "latency_s": 14.453557014465332,
       "evidence": [
         "Voting: {<Verdict.REAL: 0>: 2, <Verdict.ESCALATE: 2>: 1}"
       ],
@@ -369,650 +438,26 @@
       }
     },
     {
-      "item_id": "a7db8a71",
-      "verdict": "REAL",
-      "confidence": 0.9899999999999999,
-      "latency_s": 13.745295763015747,
+      "item_id": "ec8ac223",
+      "verdict": "FAKE",
+      "confidence": 0.9066666666666666,
+      "latency_s": 14.453557014465332,
       "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
+        "Voting: {<Verdict.FAKE: 1>: 3}"
       ],
       "metadata": {
         "architecture": "voting_n3",
         "n_voters": 3,
         "verdict_distribution": {
-          "REAL": 3
+          "FAKE": 3
         }
       }
     },
     {
-      "item_id": "fc2ff282",
-      "verdict": "REAL",
-      "confidence": 0.7666666666666666,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "e11ac6b6",
-      "verdict": "REAL",
-      "confidence": 0.9333333333333332,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "ea34279d",
-      "verdict": "REAL",
-      "confidence": 0.9333333333333332,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "e822bbaf",
-      "verdict": "REAL",
-      "confidence": 0.9666666666666667,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "3162ee22",
-      "verdict": "REAL",
-      "confidence": 0.9833333333333334,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "bbbc14dc",
-      "verdict": "REAL",
-      "confidence": 0.9666666666666667,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "730f7be6",
-      "verdict": "REAL",
-      "confidence": 0.9499999999999998,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "bebf4950",
-      "verdict": "REAL",
-      "confidence": 0.5,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "7ad66980",
-      "verdict": "REAL",
-      "confidence": 0.9766666666666666,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "c8798f52",
-      "verdict": "REAL",
-      "confidence": 0.9499999999999998,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "f8feda0c",
-      "verdict": "REAL",
-      "confidence": 0.7999999999999999,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "ef7d88a3",
-      "verdict": "REAL",
-      "confidence": 0.5,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "bf0f3d8a",
-      "verdict": "REAL",
-      "confidence": 0.9499999999999998,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "c41645f0",
-      "verdict": "REAL",
-      "confidence": 0.6166666666666667,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "133429b9",
-      "verdict": "REAL",
-      "confidence": 0.9766666666666666,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "d51e6406",
+      "item_id": "3f8a6fe0",
       "verdict": "REAL",
       "confidence": 0.7166666666666667,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "2a323bca",
-      "verdict": "REAL",
-      "confidence": 0.65,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "e1120bc5",
-      "verdict": "REAL",
-      "confidence": 0.7999999999999999,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "d1a0eeca",
-      "verdict": "REAL",
-      "confidence": 0.8666666666666667,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "42840083",
-      "verdict": "REAL",
-      "confidence": 0.7999999999999999,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "d735242a",
-      "verdict": "REAL",
-      "confidence": 0.9499999999999998,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "8e01e00f",
-      "verdict": "REAL",
-      "confidence": 0.7999999999999999,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "5b3c1d4d",
-      "verdict": "REAL",
-      "confidence": 0.65,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "2896357f",
-      "verdict": "REAL",
-      "confidence": 0.9566666666666667,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "3c96893c",
-      "verdict": "REAL",
-      "confidence": 0.9499999999999998,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "8f000a1f",
-      "verdict": "REAL",
-      "confidence": 0.65,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "380d5a98",
-      "verdict": "REAL",
-      "confidence": 0.9966666666666667,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "05b4db1a",
-      "verdict": "REAL",
-      "confidence": 0.96,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "afce1ff0",
-      "verdict": "REAL",
-      "confidence": 0.9499999999999998,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "4c2ffe03",
-      "verdict": "REAL",
-      "confidence": 0.9499999999999998,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "477f1858",
-      "verdict": "REAL",
-      "confidence": 0.9499999999999998,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "afcd879a",
-      "verdict": "REAL",
-      "confidence": 0.8133333333333334,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "242004ee",
-      "verdict": "REAL",
-      "confidence": 0.8166666666666668,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "bc79259e",
-      "verdict": "ESCALATE",
-      "confidence": 0.6666666666666666,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.ESCALATE: 2>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "ESCALATE": 3
-        }
-      }
-    },
-    {
-      "item_id": "c08a4111",
-      "verdict": "REAL",
-      "confidence": 0.9499999999999998,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "9110ea45",
-      "verdict": "REAL",
-      "confidence": 0.96,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "02b4f50d",
-      "verdict": "REAL",
-      "confidence": 0.96,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "1ed8560b",
-      "verdict": "REAL",
-      "confidence": 0.9499999999999998,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "23c183b6",
-      "verdict": "REAL",
-      "confidence": 0.9499999999999998,
-      "latency_s": 13.745295763015747,
-      "evidence": [
-        "Voting: {<Verdict.REAL: 0>: 3}"
-      ],
-      "metadata": {
-        "architecture": "voting_n3",
-        "n_voters": 3,
-        "verdict_distribution": {
-          "REAL": 3
-        }
-      }
-    },
-    {
-      "item_id": "a1370d63",
-      "verdict": "REAL",
-      "confidence": 0.66,
-      "latency_s": 13.745295763015747,
+      "latency_s": 14.453557014465332,
       "evidence": [
         "Voting: {<Verdict.FAKE: 1>: 1, <Verdict.REAL: 0>: 2}"
       ],
@@ -1026,10 +471,10 @@
       }
     },
     {
-      "item_id": "3d5ef527",
+      "item_id": "12ac40d8",
       "verdict": "REAL",
-      "confidence": 0.7666666666666666,
-      "latency_s": 13.745295763015747,
+      "confidence": 0.85,
+      "latency_s": 14.453557014465332,
       "evidence": [
         "Voting: {<Verdict.REAL: 0>: 3}"
       ],
@@ -1042,10 +487,27 @@
       }
     },
     {
-      "item_id": "06599c56",
+      "item_id": "05460104",
+      "verdict": "ESCALATE",
+      "confidence": 0.6666666666666666,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.ESCALATE: 2>: 2, <Verdict.REAL: 0>: 1}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "ESCALATE": 2,
+          "REAL": 1
+        }
+      }
+    },
+    {
+      "item_id": "baa7f609",
       "verdict": "REAL",
-      "confidence": 0.9333333333333332,
-      "latency_s": 13.745295763015747,
+      "confidence": 0.5,
+      "latency_s": 14.453557014465332,
       "evidence": [
         "Voting: {<Verdict.REAL: 0>: 3}"
       ],
@@ -1054,6 +516,567 @@
         "n_voters": 3,
         "verdict_distribution": {
           "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "c2efdb96",
+      "verdict": "REAL",
+      "confidence": 0.7333333333333334,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.ESCALATE: 2>: 1, <Verdict.REAL: 0>: 2}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "ESCALATE": 1,
+          "REAL": 2
+        }
+      }
+    },
+    {
+      "item_id": "7f1f0770",
+      "verdict": "FAKE",
+      "confidence": 0.9333333333333332,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.FAKE: 1>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "FAKE": 3
+        }
+      }
+    },
+    {
+      "item_id": "ea8bfc0b",
+      "verdict": "REAL",
+      "confidence": 0.8333333333333334,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 2, <Verdict.ESCALATE: 2>: 1}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 2,
+          "ESCALATE": 1
+        }
+      }
+    },
+    {
+      "item_id": "89675b97",
+      "verdict": "REAL",
+      "confidence": 0.8833333333333333,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.ESCALATE: 2>: 1, <Verdict.REAL: 0>: 2}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "ESCALATE": 1,
+          "REAL": 2
+        }
+      }
+    },
+    {
+      "item_id": "66920b66",
+      "verdict": "REAL",
+      "confidence": 0.9499999999999998,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "c2796465",
+      "verdict": "REAL",
+      "confidence": 0.9333333333333332,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "dd28b64b",
+      "verdict": "REAL",
+      "confidence": 0.85,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "66fe50b0",
+      "verdict": "REAL",
+      "confidence": 0.5333333333333333,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 2, <Verdict.ESCALATE: 2>: 1}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 2,
+          "ESCALATE": 1
+        }
+      }
+    },
+    {
+      "item_id": "c823e681",
+      "verdict": "REAL",
+      "confidence": 0.9666666666666667,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "4d0a7c0b",
+      "verdict": "REAL",
+      "confidence": 0.6333333333333333,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 2, <Verdict.FAKE: 1>: 1}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 2,
+          "FAKE": 1
+        }
+      }
+    },
+    {
+      "item_id": "4b0b6111",
+      "verdict": "REAL",
+      "confidence": 0.6666666666666666,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 2, <Verdict.ESCALATE: 2>: 1}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 2,
+          "ESCALATE": 1
+        }
+      }
+    },
+    {
+      "item_id": "abe149f2",
+      "verdict": "REAL",
+      "confidence": 0.7833333333333332,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 2, <Verdict.ESCALATE: 2>: 1}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 2,
+          "ESCALATE": 1
+        }
+      }
+    },
+    {
+      "item_id": "6a889cb9",
+      "verdict": "ESCALATE",
+      "confidence": 0.5333333333333333,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.ESCALATE: 2>: 2, <Verdict.REAL: 0>: 1}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "ESCALATE": 2,
+          "REAL": 1
+        }
+      }
+    },
+    {
+      "item_id": "70464eae",
+      "verdict": "REAL",
+      "confidence": 1.0,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "7d3af887",
+      "verdict": "REAL",
+      "confidence": 0.7666666666666666,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "01d643fb",
+      "verdict": "REAL",
+      "confidence": 0.9333333333333332,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "bafe628a",
+      "verdict": "FAKE",
+      "confidence": 0.7999999999999999,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.FAKE: 1>: 2, <Verdict.REAL: 0>: 1}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "FAKE": 2,
+          "REAL": 1
+        }
+      }
+    },
+    {
+      "item_id": "045868ab",
+      "verdict": "REAL",
+      "confidence": 0.9499999999999998,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "b559035e",
+      "verdict": "ESCALATE",
+      "confidence": 0.4666666666666666,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.ESCALATE: 2>: 2, <Verdict.REAL: 0>: 1}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "ESCALATE": 2,
+          "REAL": 1
+        }
+      }
+    },
+    {
+      "item_id": "5978fa8d",
+      "verdict": "REAL",
+      "confidence": 0.5,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "9f21785a",
+      "verdict": "REAL",
+      "confidence": 0.8666666666666666,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "fc4f9baa",
+      "verdict": "FAKE",
+      "confidence": 0.85,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.FAKE: 1>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "FAKE": 3
+        }
+      }
+    },
+    {
+      "item_id": "10c8f0d8",
+      "verdict": "FAKE",
+      "confidence": 0.9166666666666666,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.FAKE: 1>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "FAKE": 3
+        }
+      }
+    },
+    {
+      "item_id": "ced3127c",
+      "verdict": "REAL",
+      "confidence": 0.8333333333333334,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 2, <Verdict.ESCALATE: 2>: 1}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 2,
+          "ESCALATE": 1
+        }
+      }
+    },
+    {
+      "item_id": "0d8c78e0",
+      "verdict": "ESCALATE",
+      "confidence": 0.6333333333333333,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.FAKE: 1>: 1, <Verdict.ESCALATE: 2>: 2}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "FAKE": 1,
+          "ESCALATE": 2
+        }
+      }
+    },
+    {
+      "item_id": "df71ee00",
+      "verdict": "REAL",
+      "confidence": 0.5833333333333334,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.ESCALATE: 2>: 1, <Verdict.REAL: 0>: 2}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "ESCALATE": 1,
+          "REAL": 2
+        }
+      }
+    },
+    {
+      "item_id": "a3fd36c0",
+      "verdict": "REAL",
+      "confidence": 0.9333333333333332,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "6435bf94",
+      "verdict": "ESCALATE",
+      "confidence": 0.6,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.ESCALATE: 2>: 2, <Verdict.REAL: 0>: 1}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "ESCALATE": 2,
+          "REAL": 1
+        }
+      }
+    },
+    {
+      "item_id": "0831eb26",
+      "verdict": "REAL",
+      "confidence": 0.9666666666666667,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "358d4f33",
+      "verdict": "REAL",
+      "confidence": 0.8166666666666668,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "f6a9bed0",
+      "verdict": "REAL",
+      "confidence": 0.9333333333333332,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "6127d852",
+      "verdict": "REAL",
+      "confidence": 0.9166666666666666,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 3}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 3
+        }
+      }
+    },
+    {
+      "item_id": "c73b9694",
+      "verdict": "REAL",
+      "confidence": 0.7333333333333334,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.REAL: 0>: 2, <Verdict.FAKE: 1>: 1}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "REAL": 2,
+          "FAKE": 1
+        }
+      }
+    },
+    {
+      "item_id": "d7b006bd",
+      "verdict": "ESCALATE",
+      "confidence": 0.7333333333333334,
+      "latency_s": 14.453557014465332,
+      "evidence": [
+        "Voting: {<Verdict.FAKE: 1>: 1, <Verdict.ESCALATE: 2>: 1, <Verdict.REAL: 0>: 1}"
+      ],
+      "metadata": {
+        "architecture": "voting_n3",
+        "n_voters": 3,
+        "verdict_distribution": {
+          "FAKE": 1,
+          "ESCALATE": 1,
+          "REAL": 1
         }
       }
     }
