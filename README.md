@@ -1,20 +1,8 @@
-# Operational Trade-offs in LLM-Based Information Verification
+# LLM-Based Information Verification
 
-Companion code for the paper evaluating Single-Shot, Self-Consistency Voting, and
-Mixture-of-Agents architectures for LLM-based information verification across finance
-and healthcare domains, with and without Retrieval-Augmented Generation.
-
-## Paper Abstract
-
-The volume of unverified information has grown faster than the human capacity to check it
-with the rise of social media platforms. An automated information verification system can
-reduce the human workload. The strong reasoning power of Large Language Models (LLMs)
-makes them a promising tool for fact-checking. In this paper, we evaluate Single-Shot,
-Same-Prompt Majority Voting, and a role-based Mixture of Agents architectures, each with
-and without Retrieval-Augmented Generation, on 500 claims each in finance and healthcare.
-Each architecture generates a final label of REAL, FAKE, and ESCALATE. The performance is
-analyzed using metrics of F1, precision, recall, false positive rate, ESCALATE rate, latency,
-and computational cost.
+Evaluates Single-Shot, Self-Consistency Voting, and Mixture-of-Agents architectures
+for LLM-based information verification across finance and healthcare domains,
+with and without Retrieval-Augmented Generation.
 
 ## Architectures
 
@@ -34,7 +22,7 @@ N ∈ {1, 3, 5, 7} voters are aggregated.
 ├── src/
 │   ├── schemas.py                         # Data structures: Verdict, VerificationItem, etc.
 │   ├── metrics.py                         # Confusion matrix, F1, precision, recall, FPR, etc.
-│   ├── final_1000_validation.py           # Main experiment script (all 12 architectures × 2 domains)
+│   ├── final_1000_validation.py           # Main experiment script (all architectures × 2 domains)
 │   ├── final_1000_validation_continued.py # Continuation for remaining experiments
 │   ├── finance/
 │   │   └── finance_dataset_adapter.py     # Finance data loader
@@ -47,7 +35,6 @@ N ∈ {1, 3, 5, 7} voters are aggregated.
 │   ├── conftest.py                        # Shared fixtures
 │   ├── test_schemas.py                    # Schema validation tests
 │   └── test_metrics.py                    # Metrics correctness tests
-├── results/final_1000_validation/         # Generated experiment outputs (gitignored)
 ├── requirements.txt                       # Python dependencies
 ├── pyproject.toml                         # Project metadata
 ├── Makefile                               # Common targets: install, test, lint, clean
@@ -69,9 +56,9 @@ cp .env.example .env
 # Edit .env with your API key
 ```
 
-## Reproducing Experiments
+## Running the Experiment
 
-### Main experiment (warning: costs ~$6–8 in API fees)
+Warning: the full experiment runs ~14,000 API calls and costs approximately $6–8.
 
 ```bash
 python -m src.final_1000_validation
@@ -108,7 +95,6 @@ Both test sets are balanced at 50% prevalence. Retrieval pools exclude near-dupl
 All experiments use `deepseek-v4-flash` via `api.deepseek.com/v1` with:
 - Temperature: 0.7
 - Max tokens: 512
-- July 2026 API endpoint
 
 ## Key Results
 
