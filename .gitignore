@@ -217,10 +217,24 @@ rag_cache/
 # Documentation (generated reports, not source)
 docs/
 
-# Experiment outputs and large datasets
+# Generated experiment outputs and figures
+results/
+
+# Raw data artifacts (download from source)
 data/raw/**/*.csv
-results/revised_validation/
-results/voting_audit/
+data/raw/**/*.xlsx
+data/raw/**/*.zip
+
+# LaTeX building artifacts
+*.synctex.gz
+*.out
+*.aux
+*.log
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.ist
 
 # Marimo
 marimo/_static/
