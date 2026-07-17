@@ -24,6 +24,7 @@ from src.config import (
     COVID_TEST,
     FINANCE_CORPUS,
     FINANCE_TEST,
+    SENSITIVITY_CONCURRENCY,
     SENSITIVITY_MODELS,
     SENSITIVITY_OUTPUT_DIR,
     SENSITIVITY_TEST_SIZE,
@@ -183,6 +184,7 @@ def _run_ss(
     _run_parallel(
         [lambda it=item: make_call(it) for item in pending],
         f"SS {domain} {arch}",
+        max_workers=SENSITIVITY_CONCURRENCY,
     )
     return _reorder_results(items, recorder.load_results(domain, slug, arch))
 
@@ -262,7 +264,7 @@ def _run_voting(
                 return (it.id, vidx, vr)
             callables.append(_vote)
 
-    raw = _run_parallel(callables, f"Voting {domain} {rl}")
+    raw = _run_parallel(callables, f"Voting {domain} {rl}", max_workers=SENSITIVITY_CONCURRENCY)
 
     # Group new voters by item
     item_voters_new: dict[str, list[VerificationResult]] = defaultdict(list)
@@ -383,7 +385,7 @@ def _run_moa(
         p1_callables.append(_sup)
         p1_callables.append(_ske)
 
-    raw_p1 = _run_parallel(p1_callables, f"MoA P1 {domain} {arch}")
+    raw_p1 = _run_parallel(p1_callables, f"MoA P1 {domain} {arch}", max_workers=SENSITIVITY_CONCURRENCY)
 
     supporter_out: dict[str, tuple[str, float]] = {}
     skeptic_out: dict[str, tuple[str, float]] = {}
@@ -429,7 +431,7 @@ def _run_moa(
 
         p2_callables.append(_judge)
 
-    raw_p2 = _run_parallel(p2_callables, f"MoA P2 {domain} {arch}")
+    raw_p2 = _run_parallel(p2_callables, f"MoA P2 {domain} {arch}", max_workers=SENSITIVITY_CONCURRENCY)
     return _reorder_results(items, recorder.load_results(domain, slug, arch))
 
 

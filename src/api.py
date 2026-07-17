@@ -119,15 +119,20 @@ def _llm_call(
 def _run_parallel(
     callables: list[Callable[[], Any]],
     desc: str = "",
+    max_workers: int | None = None,
 ) -> list[Any | None]:
     """Execute a list of nullary callables concurrently.
+
+    *max_workers* caps the thread pool; defaults to ``MAX_CONCURRENCY`` from
+    config when ``None``.
 
     Returns results in the same order as *callables*; a failed call
     produces ``None`` in its slot.
     """
     n = len(callables)
+    cap = max_workers if max_workers is not None else MAX_CONCURRENCY
     results: list[Any | None] = [None] * n
-    with ThreadPoolExecutor(max_workers=min(MAX_CONCURRENCY, n)) as ex:
+    with ThreadPoolExecutor(max_workers=min(cap, n)) as ex:
         fut_to_idx = {ex.submit(fn): i for i, fn in enumerate(callables)}
         for fut in as_completed(fut_to_idx):
             idx = fut_to_idx[fut]
