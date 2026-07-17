@@ -56,21 +56,35 @@ def _llm_call(
     model: str = MODEL,
     temperature: float = TEMPERATURE,
     max_tokens: int = MAX_TOKENS,
-) -> tuple[str, float]:
-    """Make a single LLM API call. Returns (response_text, latency_s)."""
+    api_key: str | None = None,
+    base_url: str | None = None,
+) -> tuple[str, float, dict]:
+    """Make a single LLM API call.
+
+    Returns ``(response_text, latency_s, usage_dict)`` where ``usage_dict``
+    contains ``prompt_tokens``, ``completion_tokens``, ``total_tokens``
+    (or empty dict if unavailable).
+
+    When *api_key* and *base_url* are ``None``, defaults to DeepSeek V4 Flash.
+    """
     import httpx
     from openai import OpenAI
 
-    api_key = os.environ.get("DEEPSEEK_API_KEY", "")
+    resolved_key = api_key or os.environ.get("DEEPSEEK_API_KEY", "")
+    resolved_url = base_url or "https://api.deepseek.com/v1"
     http_client = httpx.Client(
         proxy=None,
         timeout=httpx.Timeout(180.0, connect=30.0),
         follow_redirects=True,
     )
     client = OpenAI(
-        api_key=api_key,
-        base_url="https://api.deepseek.com/v1",
+        api_key=resolved_key,
+        base_url=resolved_url,
         http_client=http_client,
+        default_headers={
+            "HTTP-Referer": "https://github.com/gitmichaelqiu/AdvFinNLPVuln",
+            "X-Title": "AdvFinNLPVuln",
+        },
     )
     start = time.time()
     try:
@@ -83,7 +97,18 @@ def _llm_call(
                 {"role": "user", "content": user_prompt},
             ],
         )
-        return resp.choices[0].message.content or "", time.time() - start
+        text = resp.choices[0].message.content or ""
+        latency = time.time() - start
+        usage = (
+            {
+                "prompt_tokens": resp.usage.prompt_tokens,
+                "completion_tokens": resp.usage.completion_tokens,
+                "total_tokens": resp.usage.total_tokens,
+            }
+            if resp.usage
+            else {}
+        )
+        return text, latency, usage
     except Exception as e:
         raise RuntimeError(f"API call failed: {e}")
     finally:

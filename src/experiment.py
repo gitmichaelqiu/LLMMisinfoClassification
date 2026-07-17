@@ -50,7 +50,7 @@ def main() -> None:
     # ── Verify API ──────────────────────────────────────────────
     print("\nVerifying API...")
     try:
-        raw, lat = _llm_call("You are a test assistant.", "Reply with OK.")
+        raw, lat, _ = _llm_call("You are a test assistant.", "Reply with OK.")
         print(f"  API OK ({lat:.1f}s)")
     except Exception as e:
         print(f"  API ERROR: {e}")

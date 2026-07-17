@@ -85,7 +85,7 @@ def run_single_shot(
 
     def make_call(item: VerificationItem) -> VerificationResult:
         up = make_user_prompt(item.claim_text, vec, tfidf, texts)
-        raw, lat = _llm_call(CANONICAL_SYSTEM, up)
+        raw, lat, _ = _llm_call(CANONICAL_SYSTEM, up)
         return _parse_response(
             raw, item.id, lat, {"architecture": "single_shot", "rag": rag_on}
         )
@@ -132,7 +132,7 @@ def run_voting_all_n(
         up = make_user_prompt(item.claim_text, vec, tfidf, texts)
         for v in range(n_total):
             def _vote(it: VerificationItem = item, u: str = up, vidx: int = v):
-                txt, lat = _llm_call(CANONICAL_SYSTEM, u)
+                txt, lat, _ = _llm_call(CANONICAL_SYSTEM, u)
                 return (
                     it.id,
                     vidx,
@@ -231,11 +231,11 @@ def run_moa(
         sk = MOA_SKEPTIC_RAG if rag_on else MOA_SKEPTIC
 
         def _sup(iid: str = item.id, u: str = up, p: str = sp):
-            txt, lat = _llm_call(p, u)
+            txt, lat, _ = _llm_call(p, u)
             return ("supporter", iid, txt, lat)
 
         def _ske(iid: str = item.id, u: str = up, p: str = sk):
-            txt, lat = _llm_call(p, u)
+            txt, lat, _ = _llm_call(p, u)
             return ("skeptic", iid, txt, lat)
 
         p1_callables.append(_sup)
@@ -267,7 +267,7 @@ def run_moa(
         )
 
         def _judge(iid: str = item.id, c: str = ctx, p1: float = p1_lat):
-            txt, lat = _llm_call(judge_prompt, c)
+            txt, lat, _ = _llm_call(judge_prompt, c)
             vr = _parse_response(
                 txt, iid, lat, {"architecture": "moa", "rag": rag_on}
             )
