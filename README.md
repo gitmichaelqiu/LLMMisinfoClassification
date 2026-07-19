@@ -22,12 +22,20 @@ N ∈ {1, 3, 5, 7} voters are aggregated.
 ├── src/
 │   ├── schemas.py                         # Data structures: Verdict, VerificationItem, etc.
 │   ├── metrics.py                         # Confusion matrix, F1, precision, recall, FPR, etc.
-│   ├── final_1000_validation.py           # Main experiment script (all architectures × 2 domains)
-│   ├── final_1000_validation_continued.py # Continuation for remaining experiments
-│   ├── finance/
-│   │   └── finance_dataset_adapter.py     # Finance data loader
-│   └── healthcare/
-│       └── health_dataset_adapter.py      # Healthcare data loader
+│   ├── experiment.py                      # Main experiment orchestrator
+│   ├── final_1000_validation.py           # Entry point (DeepSeek, all architectures × 2 domains)
+│   ├── sensitivity.py                     # Multi-model sensitivity analysis via OpenRouter
+│   ├── final_1000_validation_sensitivity.py # Entry point for sensitivity analysis
+│   ├── data.py                            # CSV data loading
+│   ├── architectures.py                   # Architecture runners: Single-Shot, Voting, MoA
+│   ├── evaluation.py                      # Metrics, bootstrap CIs, PPV, voter analysis
+│   ├── api.py                             # LLM API interaction layer
+│   ├── prompts.py                         # System/user prompts for all architectures
+│   ├── retrieval.py                       # TF-IDF retriever for RAG
+│   ├── figures.py                         # Figure generation
+│   ├── reporting.py                       # Console reporting and output persistence
+│   ├── storage.py                         # Per-call JSONL persistence (sensitivity)
+│   └── config.py                          # Paths, model settings, constants
 ├── data/raw/
 │   ├── finance/                           # Finance test (500) and corpus (2756)
 │   └── health/                            # Healthcare test (500) and corpus (7866)
@@ -49,11 +57,11 @@ cd AdvFinNLPVuln
 pip install -r requirements.txt
 ```
 
-Copy `.env.example` to `.env` and set your `DEEPSEEK_API_KEY`.
+Copy `.env.example` to `.env` and set your API keys.
 
 ```bash
 cp .env.example .env
-# Edit .env with your API key
+# Edit .env with your API keys
 ```
 
 ## Running the Experiment
@@ -66,6 +74,19 @@ python -m src.final_1000_validation
 
 This runs all 12 architecture × RAG configurations on both domains
 (500 finance + 500 healthcare items) using DeepSeek-v4-flash.
+
+### Sensitivity Analysis
+
+To reproduce the multi-model comparison across GPT-5.6 Luna and GLM-5.2
+via OpenRouter (requires `OPENROUTER_API_KEY`):
+
+```bash
+python -m src.final_1000_validation_sensitivity
+```
+
+This tests a stratified 50-item sample per domain on all architectures
+(Single-Shot, Voting N=1/3/5/7, MoA) with and without RAG. Results are
+written to `results/model_sensitivity/`.
 
 ### Outputs
 
@@ -90,13 +111,17 @@ make test
 Both test sets are balanced at 50% prevalence. Retrieval pools exclude near-duplicates
 (TF-IDF cosine similarity > 0.8 to any test item).
 
-## Model
+## Models
 
-All experiments use `deepseek-v4-flash` via `api.deepseek.com/v1` with:
+**Primary experiment**: `deepseek-v4-flash` via `api.deepseek.com/v1` with:
 - Temperature: 0.7
 - Max tokens: 512
 
-## Key Results
+**Sensitivity analysis** (via OpenRouter):
+- `openai/gpt-5.6-luna` (GPT-5.6 Luna)
+- `z-ai/glm-5.2` (GLM-5.2)
+
+## Key Results (DeepSeek v4 Flash, 500 items/domain)
 
 | Architecture | Finance F1 | Healthcare F1 | Mean ESC Rate | Latency |
 |---|---|---|---|---|
