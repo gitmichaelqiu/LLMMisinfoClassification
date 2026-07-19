@@ -99,6 +99,112 @@ def _model_slug(key: str) -> str:
     return key.replace("/", "-").replace("_", "-").replace(".", "-")
 
 
+def _call_arch_for(arch_name: str) -> str:
+    """Map a result architecture name to its shared call-storage name."""
+    if arch_name.startswith("voting_n"):
+        # voting_n1_rag_off → voting_rag_off
+        return arch_name.replace("voting_n1_", "voting_").replace("voting_n3_", "voting_").replace("voting_n5_", "voting_").replace("voting_n7_", "voting_")
+    return arch_name
+
+
+def _claim_key(user_prompt: str) -> str:
+    """Extract claim text from user prompt for cross-run matching.
+
+    Works identically for RAG OFF and RAG ON prompts because the claim
+    text is always the first non-empty line after ``Claim to verify:``.
+    """
+    if "Claim to verify:" in user_prompt:
+        after = user_prompt.split("Claim to verify:")[-1]
+        for line in after.split("\n"):
+            line = line.strip()
+            if line:
+                return line[:80]
+    return user_prompt.strip()[:80]
+
+
+def _prepopulate_from_old(
+    items: list[VerificationItem],
+    model_key: str,
+    domain: str,
+    arch_name: str,
+    recorder: CallRecorder,
+) -> int:
+    """Replay old results for items whose claim text matches the aborted run.
+
+    Reads old ``.jsonl`` **result** files (not calls) and matches to new
+    items by claim text via the old ``.calls.jsonl`` (which holds the
+    claim-text ↔ item-id mapping).
+
+    Returns the number of items replayed.
+    """
+    old_dir = os.path.join(SENSITIVITY_OUTPUT_DIR, "raw_outputs")
+    slug = _model_slug(model_key)
+    call_arch = _call_arch_for(arch_name)
+
+    # 1. Read old calls → claim text → old UUID
+    old_calls_path = os.path.join(old_dir, f"{domain}_{slug}_{call_arch}.calls.jsonl")
+    if not os.path.exists(old_calls_path):
+        return 0
+    claim_to_old_uuid: dict[str, str] = {}
+    with open(old_calls_path) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            ck = _claim_key(rec.get("user_prompt", ""))
+            if ck:
+                claim_to_old_uuid[ck] = rec["item_id"]
+
+    if not claim_to_old_uuid:
+        return 0
+
+    # 2. Read old results → old UUID → verdict
+    old_results_path = os.path.join(old_dir, f"{domain}_{slug}_{arch_name}.jsonl")
+    if not os.path.exists(old_results_path):
+        return 0
+    old_results: dict[str, dict] = {}
+    with open(old_results_path) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if rec.get("type") == "result":
+                old_results[rec["item_id"]] = rec
+
+    if not old_results:
+        return 0
+
+    # 3. Match new items by claim text → old UUID → old verdict
+    replayed = 0
+    from src.retrieval import make_user_prompt
+    for it in items:
+        up = make_user_prompt(it.claim_text, None, None, None)
+        ck = _claim_key(up)
+        old_uuid = claim_to_old_uuid.get(ck)
+        if old_uuid is None:
+            continue
+        old_res = old_results.get(old_uuid)
+        if old_res is None:
+            continue
+        recorder.record_result(
+            domain, slug, arch_name, it.id,
+            old_res["verdict"], old_res["confidence"],
+            old_res.get("latency_s", 0.0),
+            {"architecture": arch_name, "replayed_from_old_run": True},
+        )
+        replayed += 1
+
+    return replayed
+
+
 def _estimate_cost(
     model_key: str, total_input: int, total_output: int
 ) -> float:
@@ -197,59 +303,48 @@ def _run_voting(
     model_cfg: dict[str, Any],
     domain: str,
     recorder: CallRecorder,
-    n_new: int = 6,
+    n_new: int = 7,
 ) -> dict[int, tuple[list[VerificationResult], list[list[VerificationResult]]]]:
-    """Voting with per-call recording.
+    """Voting with per-item completion and SS-reuse.
 
-    Reuses the already-run Single-Shot result as voter 0 (the first vote),
-    then generates *n_new* (default 6) additional independent votes, for a
-    total of 7 votes per item.  This saves one API call per item compared
-    to generating all 7 from scratch.
-
-    If *any* of the N=1/3/5/7 aggregation results are missing, regenerates
-    the *n_new* votes and re-aggregates.  Every generated call is saved
-    immediately, so interrupted runs resume without repeating work.
+    Checks which items already have saved results (from prepopulation or a
+    prior partial run) and **only generates voters for the rest**.  Pre-existing
+    SS results are used as voter 0 via replacement when available.
     """
     slug = _model_slug(model_key)
     rl = "rag_on" if rag_on else "rag_off"
 
-    # ── Load SS results to reuse as voter 0 ──────────────────────
+    # ── SS results for voter-0 replacement ────────────────────────
     ss_arch = f"single_shot_rag_{rl}"
-    ss_results = recorder.load_results(domain, slug, ss_arch)
-    ss_by_id: dict[str, VerificationResult] = {r.item_id: r for r in ss_results}
-    all_ss_available = all(it.id in ss_by_id for it in items)
+    ss_by_id: dict[str, VerificationResult] = {
+        r.item_id: r for r in recorder.load_results(domain, slug, ss_arch)
+    }
 
-    # ── Check which N-aggregations are complete ──────────────────
-    all_n_complete = True
-    for N in [1, 3, 5, 7]:
-        arch = f"voting_n{N}_{rl}"
-        completed = recorder.completed_item_ids(domain, slug, arch)
-        item_ids = {it.id for it in items}
-        if not item_ids.issubset(completed):
-            all_n_complete = False
-            break
-
-    if all_n_complete:
-        result_map: dict[int, tuple[list[VerificationResult], list[list[VerificationResult]]]] = {}
+    # ── Per-item completion check ─────────────────────────────────
+    def _has_all_n(item: VerificationItem) -> bool:
         for N in [1, 3, 5, 7]:
             arch = f"voting_n{N}_{rl}"
-            results = _reorder_results(items, recorder.load_results(domain, slug, arch))
-            result_map[N] = (results, [])
-        return result_map
+            if item.id not in recorder.completed_item_ids(domain, slug, arch):
+                return False
+        return True
 
-    # ── Generate n_new voter outputs ────────────────────────────
+    pending = [it for it in items if not _has_all_n(it)]
+    if not pending:
+        return {
+            N: (_reorder_results(items, recorder.load_results(domain, slug, f"voting_n{N}_{rl}")), [])
+            for N in [1, 3, 5, 7]
+        }
+
+    # ── Generate n_new voters for pending items only ─────────────
     vec = tfidf = texts = None
     if rag_on and corpus:
         vec, tfidf, texts = build_retriever(corpus)
 
     callables: list[Any] = []
-    for item in items:
+    for item in pending:
         up = make_user_prompt(item.claim_text, vec, tfidf, texts)
         for v in range(n_new):
-            # New voters get indices 1..n_new; SS is index 0
-            voter_idx = v + 1
-
-            def _vote(it: VerificationItem = item, u: str = up, vidx: int = voter_idx):
+            def _vote(it: VerificationItem = item, u: str = up, vidx: int = v):
                 txt, lat, usage = _sensitivity_call(model_cfg, CANONICAL_SYSTEM, u)
                 vr = _parse_response(
                     txt, it.id, lat,
@@ -275,26 +370,19 @@ def _run_voting(
     for iid in item_voters_new:
         item_voters_new[iid].sort(key=lambda x: x.metadata.get("voter_idx", 0))
 
-    # ── Combine: SS + new voters → 7 total votes per item ─────────
-    n_total = n_new + 1  # 7 total (1 SS + 6 new)
-    result_map = {}
+    # ── Aggregate for each N, saving only pending items ───────────
     for N in [1, 3, 5, 7]:
         threshold = N // 2 + 1
-        aggregated: list[VerificationResult] = []
-        per_item_voters: list[list[VerificationResult]] = []
         arch = f"voting_n{N}_{rl}"
-        for item in items:
+        ready = recorder.completed_item_ids(domain, slug, arch)
+
+        for item in pending:
             ss_vote = ss_by_id.get(item.id)
             new_votes = item_voters_new.get(item.id, [])
-            if ss_vote and all_ss_available:
-                # Prepend SS as voter 0
+            if ss_vote:
                 ss_vote.metadata = {**ss_vote.metadata, "voter_idx": 0}
-                all_votes = [ss_vote] + new_votes
-            else:
-                # Fallback: use only new votes (should not happen in normal flow)
-                all_votes = new_votes
-            voters = all_votes[:N]
-            per_item_voters.append(voters)
+                new_votes.insert(0, ss_vote)
+            voters = new_votes[:N]
             if not voters:
                 vr = VerificationResult(
                     item_id=item.id, verdict=Verdict.REAL,
@@ -321,14 +409,16 @@ def _run_voting(
                         },
                     },
                 )
-            aggregated.append(vr)
             recorder.record_result(
                 domain, slug, arch, item.id,
-                vr.verdict.name, vr.confidence, vr.latency_s,
-                vr.metadata,
+                vr.verdict.name, vr.confidence, vr.latency_s, vr.metadata,
             )
-        result_map[N] = (aggregated, per_item_voters)
-    return result_map
+
+    # ── Reorder and return ────────────────────────────────────────
+    return {
+        N: (_reorder_results(items, recorder.load_results(domain, slug, f"voting_n{N}_{rl}")), [])
+        for N in [1, 3, 5, 7]
+    }
 
 
 def _run_moa(
@@ -600,8 +690,20 @@ def run_sensitivity_analysis() -> None:
     covid_corpus = load_corpus_csv(COVID_CORPUS, "healthcare")
 
     n = SENSITIVITY_TEST_SIZE
-    finance_test = finance_test_full[:n]
-    covid_test = covid_test_full[:n]
+    half = n // 2
+    rng = np.random.RandomState(SEED)
+
+    # The test CSVs have REAL items first (indices 0-249), then FAKE (250-499).
+    # For the REAL half, take the first N/2 items — these are exactly the items
+    # that were in the old run's first-50 set, so their results can be replayed.
+    # For the FAKE half, take the first N/2 FAKE items (CSV indices 250+).
+    def stratified_sample(items: list[VerificationItem]) -> list[VerificationItem]:
+        real_items = [it for it in items if it.ground_truth == Verdict.REAL]
+        fake_items = [it for it in items if it.ground_truth == Verdict.FAKE]
+        return real_items[:half] + fake_items[:half]
+
+    finance_test = stratified_sample(finance_test_full)
+    covid_test = stratified_sample(covid_test_full)
     print(f"  Finance: {len(finance_test)} test/{len(finance_corpus)} corpus items")
     print(f"  COVID:   {len(covid_test)} test/{len(covid_corpus)} corpus items")
 
@@ -629,6 +731,22 @@ def run_sensitivity_analysis() -> None:
             sys.stdout.flush()
 
             arch_results: dict[str, Any] = {}
+
+            # ── Replay old results from aborted run for ALL archs ──
+            for replay_arch in [
+                "single_shot_rag_off", "single_shot_rag_on",
+                "voting_n1_rag_off", "voting_n1_rag_on",
+                "voting_n3_rag_off", "voting_n3_rag_on",
+                "voting_n5_rag_off", "voting_n5_rag_on",
+                "voting_n7_rag_off", "voting_n7_rag_on",
+                "moa_rag_off", "moa_rag_on",
+            ]:
+                n = _prepopulate_from_old(
+                    test_items, model_key, domain_name, replay_arch, recorder,
+                )
+                if n:
+                    print(f"    Replayed {n} old results for {replay_arch}")
+            # ───────────────────────────────────────────────────
 
             # Single-Shot RAG OFF
             t0 = time.time()
