@@ -8,7 +8,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Callable
 
-from src.config import MODEL, TEMPERATURE, MAX_TOKENS, MAX_CONCURRENCY
+from src.config import MAX_CONCURRENCY, MAX_TOKENS, MODEL, TEMPERATURE
 from src.schemas import Verdict, VerificationResult
 
 # ── Response parsing ────────────────────────────────────────────

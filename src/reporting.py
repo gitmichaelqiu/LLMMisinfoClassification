@@ -120,7 +120,7 @@ def print_voting_sensitivity(
                 f"{a.get('pairwise_agreement', 0):.4f}  {lt.get('mean', 0):.1f}s"
             )
 
-    print(f"\n  Paired bootstrap 95% CI vs N=1 (RAG OFF):")
+    print("\n  Paired bootstrap 95% CI vs N=1 (RAG OFF):")
     for N in [3, 5, 7]:
         if N in table and rag_key in table[N]:
             ci = table[N][rag_key].get("confidence_intervals", {}).get("f1_95", [])
@@ -172,7 +172,7 @@ def print_final_table(
             f"{lt.get('mean', 0):.1f}s  {s.get('total_api_calls', 0):5d}"
         )
 
-    print(f"\n  95% Bootstrap CIs:")
+    print("\n  95% Bootstrap CIs:")
     for key, label in cells:
         s = domain_results.get(key, {})
         ci = s.get("confidence_intervals", {}).get("f1_95", [])
@@ -185,7 +185,7 @@ def print_final_table(
 
 # ── Cross-domain summary ───────────────────────────────────────
 def print_cross_domain_summary(all_results: dict[str, Any]) -> None:
-    print(f"\n  CROSS-DOMAIN MEAN F1")
+    print("\n  CROSS-DOMAIN MEAN F1")
     cells = [
         ("tfidf_baseline", "TF-IDF"),
         ("single_shot_rag_off", "SS OFF"),
@@ -219,7 +219,7 @@ def print_cross_domain_summary(all_results: dict[str, Any]) -> None:
 
 # ── Pairwise bootstrap comparisons ──────────────────────────────
 def print_pairwise_comparisons(all_results: dict[str, Any]) -> None:
-    print(f"\n  PAIRWISE COMPARISONS (Bootstrap DF1)")
+    print("\n  PAIRWISE COMPARISONS (Bootstrap DF1)")
     comparisons = [
         ("RAG ON vs OFF (SS)", "single_shot_rag_on", "single_shot_rag_off"),
         ("RAG ON vs OFF (Vot N=3)", "voting_n3_rag_on", "voting_n3_rag_off"),

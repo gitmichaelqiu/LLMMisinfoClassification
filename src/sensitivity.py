@@ -24,16 +24,16 @@ from src.config import (
     COVID_TEST,
     FINANCE_CORPUS,
     FINANCE_TEST,
+    MAX_TOKENS,
+    SEED,
     SENSITIVITY_CONCURRENCY,
     SENSITIVITY_MODELS,
     SENSITIVITY_OUTPUT_DIR,
     SENSITIVITY_TEST_SIZE,
     TEMPERATURE,
-    MAX_TOKENS,
-    SEED,
 )
 from src.data import load_corpus_csv, load_test_csv
-from src.evaluation import evaluate_architecture, analyze_voter_agreement
+from src.evaluation import analyze_voter_agreement, evaluate_architecture
 from src.prompts import (
     CANONICAL_SYSTEM,
     MOA_JUDGE,
@@ -47,7 +47,6 @@ from src.reporting import print_metrics
 from src.retrieval import build_retriever, make_user_prompt
 from src.schemas import Verdict, VerificationItem, VerificationResult
 from src.storage import CallRecorder
-
 
 # ── Model pricing (USD per 1M tokens) — used for cost reporting ─────
 # Based on OpenRouter pricing as of July 2026.
@@ -754,7 +753,7 @@ def run_sensitivity_analysis() -> None:
             arch = "single_shot_rag_off"
             arch_results[arch] = evaluate_architecture(test_items, ss_off, arch, len(test_items))
             arch_results[arch]["elapsed_s"] = time.time() - t0
-            print_metrics(arch_results[arch], f"  SS RAG OFF")
+            print_metrics(arch_results[arch], "  SS RAG OFF")
 
             # Single-Shot RAG ON
             t0 = time.time()
@@ -762,7 +761,7 @@ def run_sensitivity_analysis() -> None:
             arch = "single_shot_rag_on"
             arch_results[arch] = evaluate_architecture(test_items, ss_on, arch, len(test_items))
             arch_results[arch]["elapsed_s"] = time.time() - t0
-            print_metrics(arch_results[arch], f"  SS RAG ON")
+            print_metrics(arch_results[arch], "  SS RAG ON")
 
             # Voting
             for rag_flag, rag_label in [(False, "rag_off"), (True, "rag_on")]:

@@ -14,15 +14,15 @@ from dotenv import load_dotenv
 from src.api import _llm_call
 from src.architectures import run_moa, run_single_shot, run_tfidf_baseline, run_voting_all_n
 from src.config import (
+    COST_PER_CALL,
     COVID_CORPUS,
     COVID_TEST,
     FINANCE_CORPUS,
     FINANCE_TEST,
+    MAX_CONCURRENCY,
     MODEL,
     OUTPUT_DIR,
     TEMPERATURE,
-    MAX_CONCURRENCY,
-    COST_PER_CALL,
 )
 from src.data import load_all_data
 from src.evaluation import analyze_voter_agreement, evaluate_architecture
@@ -81,7 +81,7 @@ def main() -> None:
         domain_results: dict[str, Any] = {}
 
         # TF-IDF Baseline
-        print(f"\n  TF-IDF Baseline...")
+        print("\n  TF-IDF Baseline...")
         sys.stdout.flush()
         t0 = time.time()
         tfidf_r = run_tfidf_baseline(items, corpus)
@@ -164,7 +164,7 @@ def main() -> None:
     print_pairwise_comparisons(all_results)
 
     # ── Generate figures ────────────────────────────────────────
-    print(f"\nGENERATING FIGURES")
+    print("\nGENERATING FIGURES")
     generate_figures(all_results, OUTPUT_DIR)
 
     # ── Summary ─────────────────────────────────────────────────
@@ -180,7 +180,7 @@ def main() -> None:
     )
 
     print(f"\n{'=' * 70}")
-    print(f"EXPERIMENT COMPLETE")
+    print("EXPERIMENT COMPLETE")
     print(f"{'=' * 70}")
     print(f"Total runtime: {total_runtime:.0f}s ({total_runtime / 60:.1f} min)")
     print(f"Estimated total API calls: ~{total_calls}")
