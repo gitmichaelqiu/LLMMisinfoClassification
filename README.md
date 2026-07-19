@@ -103,13 +103,31 @@ make test
 
 ## Datasets
 
-- **Finance**: ISOT Fake News Dataset, filtered to 3,324 economics-keyword articles.
-  Balanced test set of 500 (250 REAL, 250 FAKE). Retrieval pool: 2,756 articles.
-- **Healthcare**: COVID-19 Fake News Dataset NLP (CONSTRAINT), 6,420 train + 2,140 val.
-  Balanced test set of 500 (250 REAL, 250 FAKE). Retrieval pool: 7,866 articles.
+The experiment uses four pre-processed CSV files tracked directly in the repository:
+
+| File | Domain | Contents | Rows | Size |
+|---|---|---|---|---|
+| `data/raw/finance/finance_test_500.csv` | Finance | Balanced test set (250 REAL, 250 FAKE) | 500 | 1.3 MB |
+| `data/raw/finance/finance_corpus.csv` | Finance | TF-IDF retrieval pool (no test-set near-duplicates) | 2,756 | 6.9 MB |
+| `data/raw/health/covid_test_500.csv` | Healthcare | Balanced test set (250 REAL, 250 FAKE) | 500 | 94 KB |
+| `data/raw/health/covid_corpus.csv` | Healthcare | TF-IDF retrieval pool (no test-set near-duplicates) | 7,866 | 1.5 MB |
 
 Both test sets are balanced at 50% prevalence. Retrieval pools exclude near-duplicates
-(TF-IDF cosine similarity > 0.8 to any test item).
+(TF-IDF cosine similarity &gt; 0.8 to any test item).
+
+### Source Provenance
+
+- **Finance**: Derived from the [ISOT Fake News Dataset](https://www.uvic.ca/engineering/ece/isot/datasets/fake-news/index.php).
+  The original 44,898 articles were filtered to 3,324 economics-keyword articles, then
+  deduplicated and split into a balanced 500-item test set and a 2,756-item retrieval corpus.
+- **Healthcare**: Derived from the [COVID-19 Fake News Dataset NLP (CONSTRAINT)](https://github.com/parthpatwa/COVID19-Fake-News-Dataset-NLP).
+  The 6,420 training and 2,140 validation tweets were deduplicated and split into a
+  balanced 500-item test set and a 7,866-item retrieval corpus.
+
+Original source files (`data/raw/finance/financial_news.csv`,
+`data/raw/health/Constraint_*.csv`, etc.) are **not** tracked in git.
+The processed files above are tracked directly so that a `git clone` immediately
+yields reproduction-ready inputs.
 
 ## Models
 

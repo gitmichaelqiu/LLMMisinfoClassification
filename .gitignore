@@ -225,6 +225,12 @@ data/raw/**/*.csv
 data/raw/**/*.xlsx
 data/raw/**/*.zip
 
+# But track the exact processed test/corpus files used by the experiment
+!data/raw/finance/finance_test_500.csv
+!data/raw/finance/finance_corpus.csv
+!data/raw/health/covid_test_500.csv
+!data/raw/health/covid_corpus.csv
+
 # LaTeX building artifacts
 *.synctex.gz
 *.out
