@@ -23,10 +23,10 @@ for _var in (
 os.environ["no_proxy"] = "*"
 os.environ["NO_PROXY"] = "*"
 
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv()
 
-from src.sensitivity import run_sensitivity_analysis
+from src.sensitivity import run_sensitivity_analysis  # noqa: E402
 
 run_sensitivity_analysis()

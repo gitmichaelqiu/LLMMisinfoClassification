@@ -24,16 +24,13 @@ from src.config import (
     COVID_TEST,
     FINANCE_CORPUS,
     FINANCE_TEST,
-    MAX_TOKENS,
-    SEED,
     SENSITIVITY_CONCURRENCY,
     SENSITIVITY_MODELS,
     SENSITIVITY_OUTPUT_DIR,
     SENSITIVITY_TEST_SIZE,
-    TEMPERATURE,
 )
 from src.data import load_corpus_csv, load_test_csv
-from src.evaluation import analyze_voter_agreement, evaluate_architecture
+from src.evaluation import evaluate_architecture
 from src.prompts import (
     CANONICAL_SYSTEM,
     MOA_JUDGE,
@@ -373,7 +370,6 @@ def _run_voting(
     for N in [1, 3, 5, 7]:
         threshold = N // 2 + 1
         arch = f"voting_n{N}_{rl}"
-        ready = recorder.completed_item_ids(domain, slug, arch)
 
         for item in pending:
             ss_vote = ss_by_id.get(item.id)
@@ -520,7 +516,7 @@ def _run_moa(
 
         p2_callables.append(_judge)
 
-    raw_p2 = _run_parallel(p2_callables, f"MoA P2 {domain} {arch}", max_workers=SENSITIVITY_CONCURRENCY)
+    _run_parallel(p2_callables, f"MoA P2 {domain} {arch}", max_workers=SENSITIVITY_CONCURRENCY)
     return _reorder_results(items, recorder.load_results(domain, slug, arch))
 
 
@@ -690,7 +686,6 @@ def run_sensitivity_analysis() -> None:
 
     n = SENSITIVITY_TEST_SIZE
     half = n // 2
-    rng = np.random.RandomState(SEED)
 
     # The test CSVs have REAL items first (indices 0-249), then FAKE (250-499).
     # For the REAL half, take the first N/2 items — these are exactly the items

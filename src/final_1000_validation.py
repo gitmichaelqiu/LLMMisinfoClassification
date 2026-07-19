@@ -23,6 +23,6 @@ for _var in (
 os.environ["no_proxy"] = "*"
 os.environ["NO_PROXY"] = "*"
 
-from src.experiment import main
+from src.experiment import main  # noqa: E402
 
 main()
