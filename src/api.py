@@ -82,8 +82,8 @@ def _llm_call(
         base_url=resolved_url,
         http_client=http_client,
         default_headers={
-            "HTTP-Referer": "https://github.com/gitmichaelqiu/AdvFinNLPVuln",
-            "X-Title": "AdvFinNLPVuln",
+            "HTTP-Referer": "https://github.com/gitmichaelqiu/LLMMisinfoClassification",
+            "X-Title": "LLMMisinfoClassification",
         },
     )
     start = time.time()

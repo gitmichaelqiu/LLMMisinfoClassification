@@ -52,8 +52,8 @@ N ∈ {1, 3, 5, 7} voters are aggregated.
 ## Setup
 
 ```bash
-git clone https://github.com/gitmichaelqiu/AdvFinNLPVuln.git
-cd AdvFinNLPVuln
+git clone https://github.com/gitmichaelqiu/LLMMisinfoClassification.git
+cd LLMMisinfoClassification
 pip install -r requirements.txt
 ```
 
