@@ -1,4 +1,4 @@
-# LLM-Based Information Verification
+# Operational Trade-offs in LLM-Based Misinformation Classification
 
 Evaluates Single-Shot, Self-Consistency Voting, and Mixture-of-Agents architectures
 for LLM-based information verification across finance and healthcare domains,
@@ -117,10 +117,10 @@ Both test sets are balanced at 50% prevalence. Retrieval pools exclude near-dupl
 
 ### Source Provenance
 
-- **Finance**: Derived from the [ISOT Fake News Dataset](https://www.uvic.ca/engineering/ece/isot/datasets/fake-news/index.php).
+- **Finance**: Derived from the [ISOT Fake News Dataset](https://www.uvic.ca/engineering/ece/isot/datasets/fake-news/index.php) under [MIT License](./licenses/LICENSE-ISOTFakeNewsDataset.txt).
   The original 44,898 articles were filtered to 3,324 economics-keyword articles, then
   deduplicated and split into a balanced 500-item test set and a 2,756-item retrieval corpus.
-- **Healthcare**: Derived from the [COVID-19 Fake News Dataset NLP (CONSTRAINT)](https://github.com/parthpatwa/COVID19-Fake-News-Dataset-NLP).
+- **Healthcare**: Derived from the [COVID-19 Fake News Dataset NLP (CONSTRAINT)](https://github.com/parthpatwa/COVID19-Fake-News-Dataset-NLP) under [MIT License](./licenses/LICENSE-COVID19FakeNewsDatasetNLP.txt).
   The 6,420 training and 2,140 validation tweets were deduplicated and split into a
   balanced 500-item test set and a 7,866-item retrieval corpus.
 
