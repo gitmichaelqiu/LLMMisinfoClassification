@@ -220,16 +220,20 @@ docs/
 # Generated experiment outputs and figures
 results/
 
-# Raw data artifacts (download from source)
+# Raw data artifacts (download from source) — ignore large originals
 data/raw/**/*.csv
 data/raw/**/*.xlsx
 data/raw/**/*.zip
+data/finance/*.csv
+data/health/*.csv
+data/health/*.xlsx
+data/health/*.zip
 
 # But track the exact processed test/corpus files used by the experiment
-!data/raw/finance/finance_test_500.csv
-!data/raw/finance/finance_corpus.csv
-!data/raw/health/covid_test_500.csv
-!data/raw/health/covid_corpus.csv
+!data/finance/finance_test_500.csv
+!data/finance/finance_corpus.csv
+!data/health/covid_test_500.csv
+!data/health/covid_corpus.csv
 
 # LaTeX building artifacts
 *.synctex.gz

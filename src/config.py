@@ -52,7 +52,7 @@ PPV_BASE_RATES = [0.001, 0.01, 0.05, 0.10, 0.25, 0.50]
 COST_RATIOS = [(1, 1), (1, 5), (1, 10), (1, 25)]
 
 # ── Data paths ─────────────────────────────────────────────────
-FINANCE_TEST = "data/raw/finance/finance_test_500.csv"
-FINANCE_CORPUS = "data/raw/finance/finance_corpus.csv"
-COVID_TEST = "data/raw/health/covid_test_500.csv"
-COVID_CORPUS = "data/raw/health/covid_corpus.csv"
+FINANCE_TEST = "data/finance/finance_test_500.csv"
+FINANCE_CORPUS = "data/finance/finance_corpus.csv"
+COVID_TEST = "data/health/covid_test_500.csv"
+COVID_CORPUS = "data/health/covid_corpus.csv"

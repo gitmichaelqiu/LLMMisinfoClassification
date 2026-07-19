@@ -63,7 +63,7 @@ def main() -> None:
     except FileNotFoundError as e:
         print(f"  DATA ERROR: {e}")
         print("  Ensure test/corpus CSV files exist. "
-              "See data/raw/finance/ and data/raw/health/.")
+              "See data/finance/ and data/health/.")
         return
 
     all_test = {d: all_data[d]["test"] for d in all_data}
