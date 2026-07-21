@@ -117,10 +117,10 @@ Both test sets are balanced at 50% prevalence. Retrieval pools exclude near-dupl
 
 ### Source Provenance
 
-- **Finance**: Derived from the [ISOT Fake News Dataset](https://www.uvic.ca/engineering/ece/isot/datasets/fake-news/index.php) under [MIT License](./licenses/LICENSE-ISOTFakeNewsDataset.txt).
+- **Finance**: Derived from the [ISOT Fake News Dataset](https://www.kaggle.com/datasets/rahulogoel/isot-fake-news-dataset) under [MIT License](./licenses/LICENSE-ISOTFakeNewsDataset.txt).
   The original 44,898 articles were filtered to 3,324 economics-keyword articles, then
   deduplicated and split into a balanced 500-item test set and a 2,756-item retrieval corpus.
-- **Healthcare**: Derived from the [COVID-19 Fake News Dataset NLP (CONSTRAINT)](https://github.com/parthpatwa/COVID19-Fake-News-Dataset-NLP) under [MIT License](./licenses/LICENSE-COVID19FakeNewsDatasetNLP.txt).
+- **Healthcare**: Derived from the [COVID19 Fake News Dataset NLP](https://www.kaggle.com/datasets/elvinagammed/covid19-fake-news-dataset-nlp) under [MIT License](./licenses/LICENSE-COVID19FakeNewsDatasetNLP.txt).
   The 6,420 training and 2,140 validation tweets were deduplicated and split into a
   balanced 500-item test set and a 7,866-item retrieval corpus.
 
