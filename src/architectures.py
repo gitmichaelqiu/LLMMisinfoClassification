@@ -12,13 +12,10 @@ from src.config import SEED
 from src.prompts import (
     CANONICAL_SYSTEM,
     MOA_JUDGE,
-    MOA_JUDGE_RAG,
     MOA_SKEPTIC,
-    MOA_SKEPTIC_RAG,
     MOA_SUPPORTER,
-    MOA_SUPPORTER_RAG,
 )
-from src.retrieval import build_retriever, make_user_prompt
+from src.retrieval import build_retriever, make_moa_user_prompt, make_user_prompt
 from src.schemas import Verdict, VerificationItem, VerificationResult
 
 
@@ -225,17 +222,15 @@ def run_moa(
     evidence_map: dict[str, str] = {}
     p1_callables: list[Any] = []
     for item in items:
-        up = make_user_prompt(item.claim_text, vec, tfidf, texts)
+        up = make_moa_user_prompt(item.claim_text, vec, tfidf, texts)
         evidence_map[item.id] = up
-        sp = MOA_SUPPORTER_RAG if rag_on else MOA_SUPPORTER
-        sk = MOA_SKEPTIC_RAG if rag_on else MOA_SKEPTIC
 
-        def _sup(iid: str = item.id, u: str = up, p: str = sp):
-            txt, lat, _ = _llm_call(p, u)
+        def _sup(iid: str = item.id, u: str = up):
+            txt, lat, _ = _llm_call(MOA_SUPPORTER, u)
             return ("supporter", iid, txt, lat)
 
-        def _ske(iid: str = item.id, u: str = up, p: str = sk):
-            txt, lat, _ = _llm_call(p, u)
+        def _ske(iid: str = item.id, u: str = up):
+            txt, lat, _ = _llm_call(MOA_SKEPTIC, u)
             return ("skeptic", iid, txt, lat)
 
         p1_callables.append(_sup)
@@ -254,20 +249,20 @@ def run_moa(
         else:
             skeptic_out[iid] = (text, lat)
 
-    judge_prompt = MOA_JUDGE_RAG if rag_on else MOA_JUDGE
     p2_callables: list[Any] = []
     for item in items:
-        up = evidence_map.get(item.id, f"Claim to verify:\n{item.claim_text}")
+        up = evidence_map.get(item.id, f"Claim to analyze:\n{item.claim_text}")
         sup_text, sup_lat = supporter_out.get(item.id, ("Error", 0))
         ske_text, ske_lat = skeptic_out.get(item.id, ("Error", 0))
         p1_lat = max(sup_lat, ske_lat)
         ctx = (
-            f"{up}\n\n── Supporter's Analysis ──\n{sup_text}\n\n"
-            f"── Skeptic's Analysis ──\n{ske_text}\n"
+            f"{up}\n\n"
+            f"The Supporter (argues REAL):\n{sup_text}\n\n"
+            f"The Skeptic (argues FAKE):\n{ske_text}\n"
         )
 
         def _judge(iid: str = item.id, c: str = ctx, p1: float = p1_lat):
-            txt, lat, _ = _llm_call(judge_prompt, c)
+            txt, lat, _ = _llm_call(MOA_JUDGE, c)
             vr = _parse_response(
                 txt, iid, lat, {"architecture": "moa", "rag": rag_on}
             )

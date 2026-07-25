@@ -34,14 +34,11 @@ from src.evaluation import evaluate_architecture
 from src.prompts import (
     CANONICAL_SYSTEM,
     MOA_JUDGE,
-    MOA_JUDGE_RAG,
     MOA_SKEPTIC,
-    MOA_SKEPTIC_RAG,
     MOA_SUPPORTER,
-    MOA_SUPPORTER_RAG,
 )
 from src.reporting import print_metrics
-from src.retrieval import build_retriever, make_user_prompt
+from src.retrieval import build_retriever, make_moa_user_prompt, make_user_prompt
 from src.schemas import Verdict, VerificationItem, VerificationResult
 from src.storage import CallRecorder
 
@@ -106,15 +103,16 @@ def _call_arch_for(arch_name: str) -> str:
 def _claim_key(user_prompt: str) -> str:
     """Extract claim text from user prompt for cross-run matching.
 
-    Works identically for RAG OFF and RAG ON prompts because the claim
-    text is always the first non-empty line after ``Claim to verify:``.
+    Works for both SS/Voting (``Claim to verify:``) and MoA
+    (``Claim to analyze:``) prompt formats.
     """
-    if "Claim to verify:" in user_prompt:
-        after = user_prompt.split("Claim to verify:")[-1]
-        for line in after.split("\n"):
-            line = line.strip()
-            if line:
-                return line[:80]
+    for prefix in ("Claim to verify:", "Claim to analyze:"):
+        if prefix in user_prompt:
+            after = user_prompt.split(prefix)[-1]
+            for line in after.split("\n"):
+                line = line.strip()
+                if line:
+                    return line[:80]
     return user_prompt.strip()[:80]
 
 
@@ -444,25 +442,23 @@ def _run_moa(
     evidence_map: dict[str, str] = {}
     p1_callables: list[Any] = []
     for item in pending:
-        up = make_user_prompt(item.claim_text, vec, tfidf, texts)
+        up = make_moa_user_prompt(item.claim_text, vec, tfidf, texts)
         evidence_map[item.id] = up
-        sp = MOA_SUPPORTER_RAG if rag_on else MOA_SUPPORTER
-        sk = MOA_SKEPTIC_RAG if rag_on else MOA_SKEPTIC
 
-        def _sup(iid: str = item.id, u: str = up, p: str = sp):
-            txt, lat, usage = _sensitivity_call(model_cfg, p, u)
+        def _sup(iid: str = item.id, u: str = up):
+            txt, lat, usage = _sensitivity_call(model_cfg, MOA_SUPPORTER, u)
             recorder.record_call(
                 domain, slug, arch, iid,
-                p, u, txt, "N/A", 0.0, lat, usage,
+                MOA_SUPPORTER, u, txt, "N/A", 0.0, lat, usage,
                 extra_metadata={"moa_role": "supporter"},
             )
             return ("supporter", iid, txt, lat)
 
-        def _ske(iid: str = item.id, u: str = up, p: str = sk):
-            txt, lat, usage = _sensitivity_call(model_cfg, p, u)
+        def _ske(iid: str = item.id, u: str = up):
+            txt, lat, usage = _sensitivity_call(model_cfg, MOA_SKEPTIC, u)
             recorder.record_call(
                 domain, slug, arch, iid,
-                p, u, txt, "N/A", 0.0, lat, usage,
+                MOA_SKEPTIC, u, txt, "N/A", 0.0, lat, usage,
                 extra_metadata={"moa_role": "skeptic"},
             )
             return ("skeptic", iid, txt, lat)
@@ -483,27 +479,27 @@ def _run_moa(
         else:
             skeptic_out[iid] = (text, lat)
 
-    judge_prompt = MOA_JUDGE_RAG if rag_on else MOA_JUDGE
     p2_callables: list[Any] = []
     for item in pending:
-        up = evidence_map.get(item.id, f"Claim to verify:\n{item.claim_text}")
+        up = evidence_map.get(item.id, f"Claim to analyze:\n{item.claim_text}")
         sup_text, sup_lat = supporter_out.get(item.id, ("Error", 0))
         ske_text, ske_lat = skeptic_out.get(item.id, ("Error", 0))
         p1_lat = max(sup_lat, ske_lat)
         ctx = (
-            f"{up}\n\n── Supporter's Analysis ──\n{sup_text}\n\n"
-            f"── Skeptic's Analysis ──\n{ske_text}\n"
+            f"{up}\n\n"
+            f"The Supporter (argues REAL):\n{sup_text}\n\n"
+            f"The Skeptic (argues FAKE):\n{ske_text}\n"
         )
 
         def _judge(iid: str = item.id, c: str = ctx, p1: float = p1_lat):
-            txt, lat, usage = _sensitivity_call(model_cfg, judge_prompt, c)
+            txt, lat, usage = _sensitivity_call(model_cfg, MOA_JUDGE, c)
             vr = _parse_response(
                 txt, iid, lat, {"architecture": "moa", "rag": rag_on}
             )
             vr.latency_s = p1 + lat
             recorder.record_call(
                 domain, slug, arch, iid,
-                judge_prompt, c, txt,
+                MOA_JUDGE, c, txt,
                 vr.verdict.name, vr.confidence, lat, usage,
                 extra_metadata={"moa_role": "judge"},
             )

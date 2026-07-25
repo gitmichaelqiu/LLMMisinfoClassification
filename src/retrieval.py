@@ -44,14 +44,36 @@ def make_user_prompt(
     rag_tfidf=None,
     rag_texts=None,
 ) -> str:
-    """Build the user prompt with optional retrieved evidence."""
+    """Build the user prompt for Single-Shot / Voting (paper appendix format)."""
     if rag_vec is not None:
         evidence = _retrieve(claim_text, rag_vec, rag_tfidf, rag_texts)
         if evidence:
             return (
                 f"Claim to verify:\n{claim_text}\n\n"
-                f"── Retrieved Evidence ──\n{evidence}\n"
-                f"────────────────────\n\n"
+                f"Retrieved Evidence:\n{evidence}\n"
                 f"Is this claim REAL or FAKE?"
             )
-    return f"Claim to verify:\n{claim_text}\n\nIs this claim REAL or FAKE?"
+    return f"Claim to verify:\n{claim_text}\nIs this claim REAL or FAKE?"
+
+
+def make_moa_user_prompt(
+    claim_text: str,
+    rag_vec=None,
+    rag_tfidf=None,
+    rag_texts=None,
+) -> str:
+    """Build the user prompt for MoA (paper appendix format).
+
+    The paper specifies a different user prompt format for MoA:
+    RAG OFF: ``Claim to analyze:\\n{claim_text}``
+    RAG ON:  ``Claim to analyze:\\n{claim_text}\\n\\n
+               Retrieved Evidence. Use them to support your argument:\\n{evidence}``
+    """
+    if rag_vec is not None:
+        evidence = _retrieve(claim_text, rag_vec, rag_tfidf, rag_texts)
+        if evidence:
+            return (
+                f"Claim to analyze:\n{claim_text}\n\n"
+                f"Retrieved Evidence. Use them to support your argument:\n{evidence}"
+            )
+    return f"Claim to analyze:\n{claim_text}"
