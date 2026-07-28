@@ -1,155 +1,99 @@
 # Operational Trade-offs in LLM-Based Misinformation Classification
 
-Evaluates Single-Shot, Self-Consistency Voting, and Mixture-of-Agents architectures
-for LLM-based information verification across finance and healthcare domains,
-with and without Retrieval-Augmented Generation.
+Evaluates Single-Shot, Self-Consistency Voting, and Mixture-of-Agents
+architectures for LLM-based information verification across finance and
+healthcare domains, with and without Retrieval-Augmented Generation.
 
 ## Paper
 
-**Operational Trade-offs in LLM-Based Misinformation Classification**
+[Read the paper](paper/Operational_Tradeoffs_in_LLM_Misinformation_Classification.pdf) —
+student research paper completed through the Pioneer Research Program
+(Yicheng Qiu, mentor Sanjay Ranka). Not peer-reviewed or formally published.
 
-- [Read the paper](paper/Operational_Tradeoffs_in_LLM_Misinformation_Classification.pdf)
-- Author: Yicheng Qiu
-- Research mentor: Sanjay Ranka
-- Conducted through the Pioneer Research Program
-- Status: Student research paper; not peer-reviewed or formally published
-
-## Architectures
-
-| Architecture | Description | API Calls per Claim | Latency |
-|---|---|---|---|
-| **Single-Shot** | One LLM call with canonical prompt | 1× | ~4.5 s |
-| **Voting (N)** | N parallel calls, majority threshold = ⌊N/2⌋+1 | N× | ~4.5–5.5 s |
-| **MoA** | Supporter + Skeptic (concurrent) → Judge (sequential) | 3× | ~10–12 s |
-
-Each architecture is tested with RAG OFF and RAG ON (TF-IDF retriever, top-5, cosine
-similarity). For Voting, 7 outputs are generated once per item, then subsets of the first
-N ∈ {1, 3, 5, 7} voters are aggregated.
-
-## Repository Structure
-
-```
-├── src/
-│   ├── schemas.py                         # Data structures: Verdict, VerificationItem, etc.
-│   ├── metrics.py                         # Confusion matrix, F1, precision, recall, FPR, etc.
-│   ├── experiment.py                      # Main experiment orchestrator
-│   ├── final_1000_validation.py           # Entry point (DeepSeek, all architectures × 2 domains)
-│   ├── sensitivity.py                     # Multi-model sensitivity analysis via OpenRouter
-│   ├── final_1000_validation_sensitivity.py # Entry point for sensitivity analysis
-│   ├── data.py                            # CSV data loading
-│   ├── architectures.py                   # Architecture runners: Single-Shot, Voting, MoA
-│   ├── evaluation.py                      # Metrics, bootstrap CIs, PPV, voter analysis
-│   ├── api.py                             # LLM API interaction layer
-│   ├── prompts.py                         # System/user prompts for all architectures
-│   ├── retrieval.py                       # TF-IDF retriever for RAG
-│   ├── figures.py                         # Figure generation
-│   ├── reporting.py                       # Console reporting and output persistence
-│   ├── storage.py                         # Per-call JSONL persistence (sensitivity)
-│   └── config.py                          # Paths, model settings, constants
-├── data/
-│   ├── finance/                           # Finance test (500) and corpus (2756)
-│   └── health/                            # Healthcare test (500) and corpus (7866)
-├── tests/
-│   ├── conftest.py                        # Shared fixtures
-│   ├── test_schemas.py                    # Schema validation tests
-│   └── test_metrics.py                    # Metrics correctness tests
-├── requirements.txt                       # Python dependencies
-├── pyproject.toml                         # Project metadata
-├── Makefile                               # Common targets: install, test, lint, clean
-└── .env.example                           # API key template
-```
-
-## Setup
+## Quick start
 
 ```bash
-git clone https://github.com/gitmichaelqiu/LLMMisinfoClassification.git
-cd LLMMisinfoClassification
 pip install -r requirements.txt
-```
-
-Copy `.env.example` to `.env` and set your API keys.
-
-```bash
-cp .env.example .env
-# Edit .env with your API keys
-```
-
-## Running the Experiment
-
-Warning: the full experiment runs ~14,000 API calls and costs approximately $6–8.
-
-```bash
+cp .env.example .env   # add your API keys
 python -m src.final_1000_validation
 ```
 
-This runs all 12 architecture × RAG configurations on both domains
-(500 finance + 500 healthcare items) using DeepSeek-v4-flash.
+The full experiment runs ~14,000 API calls (≈$6–8 on DeepSeek v4 Flash).
 
-### Sensitivity Analysis
-
-To reproduce the multi-model comparison across GPT-5.6 Luna and GLM-5.2
-via OpenRouter (requires `OPENROUTER_API_KEY`):
+For the multi-model sensitivity analysis via OpenRouter:
 
 ```bash
 python -m src.final_1000_validation_sensitivity
 ```
 
-This tests a stratified 50-item sample per domain on all architectures
-(Single-Shot, Voting N=1/3/5/7, MoA) with and without RAG. Results are
-written to `results/model_sensitivity/`.
-
-### Outputs
-
-Results are written to `results/final_1000_validation/`:
-- `raw_outputs/` — per-architecture JSON files with per-item verdicts
-- `figures/` — F1 comparison, PPV curves, RAG effect plots
-- `report.json` — consolidated metrics and confidence intervals
-
-### Running tests
+Tests, linting, and a clean target are in the `Makefile`:
 
 ```bash
 make test
+make lint
+make clean
 ```
+
+## Architectures
+
+| Architecture | How it works | API calls / claim | Latency |
+|---|---|---|---|
+| **Single-Shot** | One LLM call, canonical prompt | 1× | ~4.5 s |
+| **Voting (N)** | N parallel calls, majority threshold = ⌊N/2⌋+1 | N× | ~4.5–5.5 s |
+| **MoA** | Supporter + Skeptic (concurrent) → Judge (sequential) | 3× | ~10–12 s |
+
+Each architecture is tested with RAG off and on (TF-IDF retriever, top-5,
+cosine similarity). For Voting, 7 outputs are generated per item so that
+subsets for N ∈ {1, 3, 5, 7} can be compared without extra API calls.
+
+## Project structure
+
+```
+src/              # everything: data loading, architectures, metrics, figures
+data/             # finance and healthcare test sets + retrieval corpora
+tests/            # pytest tests for schemas and metrics
+paper/            # manuscript PDF
+```
+
+Source modules:
+
+- `schemas.py`, `metrics.py` — data structures and evaluation metrics
+- `experiment.py` + `final_1000_validation.py` — main experiment entry point
+- `sensitivity.py` + `final_1000_validation_sensitivity.py` — multi-model sweep
+- `architectures.py` — Single-Shot, Voting, and MoA runners
+- `api.py` — LLM API interaction (parallel dispatch, response parsing)
+- `prompts.py`, `retrieval.py` — prompt templates and TF-IDF RAG retriever
+- `evaluation.py`, `reporting.py`, `figures.py` — results analysis and output
+- `config.py`, `storage.py` — paths, constants, call persistence
 
 ## Datasets
 
-The experiment uses four pre-processed CSV files tracked directly in the repository:
+Four pre-processed CSV files are tracked in the repository:
 
-| File | Domain | Contents | Rows | Size |
-|---|---|---|---|---|
-| `data/finance/finance_test_500.csv` | Finance | Balanced test set (250 REAL, 250 FAKE) | 500 | 1.3 MB |
-| `data/finance/finance_corpus.csv` | Finance | TF-IDF retrieval pool (no test-set near-duplicates) | 2,756 | 6.9 MB |
-| `data/health/covid_test_500.csv` | Healthcare | Balanced test set (250 REAL, 250 FAKE) | 500 | 94 KB |
-| `data/health/covid_corpus.csv` | Healthcare | TF-IDF retrieval pool (no test-set near-duplicates) | 7,866 | 1.5 MB |
+| File | Domain | Rows | Use |
+|---|---|---|---|
+| `data/finance/finance_test_500.csv` | Finance | 500 | Balanced test set (250 REAL, 250 FAKE) |
+| `data/finance/finance_corpus.csv` | Finance | 2,756 | TF-IDF retrieval pool |
+| `data/health/covid_test_500.csv` | Healthcare | 500 | Balanced test set (250 REAL, 250 FAKE) |
+| `data/health/covid_corpus.csv` | Healthcare | 7,866 | TF-IDF retrieval pool |
 
-Both test sets are balanced at 50% prevalence. Retrieval pools exclude near-duplicates
-(TF-IDF cosine similarity &gt; 0.8 to any test item).
+Both test sets are balanced at 50% prevalence. Retrieval pools exclude
+near-duplicates (TF-IDF cosine similarity > 0.8 to any test item).
 
-### Source Provenance
-
-- **Finance**: Derived from the [ISOT Fake News Dataset](https://www.kaggle.com/datasets/rahulogoel/isot-fake-news-dataset) under [MIT License](./licenses/LICENSE-ISOTFakeNewsDataset.txt).
-  The original 44,898 articles were filtered to 3,324 economics-keyword articles, then
-  deduplicated and split into a balanced 500-item test set and a 2,756-item retrieval corpus.
-- **Healthcare**: Derived from the [COVID19 Fake News Dataset NLP](https://www.kaggle.com/datasets/elvinagammed/covid19-fake-news-dataset-nlp) under [MIT License](./licenses/LICENSE-COVID19FakeNewsDatasetNLP.txt).
-  The 6,420 training and 2,140 validation tweets were deduplicated and split into a
-  balanced 500-item test set and a 7,866-item retrieval corpus.
-
-Original source files (`data/finance/financial_news.csv`,
-`data/health/Constraint_*.csv`, etc.) are **not** tracked in git.
-The processed files above are tracked directly so that a `git clone` immediately
-yields reproduction-ready inputs.
+- **Finance**: derived from the [ISOT Fake News Dataset](https://www.kaggle.com/datasets/rahulogoel/isot-fake-news-dataset)
+  ([MIT](./licenses/LICENSE-ISOTFakeNewsDataset.txt)). Filtered to 3,324
+  economics-keyword articles, then deduplicated and split.
+- **Healthcare**: derived from the [COVID19 Fake News Dataset NLP](https://www.kaggle.com/datasets/elvinagammed/covid19-fake-news-dataset-nlp)
+  ([MIT](./licenses/LICENSE-COVID19FakeNewsDatasetNLP.txt)). Deduplicated
+  and split from the Constrain_Train and Constrain_Val sets.
 
 ## Models
 
-**Primary experiment**: `deepseek-v4-flash` via `api.deepseek.com/v1` with:
-- Temperature: 0.7
-- Max tokens: 512
+- **Primary experiment**: `deepseek-v4-flash`, temperature 0.7, max 512 tokens.
+- **Sensitivity analysis** (via OpenRouter): `openai/gpt-5.6-luna`,
+  `z-ai/glm-5.2`.
 
-**Sensitivity analysis** (via OpenRouter):
-- `openai/gpt-5.6-luna` (GPT-5.6 Luna)
-- `z-ai/glm-5.2` (GLM-5.2)
-
-## Key Results (DeepSeek v4 Flash, 500 items/domain)
+## Key results
 
 | Architecture | Finance F1 | Healthcare F1 | Mean ESC Rate | Latency |
 |---|---|---|---|---|
@@ -162,4 +106,5 @@ yields reproduction-ready inputs.
 
 ## License
 
-MIT License. See [LICENSE](./LICENSE).
+The code is MIT-licensed. See [LICENSE](./LICENSE). The manuscript PDF
+is provided for reading and citation — all rights reserved.
