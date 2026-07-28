@@ -56,19 +56,6 @@ class VerificationResult:
 
 
 @dataclass
-class VerifierConfig:
-    """Configuration for a verifier run."""
-
-    model: str = "gpt-4o-mini"
-    temperature: float = 0.0
-    max_tokens: int = 512
-    prompt_template: str = "default"
-    n_voters: int = 5
-    retriever_type: Optional[str] = None
-    extra: Dict[str, Any] = field(default_factory=dict)
-
-
-@dataclass
 class ConfusionMatrix:
     """Raw confusion matrix counts."""
 

@@ -8,7 +8,6 @@ from src.schemas import (
     Verdict,
     VerificationItem,
     VerificationResult,
-    VerifierConfig,
 )
 
 
@@ -70,28 +69,6 @@ class TestVerificationResult:
             evidence=["Flags: none", "Looks authentic"],
         )
         assert len(result.evidence) == 2
-
-
-class TestVerifierConfig:
-    def test_defaults(self):
-        config = VerifierConfig()
-        assert config.model == "gpt-4o-mini"
-        assert config.temperature == 0.0
-        assert config.max_tokens == 512
-        assert config.n_voters == 5
-
-    def test_custom(self):
-        config = VerifierConfig(
-            model="deepseek-chat",
-            temperature=0.3,
-            n_voters=7,
-        )
-        assert config.model == "deepseek-chat"
-        assert config.n_voters == 7
-
-    def test_extra(self):
-        config = VerifierConfig(extra={"custom_param": "value"})
-        assert config.extra["custom_param"] == "value"
 
 
 class TestConfusionMatrix:
