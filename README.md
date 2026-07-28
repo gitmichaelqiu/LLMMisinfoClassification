@@ -144,6 +144,7 @@ yields reproduction-ready inputs.
 | Architecture | Finance F1 | Healthcare F1 | Mean ESC Rate | Latency |
 |---|---|---|---|---|
 | Single-Shot (RAG OFF) | 0.689 | 0.779 | 4.9% | ~4.6 s |
+| Single-Shot (RAG ON) | 0.716 | 0.729 | 12.1% | ~4.9 s |
 | Voting N=7 (RAG OFF) | 0.643 | 0.794 | 19.7% | ~5.5 s |
 | Voting N=7 (RAG ON) | 0.803 | 0.765 | 31.9% | ~5.5 s |
 | MoA (RAG OFF) | 0.654 | 0.758 | 12.7% | ~10.6 s |
