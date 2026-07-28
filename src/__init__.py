@@ -1,11 +1,8 @@
-"""General AI Information Verification Framework.
+"""Operational Trade-offs in LLM-Based Information Verification.
 
-A domain-agnostic framework for verifying information claims using configurable
-verifier architectures (single-shot, voting, MoA debate, RAG-augmented) with
-hybrid risk-based decision policies.
-
-Finance is the first case-study domain. Cross-domain readiness is validated
-in Phase 9 of the roadmap.
+Evaluates Single-Shot, Self-Consistency Voting, and Mixture-of-Agents
+architectures for LLM-based information verification across finance and
+healthcare domains, with and without Retrieval-Augmented Generation.
 """
 
 __version__ = "0.1.0"
