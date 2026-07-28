@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "Please cite the paper and software repository if you use this work."
+title: "Code for Operational Trade-offs in LLM-Based Misinformation Classification"
+type: software
+authors:
+  - family-names: "Qiu"
+    given-names: "Yicheng"
+repository-code: "https://github.com/gitmichaelqiu/LLMMisinfoClassification"
+version: "1.0.0"
+date-released: "2026-07-27"
+
+preferred-citation:
+  type: manuscript
+  title: "Operational Trade-offs in LLM-Based Misinformation Classification"
+  authors:
+    - family-names: "Qiu"
+      given-names: "Yicheng"
+  year: 2026
+  notes: "Student research paper completed through the Pioneer Research Program; not peer-reviewed."

@@ -4,6 +4,16 @@ Evaluates Single-Shot, Self-Consistency Voting, and Mixture-of-Agents architectu
 for LLM-based information verification across finance and healthcare domains,
 with and without Retrieval-Augmented Generation.
 
+## Paper
+
+**Operational Trade-offs in LLM-Based Misinformation Classification**
+
+- [Read the paper](paper/Operational_Tradeoffs_in_LLM_Misinformation_Classification.pdf)
+- Author: Yicheng Qiu
+- Research mentor: Sanjay Ranka
+- Conducted through the Pioneer Research Program
+- Status: Student research paper; not peer-reviewed or formally published
+
 ## Architectures
 
 | Architecture | Description | API Calls per Claim | Latency |
