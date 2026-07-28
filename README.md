@@ -39,8 +39,8 @@ make clean
 | Architecture | How it works | API calls / claim | Latency |
 |---|---|---|---|
 | **Single-Shot** | One LLM call, canonical prompt | 1× | ~4.6 s |
-| **Voting (N)** | N parallel calls, majority threshold = ⌊N/2⌋+1 | N× | ~4.5–5.5 s |
-| **MoA** | Supporter + Skeptic (concurrent) → Judge (sequential) | 3× | ~10–12 s |
+| **Voting (N)** | N parallel calls, majority threshold = ⌊N/2⌋+1 | N× | ~5.0 s |
+| **MoA** | Supporter + Skeptic (concurrent) → Judge (sequential) | 3× | ~10.6 s |
 
 Each architecture is tested with RAG off and on (TF-IDF retriever, top-5,
 cosine similarity). For Voting, 7 outputs are generated per item so that
@@ -94,16 +94,16 @@ near-duplicates (TF-IDF cosine similarity > 0.8 to any test item).
   `openai/gpt-5.6-luna` and `z-ai/glm-5.2` via OpenRouter on a
   stratified 50-item-per-domain subset.
 
-## Key results
+## Key results (Table 8: Overall Comparison)
 
-| Architecture | Finance F1 | Healthcare F1 | Mean ESC Rate | Latency |
-|---|---|---|---|---|
-| Single-Shot (RAG OFF) | 0.689 | 0.779 | 4.9% | ~4.6 s |
-| Single-Shot (RAG ON) | 0.716 | 0.729 | 12.1% | ~4.9 s |
-| Voting N=7 (RAG OFF) | 0.643 | 0.794 | 19.7% | ~5.5 s |
-| Voting N=7 (RAG ON) | 0.803 | 0.765 | 31.9% | ~5.5 s |
-| MoA (RAG OFF) | 0.654 | 0.758 | 12.7% | ~10.6 s |
-| MoA (RAG ON) | 0.721 | 0.745 | 12.6% | ~10.9 s |
+| Architecture | Finance F1 | Healthcare F1 | Mean F1 | Mean ESC Rate | Latency |
+|---|---|---|---|---|---|
+| Single-Shot (RAG OFF) | 0.689 | 0.779 | 0.734 | 4.9% | ~4.6 s |
+| Single-Shot (RAG ON) | 0.716 | 0.729 | 0.722 | 12.1% | ~4.7 s |
+| Voting N=7 (RAG OFF) | 0.643 | 0.794 | 0.719 | 19.7% | ~5.0 s |
+| Voting N=7 (RAG ON) | 0.803 | 0.765 | 0.784 | 31.9% | ~5.1 s |
+| MoA (RAG OFF) | 0.654 | 0.758 | 0.706 | 12.7% | ~10.6 s |
+| MoA (RAG ON) | 0.721 | 0.744 | 0.733 | 12.6% | ~10.9 s |
 
 ## License
 
