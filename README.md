@@ -1,18 +1,14 @@
 # Operational Trade-offs in LLM-Based Misinformation Classification
 
-Evaluates Single-Shot, Self-Consistency Voting, and Mixture-of-Agents
-architectures for LLM-based information verification across finance and
-healthcare domains, with and without Retrieval-Augmented Generation.
+Evaluates whether adding the complexity of an LLM inference system improves misinformation classification on finance and healthcare datasets. We compare Single-Shot, same-prompt majority Voting, and a role-based Mixture of Agents architectures with retrieval-augmented generation as the optional layer.
 
 ## Paper
 
-[Read the paper](paper/Operational_Tradeoffs_in_LLM_Misinformation_Classification.pdf) —
-student research paper completed through the Pioneer Research Program
-(Yicheng Qiu, mentor Sanjay Ranka). Not peer-reviewed or formally published.
+[Read the paper](paper/Operational_Tradeoffs_in_LLM_Misinformation_Classification.pdf) (Yicheng Qiu, 2026).
 
 All experiment design, datasets, models, and results are described in the paper.
 
-## Quick start
+## Quick Start
 
 ```bash
 pip install -r requirements.txt
@@ -28,7 +24,7 @@ make lint
 make clean
 ```
 
-## Project structure
+## Project Structure
 
 ```
 src/       experiment code (entry point: final_1000_validation.py)
@@ -39,5 +35,4 @@ paper/     manuscript PDF
 
 ## License
 
-The code is MIT-licensed. See [LICENSE](./LICENSE). The manuscript PDF
-is provided for reading and citation — all rights reserved.
+The code is MIT-licensed. See [LICENSE](./LICENSE).
