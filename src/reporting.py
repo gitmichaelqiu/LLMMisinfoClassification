@@ -13,7 +13,6 @@ from src.config import MODEL, OUTPUT_DIR
 from src.schemas import VerificationItem, VerificationResult
 
 
-# Raw output persistence
 def save_raw_output(
     domain: str,
     arch_name: str,
@@ -47,7 +46,6 @@ def save_raw_output(
     return path
 
 
-# Console helpers
 def print_metrics(section: dict[str, Any], label: str = "") -> None:
     """Print a single line of metrics for one architecture."""
     m = section.get("metrics", {})
@@ -69,7 +67,6 @@ def print_metrics(section: dict[str, Any], label: str = "") -> None:
     sys.stdout.flush()
 
 
-# Voting sensitivity table
 def extract_voting_table(
     domain_results: dict[str, Any],
 ) -> dict[int, dict[str, Any]]:
@@ -131,7 +128,6 @@ def print_voting_sensitivity(
     return table
 
 
-# Final comparison table
 def print_final_table(
     domain_results: dict[str, Any], domain: str
 ) -> None:
@@ -181,7 +177,6 @@ def print_final_table(
             )
 
 
-# Cross-domain summary
 def print_cross_domain_summary(all_results: dict[str, Any]) -> None:
     print("\n  CROSS-DOMAIN MEAN F1")
     cells = [
@@ -214,7 +209,6 @@ def print_cross_domain_summary(all_results: dict[str, Any]) -> None:
             )
 
 
-# Pairwise bootstrap comparisons
 def print_pairwise_comparisons(all_results: dict[str, Any]) -> None:
     print("\n  PAIRWISE COMPARISONS (Bootstrap DF1)")
     comparisons = [

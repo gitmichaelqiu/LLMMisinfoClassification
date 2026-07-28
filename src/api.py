@@ -11,7 +11,6 @@ from typing import Any, Callable
 from src.config import MAX_CONCURRENCY, MAX_TOKENS, MODEL, TEMPERATURE
 from src.schemas import Verdict, VerificationResult
 
-# Response parsing
 _VERDICT_RE = re.compile(r"Verdict:\s*(REAL|FAKE|ESCALATE)", re.IGNORECASE)
 _CONFIDENCE_RE = re.compile(r"Confidence:\s*(\d+)", re.IGNORECASE)
 _VERDICT_MAP = {
@@ -48,7 +47,6 @@ def _parse_response(
     )
 
 
-# LLM call
 def _llm_call(
     system_prompt: str,
     user_prompt: str,
@@ -58,10 +56,7 @@ def _llm_call(
     api_key: str | None = None,
     base_url: str | None = None,
 ) -> tuple[str, float, dict]:
-    """Make a single LLM API call. Returns (response_text, latency_s, usage_dict).
-
-    Defaults to DeepSeek V4 Flash when api_key and base_url are None.
-    """
+    """Make a single LLM API call. Returns (response_text, latency_s, usage_dict)."""
     import httpx
     from openai import OpenAI
 
@@ -110,20 +105,12 @@ def _llm_call(
         http_client.close()
 
 
-# Parallel dispatch
 def _run_parallel(
     callables: list[Callable[[], Any]],
     desc: str = "",
     max_workers: int | None = None,
 ) -> list[Any | None]:
-    """Execute a list of nullary callables concurrently.
-
-    *max_workers* caps the thread pool; defaults to ``MAX_CONCURRENCY`` from
-    config when ``None``.
-
-    Returns results in the same order as *callables*; a failed call
-    produces ``None`` in its slot.
-    """
+    """Execute callables concurrently. Returns results in order; failed calls become None."""
     n = len(callables)
     cap = max_workers if max_workers is not None else MAX_CONCURRENCY
     results: list[Any | None] = [None] * n

@@ -62,7 +62,7 @@ def make_moa_user_prompt(
     rag_tfidf=None,
     rag_texts=None,
 ) -> str:
-    """Build the MoA user prompt. Differs from SS/Voting in header and wording."""
+    """Build the MoA user prompt."""
     if rag_vec is not None:
         evidence = _retrieve(claim_text, rag_vec, rag_tfidf, rag_texts)
         if evidence:

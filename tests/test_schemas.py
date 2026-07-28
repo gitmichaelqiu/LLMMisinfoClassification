@@ -19,7 +19,6 @@ class TestVerdict:
 
     def test_membership(self):
         assert Verdict.REAL in Verdict
-        # IntEnum: int values match by value (REAL.value == 0)
         assert 0 in Verdict
 
 
@@ -33,7 +32,7 @@ class TestVerificationItem:
         assert item.claim_text == "Test claim"
         assert item.ground_truth == Verdict.FAKE
         assert item.metadata["domain"] == "test"
-        assert len(item.id) == 8  # uuid4 truncated
+        assert len(item.id) == 8
 
     def test_create_without_ground_truth(self):
         item = VerificationItem.create(claim_text="Unlabeled claim")

@@ -8,7 +8,6 @@ from src.schemas import Verdict, VerificationItem
 
 
 def _parse_label(raw_label: str) -> Verdict | None:
-    """Parse a label string into a Verdict, or return None if unparsable."""
     raw = raw_label.strip()
     if raw in ("0", "1"):
         return Verdict.FAKE if raw == "1" else Verdict.REAL
@@ -18,12 +17,11 @@ def _parse_label(raw_label: str) -> Verdict | None:
 
 
 def _pick_text(row: dict) -> str:
-    """Extract the claim text from a CSV row, trying common column names."""
     return row.get("headline", row.get("title", row.get("tweet", row.get("text", ""))))
 
 
 def load_test_csv(path: str, domain: str) -> list[VerificationItem]:
-    """Load a CSV test set into ``VerificationItem`` objects."""
+    """Load a CSV test set into VerificationItem objects."""
     with open(path, "r", encoding="utf-8-sig") as f:
         rows = list(csv.DictReader(f))
     items: list[VerificationItem] = []
@@ -42,7 +40,7 @@ def load_test_csv(path: str, domain: str) -> list[VerificationItem]:
 
 
 def load_corpus_csv(path: str, domain: str) -> list[VerificationItem]:
-    """Load a CSV knowledge corpus into ``VerificationItem`` objects."""
+    """Load a CSV knowledge corpus into VerificationItem objects."""
     with open(path, "r", encoding="utf-8-sig") as f:
         rows = list(csv.DictReader(f))
     items: list[VerificationItem] = []
