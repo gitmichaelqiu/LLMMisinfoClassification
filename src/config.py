@@ -26,12 +26,6 @@ SENSITIVITY_MODELS = {
         "api_key_var": "OPENROUTER_API_KEY",
         "base_url": "https://openrouter.ai/api/v1",
     },
-    "gemini-3.5-flash": {
-        "display": "Gemini 3.5 Flash",
-        "openrouter_id": "google/gemini-3.5-flash",
-        "api_key_var": "OPENROUTER_API_KEY",
-        "base_url": "https://openrouter.ai/api/v1",
-    },
 }
 
 SENSITIVITY_OUTPUT_DIR = "results/model_sensitivity"

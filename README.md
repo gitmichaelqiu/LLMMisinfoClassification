@@ -38,7 +38,7 @@ make clean
 
 | Architecture | How it works | API calls / claim | Latency |
 |---|---|---|---|
-| **Single-Shot** | One LLM call, canonical prompt | 1× | ~4.5 s |
+| **Single-Shot** | One LLM call, canonical prompt | 1× | ~4.6 s |
 | **Voting (N)** | N parallel calls, majority threshold = ⌊N/2⌋+1 | N× | ~4.5–5.5 s |
 | **MoA** | Supporter + Skeptic (concurrent) → Judge (sequential) | 3× | ~10–12 s |
 
@@ -90,8 +90,9 @@ near-duplicates (TF-IDF cosine similarity > 0.8 to any test item).
 ## Models
 
 - **Primary experiment**: `deepseek-v4-flash`, temperature 0.7, max 512 tokens.
-- **Sensitivity analysis** (via OpenRouter): `openai/gpt-5.6-luna`,
-  `z-ai/glm-5.2`.
+- **Sensitivity analysis**: compares DeepSeek v4 Flash against
+  `openai/gpt-5.6-luna` and `z-ai/glm-5.2` via OpenRouter on a
+  stratified 50-item-per-domain subset.
 
 ## Key results
 

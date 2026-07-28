@@ -47,7 +47,6 @@ from src.storage import CallRecorder
 _MODEL_PRICING: dict[str, dict[str, float]] = {
     "gpt-5.6-luna": {"input": 1.00, "output": 6.00},
     "glm-5.2": {"input": 1.40, "output": 4.40},
-    "gemini-3.5-flash": {"input": 1.50, "output": 9.00},
 }
 
 # Architectures used as the key when storing individual API calls in the
