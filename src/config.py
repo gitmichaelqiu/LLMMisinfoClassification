@@ -34,7 +34,6 @@ SENSITIVITY_CONCURRENCY = 200  # cap for parallel API calls during sensitivity
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(os.path.join(OUTPUT_DIR, "raw_outputs"), exist_ok=True)
-os.makedirs(os.path.join(OUTPUT_DIR, "figures"), exist_ok=True)
 os.makedirs(SENSITIVITY_OUTPUT_DIR, exist_ok=True)
 os.makedirs(os.path.join(SENSITIVITY_OUTPUT_DIR, "raw_outputs"), exist_ok=True)
 

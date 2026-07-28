@@ -26,7 +26,6 @@ from src.config import (
 )
 from src.data import load_all_data
 from src.evaluation import analyze_voter_agreement, evaluate_architecture
-from src.figures import generate_figures
 from src.reporting import (
     print_cross_domain_summary,
     print_final_table,
@@ -151,10 +150,6 @@ def main() -> None:
         print_final_table(all_results[domain], domain)
     print_cross_domain_summary(all_results)
     print_pairwise_comparisons(all_results)
-
-    # Generate figures
-    print("\nGENERATING FIGURES")
-    generate_figures(all_results, OUTPUT_DIR)
 
     # Summary
     total_runtime = time.time() - global_start
