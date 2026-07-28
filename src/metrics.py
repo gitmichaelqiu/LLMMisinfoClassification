@@ -1,15 +1,8 @@
-"""Metrics computation for information verification.
-
-Provides:
-- Confusion matrix (integer counts)
-- Classification metrics (precision, recall, F1, FPR, FNR)
-- Calibration metrics (ECE)
-- Bayesian PPV / NPV curves
-"""
+"""Metrics computation for information verification."""
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import numpy as np
 
@@ -26,16 +19,7 @@ def compute_confusion_matrix(
     ground_truths: List[Verdict],
     positive_class: Verdict = Verdict.FAKE,
 ) -> ConfusionMatrix:
-    """Compute confusion matrix from verification results.
-
-    Args:
-        results: List of verifier outputs.
-        ground_truths: Corresponding ground-truth labels.
-        positive_class: Which Verdict is treated as the positive class.
-
-    Returns:
-        ConfusionMatrix with integer counts.
-    """
+    """Compute confusion matrix from verification results."""
     cm = ConfusionMatrix()
     for result, truth in zip(results, ground_truths):
         pred = result.verdict
@@ -55,11 +39,7 @@ def classification_metrics(
     ground_truths: List[Verdict],
     positive_class: Verdict = Verdict.FAKE,
 ) -> ClassificationMetrics:
-    """Compute all standard classification metrics.
-
-    Returns:
-        ClassificationMetrics with precision, recall, F1, FPR, FNR, accuracy.
-    """
+    """Compute all standard classification metrics."""
     cm = compute_confusion_matrix(results, ground_truths, positive_class)
     n = cm.tp + cm.fp + cm.tn + cm.fn
 
@@ -87,16 +67,7 @@ def compute_ece(
     correct: List[bool],
     n_bins: int = 10,
 ) -> Tuple[float, List[float], List[float], List[int]]:
-    """Compute Expected Calibration Error.
-
-    Args:
-        confidences: Predicted confidence scores in [0, 1].
-        correct: Whether each prediction was correct.
-        n_bins: Number of equal-width bins.
-
-    Returns:
-        Tuple of (ece, bin_confidences, bin_accuracies, bin_counts).
-    """
+    """Compute Expected Calibration Error."""
     confidences = np.array(confidences)
     correct = np.array(correct, dtype=float)
     bins = np.linspace(0.0, 1.0, n_bins + 1)
@@ -120,38 +91,3 @@ def compute_ece(
             bin_accuracies.append(0.0)
 
     return ece, bin_confidences, bin_accuracies, bin_counts
-
-
-def compute_ppv(
-    sensitivity: float,
-    specificity: float,
-    base_rates: Optional[List[float]] = None,
-) -> List[Tuple[float, float, float]]:
-    """Compute Bayesian Positive Predictive Value across base rates.
-
-    PPV = (sens * prev) / (sens * prev + (1 - spec) * (1 - prev))
-
-    Args:
-        sensitivity: True positive rate (recall).
-        specificity: 1 - false positive rate.
-        base_rates: List of base rates to evaluate. Defaults to
-            log-spaced values from 0.0001 to 0.5.
-
-    Returns:
-        List of (base_rate, ppv, npv) tuples.
-    """
-    if base_rates is None:
-        base_rates = list(np.logspace(-4, -0.301, 50))  # 0.01% to 50%
-
-    fpr = 1.0 - specificity
-    results = []
-    for prev in base_rates:
-        denominator_ppv = sensitivity * prev + fpr * (1 - prev)
-        ppv = (sensitivity * prev) / denominator_ppv if denominator_ppv > 0 else 0.0
-
-        denominator_npv = specificity * (1 - prev) + (1 - sensitivity) * prev
-        npv = (specificity * (1 - prev)) / denominator_npv if denominator_npv > 0 else 0.0
-
-        results.append((prev, ppv, npv))
-
-    return results

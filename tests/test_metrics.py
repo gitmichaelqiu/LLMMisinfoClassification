@@ -8,7 +8,6 @@ from src.metrics import (
     classification_metrics,
     compute_confusion_matrix,
     compute_ece,
-    compute_ppv,
 )
 from src.schemas import (
     ConfusionMatrix,
@@ -162,42 +161,3 @@ class TestComputeECE:
         ece, bin_conf, bin_acc, bin_counts = compute_ece(confidences, correct, n_bins=4)
         assert sum(bin_counts) == 4
 
-
-class TestComputePPV:
-    def test_perfect_sensitivity_specificity(self):
-        points = compute_ppv(sensitivity=1.0, specificity=1.0)
-        for prev, ppv, npv in points:
-            assert ppv == pytest.approx(1.0)
-            assert npv == pytest.approx(1.0)
-
-    def test_bayes_formula(self):
-        points = compute_ppv(sensitivity=0.8, specificity=0.9, base_rates=[0.1])
-        prev, ppv, npv = points[0]
-        assert ppv == pytest.approx(0.08 / 0.17)
-        assert npv == pytest.approx(0.81 / 0.83)
-
-    def test_low_base_rate(self):
-        points = compute_ppv(sensitivity=0.9, specificity=0.95, base_rates=[0.001])
-        _, ppv, npv = points[0]
-        assert ppv < 0.05
-        assert npv > 0.99
-
-    def test_default_base_rates(self):
-        points = compute_ppv(sensitivity=0.5, specificity=0.5)
-        assert len(points) == 50
-        first_prev, _, _ = points[0]
-        last_prev, _, _ = points[-1]
-        assert first_prev == pytest.approx(0.0001, abs=1e-5)
-        assert last_prev == pytest.approx(0.5, abs=5e-4)
-
-    def test_random_guessing(self):
-        points = compute_ppv(sensitivity=0.5, specificity=0.5, base_rates=[0.1, 0.5])
-        for prev, ppv, npv in points:
-            assert ppv == pytest.approx(prev)
-            assert npv == pytest.approx(1 - prev)
-
-    def test_zero_sensitivity(self):
-        points = compute_ppv(sensitivity=0.0, specificity=1.0, base_rates=[0.1, 0.5])
-        for prev, ppv, npv in points:
-            assert ppv == 0.0
-            assert npv == pytest.approx(1.0 - prev)
