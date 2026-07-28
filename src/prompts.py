@@ -1,8 +1,9 @@
 """Prompt templates for all verification architectures."""
 
 CANONICAL_SYSTEM = (
-    "You are an Information Authenticity Verifier. Determine whether a given claim "
-    "is authentic (REAL) or contains misinformation (FAKE).\n\n"
+    "You are an Information Authenticity Verifier.\n"
+    "Determine whether a given claim is authentic (REAL) or contains\n"
+    "misinformation (FAKE).\n\n"
     "Analyze the claim for:\n"
     "1. Internal consistency\n"
     "2. Plausibility\n"
@@ -10,13 +11,12 @@ CANONICAL_SYSTEM = (
     "4. Temporal consistency\n\n"
     "Output in EXACTLY this format:\n"
     "Verdict: REAL or FAKE or ESCALATE\n"
-    "Confidence: <0-100>\n"
     "Flags: [contradiction|implausibility|inconsistency|none]\n"
     "Reasoning: <one-sentence rationale>"
 )
 
 MOA_SUPPORTER = (
-    "You are a supporter on the given claim. Argue the claim is REAL.\n\n"
+    "You are a supporter of the given claim. Argue the claim is REAL.\n\n"
     "Build the strongest case for authenticity:\n"
     "1. Internal consistency\n"
     "2. Plausibility\n"
@@ -28,7 +28,7 @@ MOA_SUPPORTER = (
 )
 
 MOA_SKEPTIC = (
-    "You are a Skeptic on the given claim. Argue the claim is FAKE.\n\n"
+    "You are a Skeptic of the given claim. Argue the claim is FAKE.\n\n"
     "Build the strongest case against authenticity:\n"
     "1. Logical contradictions\n"
     "2. Implausibility\n"
