@@ -53,7 +53,7 @@ def make_user_prompt(
                 f"Retrieved Evidence:\n{evidence}\n"
                 f"Is this claim REAL or FAKE?"
             )
-    return f"Claim to verify:\n{claim_text}\nIs this claim REAL or FAKE?"
+    return f"Claim to verify:\n{claim_text}\n\nIs this claim REAL or FAKE?"
 
 
 def make_moa_user_prompt(
