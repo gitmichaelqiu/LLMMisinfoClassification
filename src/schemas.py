@@ -1,11 +1,4 @@
-"""Unified verification schemas and data structures.
-
-Defines the canonical types shared across all verifier architectures:
-- VerificationItem: input claim with context and ground truth
-- Verdict: classification outcome (REAL, FAKE, ESCALATE, EXAGGERATED)
-- VerificationResult: structured output from a verifier
-- VerifierConfig: configuration for a verifier run
-"""
+"""Data structures shared across all verifier architectures."""
 
 from __future__ import annotations
 
@@ -25,15 +18,7 @@ class Verdict(IntEnum):
 
 @dataclass
 class VerificationItem:
-    """A single claim to be verified.
-
-    Attributes:
-        id: Unique identifier.
-        claim_text: The claim or headline to verify.
-        context: Optional supporting context (e.g., article body, related claims).
-        metadata: Arbitrary metadata (domain, source, timestamp, etc.).
-        ground_truth: Known ground-truth verdict (None if unlabeled).
-    """
+    """A single claim to be verified."""
 
     id: str
     claim_text: str
@@ -60,16 +45,7 @@ class VerificationItem:
 
 @dataclass
 class VerificationResult:
-    """Output from a single verifier invocation.
-
-    Attributes:
-        item_id: Matches VerificationItem.id.
-        verdict: The predicted verdict.
-        confidence: Confidence score in [0, 1].
-        latency_s: Wall-clock time in seconds.
-        evidence: Optional list of evidence snippets or reasoning traces.
-        metadata: Verifier-specific metadata (model, prompt version, etc.).
-    """
+    """Output from a single verifier invocation."""
 
     item_id: str
     verdict: Verdict
@@ -81,17 +57,7 @@ class VerificationResult:
 
 @dataclass
 class VerifierConfig:
-    """Configuration for a verifier run.
-
-    Attributes:
-        model: Model identifier (e.g., "gpt-4o-mini", "deepseek-chat").
-        temperature: Sampling temperature.
-        max_tokens: Maximum output tokens.
-        prompt_template: Name or key of the prompt template to use.
-        n_voters: Number of voters (for voting verifier).
-        retriever_type: Retriever type (for RAG verifier, e.g., "dense", "sparse").
-        extra: Additional verifier-specific parameters.
-    """
+    """Configuration for a verifier run."""
 
     model: str = "gpt-4o-mini"
     temperature: float = 0.0

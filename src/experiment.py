@@ -47,7 +47,7 @@ def main() -> None:
     print(f"Model: {MODEL}, Temperature: {TEMPERATURE}, Concurrency: {MAX_CONCURRENCY}")
     sys.stdout.flush()
 
-    # ── Verify API ──────────────────────────────────────────────
+    # Verify API
     print("\nVerifying API...")
     try:
         raw, lat, _ = _llm_call("You are a test assistant.", "Reply with OK.")
@@ -56,7 +56,7 @@ def main() -> None:
         print(f"  API ERROR: {e}")
         return
 
-    # ── Load data ───────────────────────────────────────────────
+    # Load data
     print("\nLOADING DATA")
     try:
         all_data = load_all_data(FINANCE_TEST, FINANCE_CORPUS, COVID_TEST, COVID_CORPUS)
@@ -69,7 +69,7 @@ def main() -> None:
     all_test = {d: all_data[d]["test"] for d in all_data}
     all_corpus = {d: all_data[d]["corpus"] for d in all_data}
 
-    # ── Run experiments ─────────────────────────────────────────
+    # Run experiments
     print("\nEXPERIMENTS")
     all_results: dict[str, Any] = {}
     for domain in ["finance", "healthcare"]:
@@ -148,7 +148,7 @@ def main() -> None:
 
         all_results[domain] = domain_results
 
-    # ── Print results ──────────────────────────────────────────
+    # Print results
     print(f"\n{'=' * 70}")
     print("VOTING SIZE SENSITIVITY (RAG OFF)")
     print(f"{'=' * 70}")
@@ -163,11 +163,11 @@ def main() -> None:
     print_cross_domain_summary(all_results)
     print_pairwise_comparisons(all_results)
 
-    # ── Generate figures ────────────────────────────────────────
+    # Generate figures
     print("\nGENERATING FIGURES")
     generate_figures(all_results, OUTPUT_DIR)
 
-    # ── Summary ─────────────────────────────────────────────────
+    # Summary
     total_runtime = time.time() - global_start
     total_calls = sum(
         all_results[d].get("voting_n7_rag_off", {}).get("total_api_calls", 0)
@@ -188,7 +188,7 @@ def main() -> None:
     print(f"Results: {OUTPUT_DIR}/")
     sys.stdout.flush()
 
-    # ── Save report ─────────────────────────────────────────────
+    # Save report
     report = {
         "metadata": {
             "experiment": "final_1000_validation",

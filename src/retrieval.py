@@ -62,13 +62,7 @@ def make_moa_user_prompt(
     rag_tfidf=None,
     rag_texts=None,
 ) -> str:
-    """Build the user prompt for MoA (paper appendix format).
-
-    The paper specifies a different user prompt format for MoA:
-    RAG OFF: ``Claim to analyze:\\n{claim_text}``
-    RAG ON:  ``Claim to analyze:\\n{claim_text}\\n\\n
-               Retrieved Evidence. Use them to support your argument:\\n{evidence}``
-    """
+    """Build the MoA user prompt. Differs from SS/Voting in header and wording."""
     if rag_vec is not None:
         evidence = _retrieve(claim_text, rag_vec, rag_tfidf, rag_texts)
         if evidence:

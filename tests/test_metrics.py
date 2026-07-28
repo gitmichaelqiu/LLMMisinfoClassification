@@ -16,7 +16,7 @@ from src.schemas import (
     VerificationResult,
 )
 
-# ── Helpers ────────────────────────────────────────────────────
+# Helpers
 
 def _result(verdict: Verdict, confidence: float = 0.9) -> VerificationResult:
     return VerificationResult(
@@ -27,7 +27,7 @@ def _result(verdict: Verdict, confidence: float = 0.9) -> VerificationResult:
     )
 
 
-# ── compute_confusion_matrix ──────────────────────────────────
+# compute_confusion_matrix
 
 class TestComputeConfusionMatrix:
     def test_all_correct(self):
@@ -85,7 +85,7 @@ class TestComputeConfusionMatrix:
         assert cm == ConfusionMatrix(tp=1, fp=0, tn=1, fn=1)
 
 
-# ── classification_metrics ────────────────────────────────────
+# classification_metrics
 
 class TestClassificationMetrics:
     def test_perfect_classifier(self):
@@ -150,7 +150,7 @@ class TestClassificationMetrics:
         assert m.n_total == 0
 
 
-# ── compute_ece ───────────────────────────────────────────────
+# compute_ece
 
 class TestComputeECE:
     def test_perfect_calibration(self):
@@ -192,7 +192,7 @@ class TestComputeECE:
         assert sum(bin_counts) == 4  # 1.0 excluded from bins
 
 
-# ── compute_ppv ───────────────────────────────────────────────
+# compute_ppv
 
 class TestComputePPV:
     def test_perfect_sensitivity_specificity(self):

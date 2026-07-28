@@ -12,7 +12,7 @@ from src.metrics import classification_metrics, compute_ece
 from src.schemas import Verdict, VerificationItem, VerificationResult
 
 
-# ── Latency statistics ──────────────────────────────────────────
+# Latency statistics
 def _latency_stats(latencies: list[float]) -> dict[str, float]:
     if not latencies:
         return {"mean": 0, "median": 0, "p95": 0, "min": 0, "max": 0}
@@ -25,7 +25,7 @@ def _latency_stats(latencies: list[float]) -> dict[str, float]:
     }
 
 
-# ── Bootstrap CI helpers ────────────────────────────────────────
+# Bootstrap CI helpers
 def _f1_metric(
     results: list[VerificationResult], truths: list[Verdict]
 ) -> float:
@@ -79,7 +79,7 @@ def _bootstrap_ci(
     )
 
 
-# ── PPV and expected cost curves ────────────────────────────────
+# PPV and expected cost curves
 def compute_ppv_curve(
     sens: float, fpr: float, base_rates: list[float]
 ) -> list[dict[str, float]]:
@@ -105,7 +105,7 @@ def compute_expected_cost(
     return results
 
 
-# ── Full architecture evaluation ────────────────────────────────
+# Full architecture evaluation
 def evaluate_architecture(
     items: list[VerificationItem],
     results: list[VerificationResult],
@@ -163,7 +163,7 @@ def evaluate_architecture(
     return section
 
 
-# ── Voter agreement analysis ────────────────────────────────────
+# Voter agreement analysis
 def analyze_voter_agreement(
     items: list[VerificationItem],
     per_item_voters: list[list[VerificationResult]],

@@ -11,7 +11,7 @@ from typing import Any, Callable
 from src.config import MAX_CONCURRENCY, MAX_TOKENS, MODEL, TEMPERATURE
 from src.schemas import Verdict, VerificationResult
 
-# ── Response parsing ────────────────────────────────────────────
+# Response parsing
 _VERDICT_RE = re.compile(r"Verdict:\s*(REAL|FAKE|ESCALATE)", re.IGNORECASE)
 _CONFIDENCE_RE = re.compile(r"Confidence:\s*(\d+)", re.IGNORECASE)
 _VERDICT_MAP = {
@@ -48,7 +48,7 @@ def _parse_response(
     )
 
 
-# ── LLM call ────────────────────────────────────────────────────
+# LLM call
 def _llm_call(
     system_prompt: str,
     user_prompt: str,
@@ -58,13 +58,9 @@ def _llm_call(
     api_key: str | None = None,
     base_url: str | None = None,
 ) -> tuple[str, float, dict]:
-    """Make a single LLM API call.
+    """Make a single LLM API call. Returns (response_text, latency_s, usage_dict).
 
-    Returns ``(response_text, latency_s, usage_dict)`` where ``usage_dict``
-    contains ``prompt_tokens``, ``completion_tokens``, ``total_tokens``
-    (or empty dict if unavailable).
-
-    When *api_key* and *base_url* are ``None``, defaults to DeepSeek V4 Flash.
+    Defaults to DeepSeek V4 Flash when api_key and base_url are None.
     """
     import httpx
     from openai import OpenAI
@@ -114,7 +110,7 @@ def _llm_call(
         http_client.close()
 
 
-# ── Parallel dispatch ────────────────────────────────────────────
+# Parallel dispatch
 def _run_parallel(
     callables: list[Callable[[], Any]],
     desc: str = "",

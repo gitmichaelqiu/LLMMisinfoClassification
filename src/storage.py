@@ -1,20 +1,6 @@
-"""Per-call JSONL persistence for reliability and recovery.
+"""Per-call JSONL persistence so interrupted runs resume without redoing work.
 
-``CallRecorder`` saves every individual API call to an append-only JSONL file
-so that if the process is interrupted mid-run, no completed calls are lost and
-the run can resume from where it left off.
-
-File layout
------------
-For each ``(domain, model, architecture)`` cell two files exist under
-``<output_dir>/raw_outputs/``::
-
-    {domain}_{model_slug}_{arch}.calls.jsonl   # one line per API call
-    {domain}_{model_slug}_{arch}.jsonl          # one line per final result (per item)
-
-The ``.calls`` file stores the full raw prompt / response for later analysis
-(error taxonomy, RAG failure analysis, etc.).  The results file stores only the
-final ``VerificationResult`` and is what drives recovery.
+Saves every API call to an append-only file; no results lost on crash.
 """
 
 from __future__ import annotations
@@ -43,7 +29,7 @@ class CallRecorder:
         self._locks: dict[str, threading.Lock] = {}
         self._lock_for_path: threading.Lock = threading.Lock()
 
-    # ── internal helpers ────────────────────────────────────────────
+    # internal helpers
 
     def _paths(self, domain: str, model: str, architecture: str) -> tuple[str, str]:
         """Return ``(results_path, calls_path)``."""
@@ -66,7 +52,7 @@ class CallRecorder:
                 f.write(json.dumps(record, default=str) + "\n")
                 f.flush()
 
-    # ── recording ───────────────────────────────────────────────────
+    # recording
 
     def record_call(
         self,
@@ -140,7 +126,7 @@ class CallRecorder:
         }
         self._append(results_path, record)
 
-    # ── recovery / loading ──────────────────────────────────────────
+    # recovery / loading
 
     def completed_item_ids(
         self, domain: str, model: str, architecture: str
@@ -221,7 +207,7 @@ class CallRecorder:
                     continue
         return records
 
-    # ── cost tracking ───────────────────────────────────────────────
+    # cost tracking
 
     def token_counts(
         self, domain: str, model: str, architecture: str

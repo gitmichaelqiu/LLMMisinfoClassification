@@ -42,7 +42,7 @@ from src.retrieval import build_retriever, make_moa_user_prompt, make_user_promp
 from src.schemas import Verdict, VerificationItem, VerificationResult
 from src.storage import CallRecorder
 
-# ── Model pricing (USD per 1M tokens) — used for cost reporting ─────
+# Model pricing (USD per 1M tokens) — used for cost reporting
 # Based on OpenRouter pricing as of July 2026.
 _MODEL_PRICING: dict[str, dict[str, float]] = {
     "gpt-5.6-luna": {"input": 1.00, "output": 6.00},
@@ -64,9 +64,7 @@ _CALL_STORAGE_ARCHS: list[str] = [
 ]
 
 
-# ══════════════════════════════════════════════════════════════════════
-#  Helpers
-# ══════════════════════════════════════════════════════════════════════
+# Helpers
 
 def _sensitivity_call(
     model_cfg: dict[str, Any],
@@ -234,9 +232,7 @@ def _reorder_results(
     ]
 
 
-# ══════════════════════════════════════════════════════════════════════
-#  Architecture runners  (with per-call persistence + recovery)
-# ══════════════════════════════════════════════════════════════════════
+# Architecture runners (with per-call persistence + recovery)
 
 def _run_ss(
     items: list[VerificationItem],
@@ -308,13 +304,13 @@ def _run_voting(
     slug = _model_slug(model_key)
     rl = "rag_on" if rag_on else "rag_off"
 
-    # ── SS results for voter-0 replacement ────────────────────────
+        # SS results for voter-0 replacement
     ss_arch = f"single_shot_rag_{rl}"
     ss_by_id: dict[str, VerificationResult] = {
         r.item_id: r for r in recorder.load_results(domain, slug, ss_arch)
     }
 
-    # ── Per-item completion check ─────────────────────────────────
+        # Per-item completion check
     def _has_all_n(item: VerificationItem) -> bool:
         for N in [1, 3, 5, 7]:
             arch = f"voting_n{N}_{rl}"
@@ -329,7 +325,7 @@ def _run_voting(
             for N in [1, 3, 5, 7]
         }
 
-    # ── Generate n_new voters for pending items only ─────────────
+        # Generate n_new voters for pending items only
     vec = tfidf = texts = None
     if rag_on and corpus:
         vec, tfidf, texts = build_retriever(corpus)
@@ -364,7 +360,7 @@ def _run_voting(
     for iid in item_voters_new:
         item_voters_new[iid].sort(key=lambda x: x.metadata.get("voter_idx", 0))
 
-    # ── Aggregate for each N, saving only pending items ───────────
+        # Aggregate for each N, saving only pending items
     for N in [1, 3, 5, 7]:
         threshold = N // 2 + 1
         arch = f"voting_n{N}_{rl}"
@@ -407,7 +403,7 @@ def _run_voting(
                 vr.verdict.name, vr.confidence, vr.latency_s, vr.metadata,
             )
 
-    # ── Reorder and return ────────────────────────────────────────
+        # Reorder and return
     return {
         N: (_reorder_results(items, recorder.load_results(domain, slug, f"voting_n{N}_{rl}")), [])
         for N in [1, 3, 5, 7]
@@ -516,9 +512,7 @@ def _run_moa(
     return _reorder_results(items, recorder.load_results(domain, slug, arch))
 
 
-# ══════════════════════════════════════════════════════════════════════
-#  Comparison table
-# ══════════════════════════════════════════════════════════════════════
+# Comparison table
 
 def _print_comparison(
     all_results: dict[str, dict[str, dict[str, Any]]],
@@ -648,9 +642,7 @@ def _save_report(
     print(f"  Report saved: {report_path}")
 
 
-# ══════════════════════════════════════════════════════════════════════
-#  Main entry point
-# ══════════════════════════════════════════════════════════════════════
+# Main entry point
 
 def run_sensitivity_analysis() -> None:
     """Orchestrate the full multi-model sensitivity sweep."""
@@ -662,7 +654,7 @@ def run_sensitivity_analysis() -> None:
     print(f"Models: {', '.join(SENSITIVITY_MODELS[m]['display'] for m in models_to_run)}")
     print("=" * 70)
 
-    # ── Verify API ────────────────────────────────────────────────
+        # Verify API
     print("\nVerifying API (OpenRouter)...")
     try:
         first_cfg = SENSITIVITY_MODELS[models_to_run[0]]
@@ -673,7 +665,7 @@ def run_sensitivity_analysis() -> None:
         print("  Ensure OPENROUTER_API_KEY is set in .env")
         return
 
-    # ── Load data ─────────────────────────────────────────────────
+        # Load data
     print("\nLoading data...")
     finance_test_full = load_test_csv(FINANCE_TEST, "finance")
     finance_corpus = load_corpus_csv(FINANCE_CORPUS, "finance")
@@ -702,7 +694,7 @@ def run_sensitivity_analysis() -> None:
         ("healthcare", covid_test, covid_corpus),
     ]
 
-    # ── Run models ────────────────────────────────────────────────
+        # Run models
     all_results: dict[str, dict[str, dict[str, Any]]] = {}
     total_estimated_cost = 0.0
 
@@ -722,7 +714,7 @@ def run_sensitivity_analysis() -> None:
 
             arch_results: dict[str, Any] = {}
 
-            # ── Replay old results from aborted run for ALL archs ──
+            # Replay old results from aborted run for ALL archs
             for replay_arch in [
                 "single_shot_rag_off", "single_shot_rag_on",
                 "voting_n1_rag_off", "voting_n1_rag_on",
@@ -736,7 +728,7 @@ def run_sensitivity_analysis() -> None:
                 )
                 if n:
                     print(f"    Replayed {n} old results for {replay_arch}")
-            # ───────────────────────────────────────────────────
+            #
 
             # Single-Shot RAG OFF
             t0 = time.time()
@@ -789,7 +781,7 @@ def run_sensitivity_analysis() -> None:
 
             domain_results[domain_name] = arch_results
 
-        # ── Cost summary for this model ───────────────────────────
+        # Cost summary for this model
         total_in = total_out = 0
         for domain_name, _test_items, _corpus_items in domains:
             for call_arch in _CALL_STORAGE_ARCHS:
@@ -808,7 +800,7 @@ def run_sensitivity_analysis() -> None:
 
         all_results[model_key] = domain_results
 
-    # ── Final comparison ──────────────────────────────────────────
+    # Final comparison
     _print_comparison(all_results, models_to_run)
     _save_report(all_results)
 

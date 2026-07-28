@@ -19,9 +19,7 @@ from src.retrieval import build_retriever, make_moa_user_prompt, make_user_promp
 from src.schemas import Verdict, VerificationItem, VerificationResult
 
 
-# ══════════════════════════════════════════════════════════════════
-#  TF-IDF + Logistic Regression baseline
-# ═════════════════════════════════════════════════════════════════
+# TF-IDF + Logistic Regression baseline
 def run_tfidf_baseline(
     items: list[VerificationItem],
     corpus: list[VerificationItem],
@@ -67,9 +65,7 @@ def run_tfidf_baseline(
     return results
 
 
-# ══════════════════════════════════════════════════════════════════
-#  Single-Shot
-# ═════════════════════════════════════════════════════════════════
+# Single-Shot
 def run_single_shot(
     items: list[VerificationItem],
     rag_on: bool = False,
@@ -106,9 +102,7 @@ def run_single_shot(
     ]
 
 
-# ══════════════════════════════════════════════════════════════════
-#  Voting  (generate N=7,  subset for 1/3/5/7)
-# ═════════════════════════════════════════════════════════════════
+# Voting (generate N=7, subset for 1/3/5/7)
 def run_voting_all_n(
     items: list[VerificationItem],
     rag_on: bool = False,
@@ -206,9 +200,7 @@ def run_voting_all_n(
     return result_map
 
 
-# ══════════════════════════════════════════════════════════════════
-#  Mixture of Agents
-# ═════════════════════════════════════════════════════════════════
+# Mixture of Agents
 def run_moa(
     items: list[VerificationItem],
     rag_on: bool = False,
