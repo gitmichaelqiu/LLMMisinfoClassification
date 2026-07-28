@@ -24,14 +24,6 @@ class Verdict(IntEnum):
     EXAGGERATED = 3
 
 
-VERDICT_LABELS = {
-    Verdict.REAL: "REAL/HOLD",
-    Verdict.FAKE: "FAKE/INTERVENE",
-    Verdict.ESCALATE: "GREY_SWAN/ESCALATE",
-    Verdict.EXAGGERATED: "EXAGGERATED/PARTIAL_REDUCE",
-}
-
-
 @dataclass
 class VerificationItem:
     """A single claim to be verified.
