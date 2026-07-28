@@ -6,7 +6,6 @@ SEED = 42
 
 MODEL = "deepseek-v4-flash"
 TEMPERATURE = 0.7
-MAX_TOKENS = 512
 MAX_CONCURRENCY = 2000
 
 OUTPUT_DIR = "results/final_1000_validation"

@@ -8,7 +8,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Callable
 
-from src.config import MAX_CONCURRENCY, MAX_TOKENS, MODEL, TEMPERATURE
+from src.config import MAX_CONCURRENCY, MODEL, TEMPERATURE
 from src.schemas import Verdict, VerificationResult
 
 _VERDICT_RE = re.compile(r"Verdict:\s*(REAL|FAKE|ESCALATE)", re.IGNORECASE)
@@ -52,7 +52,6 @@ def _llm_call(
     user_prompt: str,
     model: str = MODEL,
     temperature: float = TEMPERATURE,
-    max_tokens: int = MAX_TOKENS,
     api_key: str | None = None,
     base_url: str | None = None,
 ) -> tuple[str, float, dict]:
@@ -81,7 +80,6 @@ def _llm_call(
         resp = client.chat.completions.create(
             model=model,
             temperature=temperature,
-            max_tokens=max_tokens,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
