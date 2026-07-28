@@ -49,8 +49,8 @@ def make_user_prompt(
         evidence = _retrieve(claim_text, rag_vec, rag_tfidf, rag_texts)
         if evidence:
             return (
-                f"Claim to verify:\n{claim_text}\n\n"
-                f"Retrieved Evidence:\n{evidence}\n"
+                f"Claim to verify:\n\n{claim_text}\n\n"
+                f"Retrieved Evidence:\n{evidence}\n\n"
                 f"Is this claim REAL or FAKE?"
             )
     return f"Claim to verify:\n{claim_text}\n\nIs this claim REAL or FAKE?"
@@ -67,7 +67,7 @@ def make_moa_user_prompt(
         evidence = _retrieve(claim_text, rag_vec, rag_tfidf, rag_texts)
         if evidence:
             return (
-                f"Claim to analyze:\n{claim_text}\n\n"
+                f"Claim to analyze:\n\n{claim_text}\n\n"
                 f"Retrieved Evidence. Use them to support your argument:\n{evidence}"
             )
     return f"Claim to analyze:\n{claim_text}"
