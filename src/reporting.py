@@ -136,7 +136,6 @@ def print_final_table(
     domain_results: dict[str, Any], domain: str
 ) -> None:
     cells = [
-        ("tfidf_baseline", "TF-IDF Baseline"),
         ("single_shot_rag_off", "SS RAG OFF"),
         ("single_shot_rag_on", "SS RAG ON"),
         ("voting_n1_rag_off", "Vot N=1 OFF"),
@@ -186,7 +185,6 @@ def print_final_table(
 def print_cross_domain_summary(all_results: dict[str, Any]) -> None:
     print("\n  CROSS-DOMAIN MEAN F1")
     cells = [
-        ("tfidf_baseline", "TF-IDF"),
         ("single_shot_rag_off", "SS OFF"),
         ("single_shot_rag_on", "SS ON"),
         ("voting_n1_rag_off", "V1 OFF"),
@@ -227,7 +225,6 @@ def print_pairwise_comparisons(all_results: dict[str, Any]) -> None:
         ("MoA vs SS (RAG ON)", "moa_rag_on", "single_shot_rag_on"),
         ("Vot N=3 vs N=1 (RAG OFF)", "voting_n3_rag_off", "voting_n1_rag_off"),
         ("Vot N=3 vs N=1 (RAG ON)", "voting_n3_rag_on", "voting_n1_rag_on"),
-        ("SS vs TF-IDF", "single_shot_rag_off", "tfidf_baseline"),
     ]
     for comp_name, key_a, key_b in comparisons:
         print(f"\n  {comp_name}:")

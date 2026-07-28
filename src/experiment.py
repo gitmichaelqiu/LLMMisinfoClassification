@@ -12,7 +12,7 @@ from typing import Any
 from dotenv import load_dotenv
 
 from src.api import _llm_call
-from src.architectures import run_moa, run_single_shot, run_tfidf_baseline, run_voting_all_n
+from src.architectures import run_moa, run_single_shot, run_voting_all_n
 from src.config import (
     COST_PER_CALL,
     COVID_CORPUS,
@@ -79,17 +79,6 @@ def main() -> None:
         print(f"{domain.upper()} - {len(items)} items, {len(corpus)} corpus")
         print(f"{'=' * 65}")
         domain_results: dict[str, Any] = {}
-
-        # TF-IDF Baseline
-        print("\n  TF-IDF Baseline...")
-        sys.stdout.flush()
-        t0 = time.time()
-        tfidf_r = run_tfidf_baseline(items, corpus)
-        domain_results["tfidf_baseline"] = evaluate_architecture(
-            items, tfidf_r, "tfidf_baseline", 0
-        )
-        domain_results["tfidf_baseline"]["elapsed_s"] = time.time() - t0
-        print_metrics(domain_results["tfidf_baseline"], "TF-IDF Baseline")
 
         # Single-Shot RAG OFF / ON
         for rag_flag, rag_label in [(False, "RAG OFF"), (True, "RAG ON")]:

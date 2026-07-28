@@ -1,4 +1,4 @@
-"""Architecture runners: Single-Shot, Voting, MoA, and TF-IDF baseline."""
+"""Architecture runners: Single-Shot, Voting, and MoA."""
 
 from __future__ import annotations
 
@@ -8,7 +8,6 @@ from typing import Any
 import numpy as np
 
 from src.api import _llm_call, _parse_response, _run_parallel
-from src.config import SEED
 from src.prompts import (
     CANONICAL_SYSTEM,
     MOA_JUDGE,
@@ -17,52 +16,6 @@ from src.prompts import (
 )
 from src.retrieval import build_retriever, make_moa_user_prompt, make_user_prompt
 from src.schemas import Verdict, VerificationItem, VerificationResult
-
-
-# TF-IDF + Logistic Regression baseline
-def run_tfidf_baseline(
-    items: list[VerificationItem],
-    corpus: list[VerificationItem],
-) -> list[VerificationResult]:
-    """Train a TF-IDF + LogisticRegression classifier on the corpus and
-    evaluate on *items*.  No LLM calls — cheap sklearn baseline."""
-    from sklearn.feature_extraction.text import TfidfVectorizer
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.pipeline import Pipeline
-
-    corpus_texts = [it.claim_text for it in corpus]
-    corpus_labels = [1 if it.ground_truth == Verdict.FAKE else 0 for it in corpus]
-
-    clf = Pipeline([
-        ("tfidf", TfidfVectorizer(stop_words="english", max_features=10000)),
-        (
-            "lr",
-            LogisticRegression(
-                class_weight="balanced", random_state=SEED, max_iter=1000
-            ),
-        ),
-    ])
-    clf.fit(corpus_texts, corpus_labels)
-
-    results: list[VerificationResult] = []
-    for item in items:
-        pred = clf.predict([item.claim_text])[0]
-        prob = clf.predict_proba([item.claim_text])[0]
-        if pred == 1:
-            verdict, confidence = Verdict.FAKE, prob[1]
-        else:
-            verdict, confidence = Verdict.REAL, prob[0]
-        results.append(
-            VerificationResult(
-                item_id=item.id,
-                verdict=verdict,
-                confidence=float(confidence),
-                latency_s=0.001,
-                evidence=[],
-                metadata={"architecture": "tfidf_baseline"},
-            )
-        )
-    return results
 
 
 # Single-Shot
