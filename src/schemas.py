@@ -21,7 +21,6 @@ class Verdict(IntEnum):
     REAL = 0
     FAKE = 1
     ESCALATE = 2
-    EXAGGERATED = 3
 
 
 @dataclass

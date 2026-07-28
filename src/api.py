@@ -12,13 +12,12 @@ from src.config import MAX_CONCURRENCY, MAX_TOKENS, MODEL, TEMPERATURE
 from src.schemas import Verdict, VerificationResult
 
 # ── Response parsing ────────────────────────────────────────────
-_VERDICT_RE = re.compile(r"Verdict:\s*(REAL|FAKE|ESCALATE|EXAGGERATED)", re.IGNORECASE)
+_VERDICT_RE = re.compile(r"Verdict:\s*(REAL|FAKE|ESCALATE)", re.IGNORECASE)
 _CONFIDENCE_RE = re.compile(r"Confidence:\s*(\d+)", re.IGNORECASE)
 _VERDICT_MAP = {
     "REAL": Verdict.REAL,
     "FAKE": Verdict.FAKE,
     "ESCALATE": Verdict.ESCALATE,
-    "EXAGGERATED": Verdict.EXAGGERATED,
 }
 
 

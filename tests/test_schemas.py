@@ -17,7 +17,6 @@ class TestVerdict:
         assert Verdict.REAL == 0
         assert Verdict.FAKE == 1
         assert Verdict.ESCALATE == 2
-        assert Verdict.EXAGGERATED == 3
 
     def test_membership(self):
         assert Verdict.REAL in Verdict
